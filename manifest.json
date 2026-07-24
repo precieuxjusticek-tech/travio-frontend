@@ -1,0 +1,31 @@
+{
+  "name": "Travio — Gestion de transport",
+  "short_name": "Travio",
+  "description": "Plateforme de gestion en temps réel pour agences de transport interurbain.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0A0E1A",
+  "theme_color": "#0B1220",
+  "icons": [
+    {
+      "src": "images/travio-logs.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/travio-logs.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/travio-logs.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

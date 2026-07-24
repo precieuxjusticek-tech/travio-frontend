@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TRAVIO</title>
+        <link rel="icon" type="image/png" href="images/travio-favicon.png">
+        <link rel="stylesheet" href="splash.css">
+    </head>
+    <body>
+        <div class="splash" id="splash">
+
+            <!-- Cercles décoratifs -->
+            <div class="circle c1"></div>
+            <div class="circle c2"></div>
+            <div class="circle c3"></div>
+
+            <!-- Contenu central -->
+            <div class="splash-content">
+
+            <!-- Icône logo -->
+            <div class="logo-icon" id="logoIcon">
+                <img src="images/travio-favicon.png" class="logo-img" alt="TRAVIO">
+            </div>
+
+            <!-- Nom -->
+            <div class="logo-name" id="logoName">
+                TRAVI<span>O</span>
+            </div>
+
+            <!-- Slogan -->
+            <div class="slogan" id="slogan">Configurer. Vendre. Suivre.</div>
+
+            <!-- Mention maison mère -->
+            <div class="brand-by" id="brandBy">by <span>VTK</span></div>
+
+            <!-- Loader -->
+            <div class="loader" id="loader">
+                <div class="loader-bar"></div>
+            </div>
+
+            </div>
+
+        </div>
+
+        <!-- App principale (cachée au départ) -->
+        <div class="app" id="app">
+
+            <!-- HEADER fixe -->
+            <div class="ob-header">
+                <div class="ob-logo">
+                    <img src="images/travio-favicon.png" class="logo-img-ob" alt="TRAVIO">                    
+                    <span>TRAVIO</span>
+                </div>
+                <button class="ob-skip" id="skipBtn" onclick="goToLogin()">Passer</button>
+            </div>
+
+            <!-- SLIDES -->
+            <div class="ob-slider" id="obSlider">
+
+                <!-- Slide 1 : Centralisation -->
+                <div class="ob-slide" id="slide1">
+                    <div class="ob-illustration">
+                        <div class="ob-icon-wrap">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <rect width="64" height="64" rx="20" fill="#EEF3FF"/>
+                                <!-- Bus simplifié -->
+                                <rect x="8" y="28" width="40" height="20" rx="4" fill="#0057FF" opacity="0.15" stroke="#0057FF" stroke-width="2"/>
+                                <circle cx="16" cy="50" r="4" fill="#0057FF"/>
+                                <circle cx="36" cy="50" r="4" fill="#0057FF"/>
+                                <rect x="8" y="28" width="40" height="8" rx="4" fill="#0057FF" opacity="0.3"/>
+                                <!-- Icônes chaos qui convergent -->
+                                <rect x="52" y="10" width="8" height="6" rx="2" fill="#FF4D6A" opacity="0.6"/>
+                                <rect x="52" y="20" width="8" height="6" rx="2" fill="#FFB23F" opacity="0.6"/>
+                                <rect x="52" y="30" width="8" height="6" rx="2" fill="#00E5A0" opacity="0.6"/>
+                                <!-- Flèche vers centre -->
+                                <path d="M50 13 L32 24" stroke="#0057FF" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.5"/>
+                                <path d="M50 23 L32 30" stroke="#0057FF" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.5"/>
+                                <path d="M50 33 L48 36" stroke="#0057FF" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ob-text">
+                        <h2>Gérez toute votre agence depuis un seul endroit</h2>
+                        <p>Fini les carnets papier et les appels pour vérifier les places disponibles. Travio centralise vos trajets, vos bus et votre réseau de vente.</p>
+                    </div>
+                </div>
+
+                <!-- Slide 2 : Comment ça marche -->
+                <div class="ob-slide" id="slide2">
+                    <div class="ob-illustration">
+                        <div class="ob-icon-wrap">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <rect width="64" height="64" rx="20" fill="#EDFDF6"/>
+                                <!-- Étape 1 : bus -->
+                                <rect x="6" y="24" width="14" height="10" rx="3" fill="#0057FF" opacity="0.2" stroke="#0057FF" stroke-width="1.5"/>
+                                <circle cx="9" cy="36" r="2.5" fill="#0057FF" opacity="0.5"/>
+                                <circle cx="17" cy="36" r="2.5" fill="#0057FF" opacity="0.5"/>
+                                <!-- Flèche -->
+                                <path d="M22 29 L28 29" stroke="#0057FF" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M26 27 L28 29 L26 31" stroke="#0057FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <!-- Étape 2 : PDV (téléphone) -->
+                                <rect x="30" y="20" width="10" height="18" rx="3" fill="#0057FF" opacity="0.15" stroke="#0057FF" stroke-width="1.5"/>
+                                <rect x="32" y="24" width="6" height="8" rx="1" fill="#0057FF" opacity="0.3"/>
+                                <circle cx="35" cy="34" r="1.5" fill="#0057FF" opacity="0.5"/>
+                                <!-- Flèche -->
+                                <path d="M42 29 L48 29" stroke="#0057FF" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M46 27 L48 29 L46 31" stroke="#0057FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <!-- Étape 3 : dashboard -->
+                                <rect x="50" y="22" width="10" height="14" rx="2" fill="#00E5A0" opacity="0.3" stroke="#00E5A0" stroke-width="1.5"/>
+                                <rect x="52" y="25" width="6" height="1.5" rx="0.75" fill="#00E5A0"/>
+                                <rect x="52" y="28" width="4" height="1.5" rx="0.75" fill="#00E5A0"/>
+                                <rect x="52" y="31" width="5" height="1.5" rx="0.75" fill="#00E5A0"/>
+                                <!-- Labels -->
+                                <text x="9" y="45" font-size="5" fill="#0057FF" opacity="0.7" text-anchor="middle" font-family="sans-serif">Trajets</text>
+                                <text x="35" y="45" font-size="5" fill="#0057FF" opacity="0.7" text-anchor="middle" font-family="sans-serif">PDV</text>
+                                <text x="55" y="43" font-size="5" fill="#00A070" text-anchor="middle" font-family="sans-serif">Dashboard</text>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ob-text">
+                        <h2>Vos trajets, vos bus, vos points de vente</h2>
+                        <p>Configurez vos lignes une seule fois. Chaque agent PDV reçoit son accès et vend en temps réel — les places se décomptent automatiquement à chaque billet.</p>
+                        <div class="ob-steps-list">
+                            <div class="ob-step-item"><span class="ob-step-num">1</span><span>Vous configurez trajets et bus</span></div>
+                            <div class="ob-step-item"><span class="ob-step-num">2</span><span>Vos PDV vendent via leur interface</span></div>
+                            <div class="ob-step-item"><span class="ob-step-num">3</span><span>Vous suivez tout en temps réel</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 : Zéro surréservation -->
+                <div class="ob-slide" id="slide3">
+                    <div class="ob-illustration">
+                        <div class="ob-icon-wrap">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <rect width="64" height="64" rx="20" fill="#EEF3FF"/>
+                                <!-- Route avec tronçons -->
+                                <rect x="8" y="30" width="48" height="4" rx="2" fill="#0057FF" opacity="0.15"/>
+                                <!-- Points de la route -->
+                                <circle cx="8" cy="32" r="5" fill="#0057FF"/>
+                                <circle cx="24" cy="32" r="4" fill="#0057FF" opacity="0.5"/>
+                                <circle cx="40" cy="32" r="4" fill="#0057FF" opacity="0.5"/>
+                                <circle cx="56" cy="32" r="5" fill="#FF4D6A"/>
+                                <!-- Bus sur la route -->
+                                <rect x="28" y="24" width="12" height="8" rx="2" fill="#0057FF"/>
+                                <circle cx="31" cy="33" r="2" fill="#1a1a2e"/>
+                                <circle cx="37" cy="33" r="2" fill="#1a1a2e"/>
+                                <!-- Check places -->
+                                <rect x="16" y="42" width="12" height="14" rx="3" fill="#00E5A0" opacity="0.2" stroke="#00E5A0" stroke-width="1.5"/>
+                                <path d="M19 49 L21.5 51.5 L25 47" stroke="#00E5A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <!-- Stats -->
+                                <rect x="36" y="42" width="20" height="6" rx="2" fill="#0057FF" opacity="0.15" stroke="#0057FF" stroke-width="1"/>
+                                <rect x="38" y="44" width="8" height="2" rx="1" fill="#0057FF" opacity="0.4"/>
+                                <rect x="36" y="50" width="20" height="6" rx="2" fill="#0057FF" opacity="0.15" stroke="#0057FF" stroke-width="1"/>
+                                <rect x="38" y="52" width="12" height="2" rx="1" fill="#0057FF" opacity="0.4"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ob-text">
+                        <h2>Zéro surréservation. Zéro perte.</h2>
+                        <p>Chaque billet vendu décompte les places en temps réel, tronçon par tronçon. Un passager qui monte à Dolisie et descend à Pointe-Noire n'occupe que les bonnes places.</p>
+                        <div class="ob-features-list">
+                            <div class="ob-feature-item">
+                                <span class="ob-feat-check">✓</span>
+                                <span>Places gérées par tronçon sur les trajets avec arrêts</span>
+                            </div>
+                            <div class="ob-feature-item">
+                                <span class="ob-feat-check">✓</span>
+                                <span>Annulations et incidents tracés automatiquement</span>
+                            </div>
+                            <div class="ob-feature-item">
+                                <span class="ob-feat-check">✓</span>
+                                <span>Rapports financiers par PDV, par trajet, par période</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4 : Démarrage -->
+                <div class="ob-slide" id="slide4">
+                    <div class="ob-illustration">
+                        <div class="ob-icon-wrap">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <rect width="64" height="64" rx="20" fill="#EDFDF6"/>
+                                <path d="M32 10 C32 10 20 22 20 36 C20 42 24 46 32 46 C40 46 44 42 44 36 C44 22 32 10 32 10Z" fill="#0057FF" opacity="0.15" stroke="#0057FF" stroke-width="2"/>
+                                <circle cx="32" cy="30" r="5" fill="#0057FF" opacity="0.4"/>
+                                <path d="M28 46 C28 52 32 54 32 54 C32 54 36 52 36 46" fill="#FF4D6A" opacity="0.6"/>
+                                <circle cx="18" cy="20" r="2" fill="#00E5A0"/>
+                                <circle cx="46" cy="16" r="2" fill="#FFB23F"/>
+                                <circle cx="50" cy="34" r="2" fill="#00E5A0"/>
+                                <circle cx="14" cy="38" r="2" fill="#FFB23F"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ob-text">
+                        <h2>Prêt à démarrer en 3 minutes</h2>
+                        <p>Créez votre agence, ajoutez votre premier trajet et invitez vos points de vente. Votre réseau sera opérationnel aujourd'hui.</p>
+                        <div class="ob-checklist">
+                            <div class="ob-check-item done">
+                                <span class="ob-check-icon">✓</span>
+                                <span>Compte créé</span>
+                            </div>
+                            <div class="ob-check-item">
+                                <span class="ob-check-icon pending">→</span>
+                                <span>Configurer votre agence</span>
+                            </div>
+                            <div class="ob-check-item">
+                                <span class="ob-check-icon pending">→</span>
+                                <span>Ajouter vos trajets</span>
+                            </div>
+                            <div class="ob-check-item">
+                                <span class="ob-check-icon pending">→</span>
+                                <span>Inviter vos points de vente</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5 : Tarification -->
+                <div class="ob-slide" id="slide5">
+                    <div class="ob-illustration">
+                        <div class="ob-icon-wrap">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <rect width="64" height="64" rx="20" fill="#EDFDF6"/>
+                                <rect x="8" y="18" width="48" height="30" rx="5" fill="#0057FF" opacity="0.15" stroke="#0057FF" stroke-width="1.5"/>
+                                <rect x="8" y="18" width="48" height="10" rx="5" fill="#0057FF" opacity="0.25"/>
+                                <rect x="14" y="22" width="7" height="5" rx="1.5" fill="#00E5A0" opacity="0.8"/>
+                                <rect x="14" y="34" width="20" height="2.5" rx="1.25" fill="#00E5A0" opacity="0.7"/>
+                                <rect x="14" y="39" width="14" height="2" rx="1" fill="#0057FF" opacity="0.4"/>
+                                <circle cx="48" cy="40" r="7" fill="#00E5A0" opacity="0.2" stroke="#00E5A0" stroke-width="1.5"/>
+                                <path d="M44.5 40l2.5 2.5 4-4" stroke="#00E5A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ob-text">
+                        <h2>Essayez Travio gratuitement</h2>
+                        <p>Testez toutes les fonctionnalités pendant 12 jours, sans engagement.</p>
+                        <div class="ob-trial-card">
+                            <div class="ob-trial-label">Période d'essai</div>
+                            <div class="ob-trial-amount">12 <span>jours gratuits</span></div>
+                        </div>
+                        <div class="ob-trial-features">
+                            <div class="ob-feature-item">
+                                <span class="ob-feat-check">✓</span>
+                                <span>Accès complet à toutes les fonctionnalités</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- FOOTER fixe -->
+            <div class="ob-footer">
+                <!-- Indicateurs -->
+                <div class="ob-dots">
+                    <div class="ob-dot active" id="dot0"></div>
+                    <div class="ob-dot" id="dot1"></div>
+                    <div class="ob-dot" id="dot2"></div>
+                    <div class="ob-dot" id="dot3"></div>
+                    <div class="ob-dot" id="dot4"></div>
+                </div>
+                <!-- Bouton -->
+                <button class="ob-btn" id="obBtn" onclick="nextSlide()">Suivant →</button>
+
+                <!-- Mention maison mère -->
+                <div class="ob-brand-by">TRAVIO by <span>VTK</span></div>
+
+            </div>
+
+        </div>
+
+        <script src="splash.js"></script>
+    </body>
+</html>

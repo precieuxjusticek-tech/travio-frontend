@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRAVIO — Dashboard</title>
+
+  <link rel="icon" type="image/png" href="images/travio-favicon.png">
+  <link rel="stylesheet" href="dashboard.css">
+  
+  <!-- fichiers manufest-->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0B1220">
+</head>
+<body>
+
+  <!-- ══ LOADING SCREEN ══ -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-logo">
+      <img src="images/travio-logs.png" alt="TRAVIO" class="loader-logo-img">
+      <div class="loader-brand">TRAVI<em>O</em></div>
+    </div>
+    <div class="loader-bar-wrap">
+      <div class="loader-bar-inner"></div>
+    </div>
+  </div>
+
+  <!-- ══ ONBOARDING OVERLAY ══ -->
+  <div class="onboarding-overlay" id="onboardingOverlay">
+
+    <div class="ob-backdrop"></div>
+
+    <div class="ob-modal" id="obModal">
+
+      <!-- Progression -->
+      <div class="ob-progress-bar">
+        <div class="ob-progress-fill" id="obProgressFill"></div>
+      </div>
+
+      <!-- Étape indicateur -->
+      <div class="ob-step-indicator">
+        <span class="ob-step-label" id="obStepLabel">Étape 1 sur 3</span>
+        <div class="ob-step-dots">
+          <div class="ob-step-dot active" id="sdot0"></div>
+          <div class="ob-step-dot" id="sdot1"></div>
+          <div class="ob-step-dot" id="sdot2"></div>
+        </div>
+      </div>
+
+      <!-- ── ÉTAPE 1 — Identité visuelle ── -->
+      <div class="ob-step" id="step1">
+
+        <div class="ob-step-head">
+          <div class="ob-step-icon">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+              <rect x="5" y="9" width="16" height="14" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M9 3h8v6H9z" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M9 13h2M9 17h2M15 13h2M15 17h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2>Identité de votre agence</h2>
+          <p>Commençons par les informations de base qui identifient votre agence auprès des voyageurs.</p>
+        </div>
+
+        <div class="ob-fields">
+
+          <div class="ob-field-group">
+            <label>Nom de l'agence <span class="req">*</span></label>
+            <div class="ob-field-wrap">
+              <svg class="ob-field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 8h6M5 5.5h4M5 10.5h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <input type="text" placeholder="Ex : Agence VoyagePlus" id="agence-nom" class="ob-input">
+            </div>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Logo de l'agence <span class="req">*</span></label>
+            <div class="ob-upload-zone" id="logoUploadZone" onclick="document.getElementById('logoFileInput').click()">
+              <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
+              <div class="ob-upload-preview" id="logoPreview">
+                <div class="ob-upload-placeholder">
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <path d="M14 4v14M7 11l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 22h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  <span>Cliquez pour uploader votre logo</span>
+                  <small>PNG, JPG — recommandé 400×400px</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ob-field-row">
+            <div class="ob-field-group">
+              <label>Photos de l'agence</label>
+              <div class="ob-upload-zone ob-upload-small" id="photosUploadZone" onclick="document.getElementById('photosFileInput').click()">
+                <input type="file" id="photosFileInput" accept="image/*" multiple style="display:none" onchange="handlePhotosUpload(this)">
+                <div class="ob-photos-preview" id="photosPreview">
+                  <div class="ob-upload-placeholder small">
+                    <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+                      <path d="M14 4v14M7 11l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M4 22h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Ajouter des photos</span>
+                    <small>Max 5 photos</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ob-field-row">
+            <div class="ob-field-group">
+              <label>Ville du siège <span class="req">*</span></label>
+              <div class="ob-field-wrap">
+                <svg class="ob-field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 1a5 5 0 00-5 5c0 3.5 5 9 5 9s5-5.5 5-9a5 5 0 00-5-5z" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <input type="text" placeholder="Ex : Brazzaville" id="agence-ville" class="ob-input">
+              </div>
+            </div>
+            <div class="ob-field-group">
+              <label>Pays</label>
+              <div class="ob-field-wrap">
+                <svg class="ob-field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M1.5 8h13M8 1.5a10 10 0 010 13M8 1.5a10 10 0 000 13" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <div class="ob-pays-wrap">
+                  <img class="ob-pays-flag" src="https://flagcdn.com/w40/cg.png" alt="Congo" onerror="this.style.display='none'">
+                  <input type="text" value="Congo Brazzaville" id="agence-pays" class="ob-input ob-pays-input" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="ob-btn-next" onclick="goToStep(2)">
+          Continuer <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+      </div>
+
+      <!-- ── ÉTAPE 2 — Contact ── -->
+      <div class="ob-step hidden" id="step2">
+
+        <div class="ob-step-head">
+          <div class="ob-step-icon">
+            <svg width="26" height="26" viewBox="0 0 16 16" fill="none">
+              <path d="M3 2h3l1.5 3.5-2 1.2A8.5 8.5 0 009.3 10.5l1.2-2L14 10v3a1 1 0 01-1 1A12 12 0 012 3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2>Coordonnées de contact</h2>
+          <p>Ces informations permettront aux voyageurs de vous joindre et de finaliser leurs réservations.</p>
+        </div>
+
+        <div class="ob-fields">
+
+          <div class="ob-field-group">
+            <label>Adresse du siège <span class="req">*</span></label>
+            <div class="ob-field-wrap">
+              <svg class="ob-field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <input type="text" placeholder="Ex : Avenue de l'Indépendance, Centre-ville" id="agence-adresse" class="ob-input">
+            </div>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Numéro de téléphone principal <span class="req">*</span></label>
+            <div class="ob-field-wrap">
+              <svg class="ob-field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 2h3l1.5 3.5-2 1.2A8.5 8.5 0 009.3 10.5l1.2-2L14 10v3a1 1 0 01-1 1A12 12 0 012 3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input type="tel" placeholder="+242 06 xxx xx xx" id="agence-tel"
+              class="ob-input" pattern="[0-9]{9}" maxlength="9" minlength="9" required>
+            </div>
+            <div class="ob-hint">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Ce numéro sera affiché aux voyageurs pour les réservations — de préférence un WhatsApp actif.
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ob-btn-row">
+          <button class="ob-btn-back" onclick="goToStep(1)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 8H4M7 5L4 8l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Retour
+          </button>
+          <button class="ob-btn-next" onclick="goToStep(3)">
+            Continuer <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ── ÉTAPE 3 — Présentation ── -->
+      <div class="ob-step hidden" id="step3">
+
+        <div class="ob-step-head">
+          <div class="ob-step-icon">
+            <svg width="26" height="26" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1l1.3 4.2L13.5 6.5l-4.2 1.3L8 12l-1.3-4.2L2.5 6.5l4.2-1.3L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2>Donnez vie à votre agence</h2>
+          <p>Ces informations vont convaincre les voyageurs de choisir votre agence. Soyez authentiques et percutants.</p>
+        </div>
+
+        <div class="ob-fields">
+
+          <div class="ob-field-group">
+            <label>Slogan / Devise <span class="req">*</span></label>
+            <div class="ob-field-wrap">
+              <svg class="ob-field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <input type="text" placeholder='Ex : "Votre confort, notre priorité"' id="agence-slogan" class="ob-input">
+            </div>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Description courte <span class="req">*</span></label>
+            <textarea class="ob-textarea" id="agence-description" placeholder="Qui êtes-vous ? Ce qui vous rend unique par rapport aux autres agences..." rows="3"></textarea>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Notre histoire</label>
+            <textarea class="ob-textarea" id="agence-histoire" placeholder="Quand avez-vous été fondé ? Par qui ? Quelle est votre mission depuis le début ?" rows="3"></textarea>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Année de création</label>
+            <div class="ob-field-wrap">
+              <svg class="ob-field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <input type="number" placeholder="Ex : 2015" id="agence-annee" class="ob-input" min="1950" max="2025">
+            </div>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Pourquoi nous choisir ?</label>
+            <div class="ob-points-wrap" id="pointsWrap">
+              <div class="ob-point-input">
+                <span class="ob-point-num">1</span>
+                <input type="text" placeholder="Ex : Ponctualité garantie" class="ob-input ob-point-field" id="point1">
+              </div>
+              <div class="ob-point-input">
+                <span class="ob-point-num">2</span>
+                <input type="text" placeholder="Ex : Bus climatisés et confortables" class="ob-input ob-point-field" id="point2">
+              </div>
+              <div class="ob-point-input">
+                <span class="ob-point-num">3</span>
+                <input type="text" placeholder="Ex : Service client réactif 7j/7" class="ob-input ob-point-field" id="point3">
+              </div>
+            </div>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Nos engagements envers les voyageurs</label>
+            <textarea class="ob-textarea" id="agence-engagements" placeholder="Ex : Remboursement en cas d'annulation, bagages sécurisés, assistance en cas de panne..." rows="3"></textarea>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Règles de l'agence</label>
+            <textarea class="ob-textarea" id="agence-regles" placeholder="Ex : Présentation obligatoire 30 min avant le départ. Aucun remboursement après confirmation. Bagages limités à 30kg..." rows="3"></textarea>
+            <div class="ob-hint">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Ces règles seront affichées aux voyageurs avant toute réservation.
+            </div>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Délai de présentation avant le départ</label>
+            <div style="display:flex;gap:8px;">
+              <input type="number" min="1" class="ob-input" id="ob-delai-formalite-valeur" placeholder="Ex : 30" style="flex:1;padding-left:14px;">
+              <select class="ob-input" id="ob-delai-formalite-unite"
+                style="flex:1;padding-left:14px;appearance:auto;-webkit-appearance:auto;background:#0F1525;color:var(--white);">
+                <option value="minutes">Minutes</option>
+                <option value="heures">Heures</option>
+              </select>
+            </div>
+            <div class="ob-hint">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Temps avant le départ auquel le passager doit se présenter — affiché sur les billets.
+            </div>
+          </div>
+
+          <div class="ob-field-group">
+            <label>Politique d'annulation des billets</label>
+
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+              <label class="ob-radio-item">
+                <input type="radio" name="ob-annul" value="remboursement">
+                <span>Annulation autorisée avec remboursement</span>
+              </label>
+              <label class="ob-radio-item">
+                <input type="radio" name="ob-annul" value="sans_remboursement">
+                <span>Annulation autorisée sans remboursement</span>
+              </label>
+              <label class="ob-radio-item">
+                <input type="radio" name="ob-annul" value="non" checked>
+                <span>Vente définitive — aucune annulation</span>
+              </label>
+            </div>
+
+            <div id="ob-annul-delai-wrap" style="display:none;margin-top:4px;">
+              <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">
+                Délai limite avant le départ
+              </label>
+              <select class="ob-input" id="ob-annul-delai" style="padding-left:14px;appearance:auto;-webkit-appearance:auto;background:#0F1525;color:var(--white);">
+                <option value="1">Au moins 1h avant</option>
+                <option value="2" selected>Au moins 2h avant</option>
+                <option value="6">Au moins 6h avant</option>
+                <option value="12">Au moins 12h avant</option>
+                <option value="24">Au moins 24h avant</option>
+                <option value="48">Au moins 48h avant</option>
+              </select>
+            </div>
+
+            <div id="ob-annul-precisions-wrap" style="display:none;margin-top:10px;">
+              <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">
+                Frais d'annulation retenus par l'agence
+              </label>
+              <div style="position:relative;display:flex;align-items:center;">
+                <input type="number" class="ob-input" id="ob-annul-precisions"
+                  min="0" max="100" step="1" placeholder="Ex : 20"
+                  style="padding-right:40px;">
+                <span style="position:absolute;right:14px;color:var(--muted);font-size:14px;font-weight:600;pointer-events:none;">%</span>
+              </div>
+              <div class="ob-hint" style="margin-top:6px;">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Ce pourcentage sera affiché dans le modal de confirmation d'annulation côté PDV et voyageur.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ob-btn-row">
+          <button class="ob-btn-back" onclick="goToStep(2)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 8H4M7 5L4 8l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Retour
+          </button>
+          <button class="ob-btn-next ob-btn-final" id="obFinalBtn" onclick="submitAgency()">
+            Créer mon agence
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD PRINCIPAL ══ -->
+  <div class="dashboard" id="dashboard">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar" id="sidebar">
+
+      <div class="sidebar-logo">
+        <img src="images/travio-logs.png" alt="TRAVIO" class="sidebar-logo-img">
+        <span>TRAVI<em>O</em></span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item active" data-page="overview" onclick="showPage('overview', this)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="1" y="1" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6"/>
+            <rect x="10" y="1" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6"/>
+            <rect x="1" y="10" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6"/>
+            <rect x="10" y="10" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          Vue d'ensemble
+        </a>
+        <a class="nav-item" data-page="reservations" onclick="showPage('reservations', this)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="1" y="3" width="16" height="13" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M5 1v4M13 1v4M1 7h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M5 11h3M5 13.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Réservations
+          <span class="nav-badge" id="navBadgeResa">0</span>
+        </a>
+        <a class="nav-item" data-page="trajets" onclick="showPage('trajets', this)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="4" cy="13" r="2.5" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="14" cy="13" r="2.5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M2 13V6a2 2 0 012-2h6l4 4v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 2v4h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Trajets & Bus
+        </a>
+        <a class="nav-item" data-page="finances" onclick="showPage('finances', this)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="1" y="4" width="16" height="11" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M1 8h16" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M5 12h2M9 12h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Finances
+        </a>
+
+        <div class="nav-section-label" style="margin-top:16px">Gestion</div>
+        <a class="nav-item" data-page="equipe" onclick="showPage('equipe', this)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="7" cy="6" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M1 16a6 6 0 0112 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="14" cy="6" r="2" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M14 12a5 5 0 013 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Équipe & PDV
+        </a>
+
+        <a class="nav-item" data-page="billets" onclick="showPage('billets', this)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M6 4V2h6v2M6 8h6M6 11h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Configuration des billets
+          <span class="nav-badge show" id="navBadgeBilletConfig" style="background:#FFB23F;">?</span>
+        </a>
+
+        <a class="nav-item" data-page="geo" onclick="showPage('geo', this)" style="display: none;">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 1a5.5 5.5 0 00-5.5 5.5C3.5 10.5 9 17 9 17s5.5-6.5 5.5-10.5A5.5 5.5 0 009 1z" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="9" cy="6.5" r="2" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          Géolocalisation
+          <span class="nav-badge-soon">Bientôt</span>
+        </a>
+
+        <a class="nav-item" data-page="agence" onclick="showPage('agence', this)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="7.5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M9 6v3l2 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Mon agence
+        </a>
+
+        <a class="nav-item" data-page="abonnement" onclick="showPage('abonnement', this)">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M8 4.5v4l2.5 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Mon essai gratuit
+          <span class="nav-badge" id="navBadgeAbonnement" style="background:#FFB23F;display:none;">!</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-user-avatar" id="sidebarAvatar">?</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-user-name" id="sidebarName">—</span>
+          <span class="sidebar-user-role">Administrateur</span>
+        </div>
+        <button class="sidebar-logout" onclick="handleLogout()" title="Déconnexion">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main class="main" id="main">
+
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M2 4h14M2 9h14M2 14h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <div class="topbar-title" id="topbarTitle">Vue d'ensemble</div>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-agence-badge" id="topbarAgenceBadge" style="cursor:pointer" title="Voir mon agence" onclick="showPage('agence', document.querySelector('[data-page=agence]'))">
+            <div class="topbar-agence-dot"></div>
+            <div id="topbarAgenceLogo" style="width:22px;height:22px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:10px;font-weight:800;color:var(--primary);flex-shrink:0;">
+              ?
+            </div>
+            <span id="topbarAgenceName">—</span>
+          </div>
+          <div style="position:relative;" id="supportBtnWrap">
+            <button class="topbar-notif" id="topbarSupport" onclick="goToSupport()">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="7.5" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M6.5 7a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <circle cx="9" cy="14" r="0.8" fill="currentColor"/>
+              </svg>
+            </button>
+            <div class="support-bubble" id="supportBubble" style="display:none;">
+              <span style="color:var(--accent);font-weight:600;">Besoin d'aide ?</span><br>
+              Un bug, une question, un problème ? Nous sommes là pour vous aider.
+              <div class="support-bubble-arrow"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAGE : VUE D'ENSEMBLE ── -->
+      <div class="page active" id="page-overview">
+
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="overviewGreeting">
+              Bonjour
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" style="vertical-align:-3px;">
+                <path d="M8 1a2 2 0 012 2v4M8 1a2 2 0 00-2 2v5M11 5a1.3 1.3 0 012.6 0v3M6 7a1.3 1.3 0 00-2.6 0v1.5c0 3 2 5.5 5 5.5h1c2.5 0 4.5-2 4.5-4.5V7a1.3 1.3 0 00-2.6 0"
+                stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </h1>
+            <p class="page-subtitle" id="overviewAgence">Voici ce qui se passe aujourd'hui.</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn-action-primary" onclick="openCreateTrajet()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Nouveau trajet
+            </button>
+          </div>
+        </div>
+
+        <div id="overviewPolitiqueAnnul"></div>
+
+        <!-- Stats cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Réservations aujourd'hui</span>
+              <div class="stat-icon blue">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 1v4M12 1v4M1 6h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statResa">0</div>
+            <div class="stat-delta positive" id="statResaDelta">— aujourd'hui</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Revenus du jour</span>
+              <div class="stat-icon green">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><path d="M5 11h2M9 11h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statRevenu">0 XAF</div>
+            <div class="stat-delta positive" id="statRevenuDelta"></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Trajets actifs</span>
+              <div class="stat-icon purple">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 12V6a2 2 0 012-2h5l4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statTrajets">0</div>
+            <div class="stat-delta" id="statTrajetsInfo">trajets programmés</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Billets vendus aujourd'hui</span>
+              <div class="stat-icon orange">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statVoyageurs">0</div>
+            <div class="stat-delta positive" id="statVoyageursInfo"></div>
+          </div>
+        </div>
+
+        <!-- Contenu principal : dernières réservations + actions rapides -->
+        <div class="overview-grid">
+
+          <!-- Dernières réservations -->
+          <div class="overview-card">
+            <div class="overview-card-header">
+              <h3>Dernières réservations <span id="overviewResaBadge" style="display:none;background:var(--primary);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;"></span></h3>
+              <a class="overview-link" onclick="showPage('reservations', document.querySelector('[data-page=reservations]'))">Voir tout →</a>
+            </div>
+            <div class="resa-list" id="overviewResaList">
+              <div class="empty-state">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect x="4" y="7" width="28" height="24" rx="4" stroke="currentColor" stroke-width="1.8"/><path d="M10 3v8M26 3v8M4 15h28" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <p>Aucune réservation pour l'instant</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions rapides -->
+          <div class="overview-side">
+
+            <div class="overview-card">
+              <div class="overview-card-header">
+                <h3>Actions rapides</h3>
+              </div>
+              <div class="quick-actions">
+                <button class="quick-action" onclick="openCreateTrajet()">
+                  <div class="qa-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <rect x="3" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                      <path d="M3 10h14" stroke="currentColor" stroke-width="1.6"/>
+                      <circle cx="6" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+                      <circle cx="14" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M6 4V2h8v2" stroke="currentColor" stroke-width="1.6"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong>Ajouter un trajet</strong>
+                    <small>Programmer un nouveau départ</small>
+                  </div>
+                </button>
+                <button class="quick-action" onclick="showPage('equipe', document.querySelector('[data-page=equipe]'))">
+                  <div class="qa-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.6"/>
+                      <path d="M3 18a7 7 0 0114 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong>Ajouter un PDV</strong>
+                    <small>Créer un point de vente</small>
+                  </div>
+                </button>
+                <button class="quick-action" onclick="showPage('agence', document.querySelector('[data-page=agence]'))">
+                  <div class="qa-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.6"/>
+                      <path d="M10 2v2.2M10 15.8V18M18 10h-2.2M4.2 10H2M15.5 4.5l-1.5 1.5M6 12.5l-1.5 1.5M15.5 15.5l-1.5-1.5M6 7.5l-1.5-1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong>Modifier l'agence</strong>
+                    <small>Infos, photos, description</small>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ── PAGE : RÉSERVATIONS ── -->
+      <div class="page" id="page-reservations">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Réservations</h1>
+            <p class="page-subtitle">Suivez toutes les réservations de votre réseau en temps réel.</p>
+            <span id="resaPeriodeLabel" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;
+              background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);
+              color:var(--accent);font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:20px;">
+            </span>
+          </div>
+          <div class="page-header-actions">
+            <div id="resaPeriodeFilters" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <button class="rqf-btn" onclick="setResaPeriode('today', this)">Aujourd'hui</button>
+              <button class="rqf-btn" onclick="setResaPeriode('week', this)">Semaine</button>
+              <button class="rqf-btn" onclick="setResaPeriode('month', this)">Mois</button>
+              <button class="rqf-btn active" onclick="setResaPeriode('all', this)">Tout</button>
+              <button class="rqf-btn" id="resaCustomBtn" onclick="toggleResaCustomPicker()" style="display:flex;align-items:center;gap:5px;">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Période précise
+              </button>
+            </div>
+            <div id="resaCustomPickerWrap" style="display:none;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                <div class="pdv-field-group" style="margin:0;">
+                  <label>Du</label>
+                  <input type="date" class="pdv-input" id="resaCustomDebut">
+                </div>
+                <div class="pdv-field-group" style="margin:0;">
+                  <label>Au</label>
+                  <input type="date" class="pdv-input" id="resaCustomFin">
+                </div>
+                <button class="btn-action-primary" onclick="applyResaCustomRange()" style="height:fit-content;">Appliquer</button>
+                <button class="btn-action-secondary" onclick="clearResaCustomRange()" style="height:fit-content;">Annuler</button>
+              </div>
+              <p style="font-size:11px;color:var(--muted);margin-top:8px;">Astuce : pour un seul jour, mettez la même date des deux côtés. Pour un mois entier, sélectionnez le 1er au dernier jour du mois.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alertes -->
+        <div id="resaAlertesWrap"></div>
+
+        <!-- Stats résumé -->
+        <div class="stats-grid" id="resaStatsGrid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Réservations</span>
+              <div class="stat-icon blue">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 1v4M12 1v4M1 6h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="resaStatTotal">0</div>
+            <div class="stat-delta" id="resaStatTotalInfo">sur la période</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Taux d'annulation</span>
+              <div class="stat-icon orange">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="resaStatAnnulTaux">0%</div>
+            <div class="stat-delta" id="resaStatAnnulInfo">— annulées</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">PDV vendeurs actifs</span>
+              <div class="stat-icon purple">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="6" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M1 15a6 6 0 0112 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="resaStatPdvActifs">0 / 0</div>
+            <div class="stat-delta">sur la période</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Modifications à la baisse</span>
+              <div class="stat-icon orange">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="resaStatBaisse">0</div>
+            <div class="stat-delta">non vérifiées</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Billets vendus</span>
+              <div class="stat-icon blue">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="resaStatPassagers">0</div>
+            <div class="stat-delta" id="resaStatPassagersInfo">sur la période</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Passagers déjà transportés</span>
+              <div class="stat-icon green">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="resaStatDejaTransportes">0</div>
+            <div class="stat-delta">voyage déjà effectué</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Passagers retirés</span>
+              <div class="stat-icon orange">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11 4l3 3M14 4l-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="resaStatRetraits">0</div>
+            <div class="stat-delta">sur la période</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Réservations réaffectées</span>
+              <div class="stat-icon blue">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8A5 5 0 103 8M13 8V4M13 8H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="resaStatReaffectees">0</div>
+            <div class="stat-delta">suite à un changement de bus</div>
+          </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="overview-card" style="padding:14px 16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span id="resaCompteur" style="font-size:12px;color:var(--muted);font-weight:500;">—</span>
+          </div>
+          <div class="resa-filters-row" style="align-items:flex-end;">
+            <div class="pdv-field-group" style="margin:0;flex:0 0 140px;">
+              <label>Ville(s)</label>
+              <select class="pdv-select" id="resaFiltreVille">
+                <option value="">Toutes les villes</option>
+              </select>
+            </div>
+            <div class="pdv-field-group" style="margin:0;flex:1;min-width:140px;">
+              <label>PDV</label>
+              <select class="pdv-select" id="resaFiltrePdv">
+                <option value="">Tous les PDV</option>
+              </select>
+            </div>
+            <div class="pdv-field-group" style="margin:0;flex:1;min-width:140px;">
+              <label>Trajet</label>
+              <select class="pdv-select" id="resaFiltreTrajet">
+                <option value="">Tous les trajets</option>
+              </select>
+            </div>
+            <div class="pdv-field-group" style="margin:0;flex:0 0 140px;">
+              <label>Bus</label>
+              <select class="pdv-select" id="resaFiltreBus">
+                <option value="">Tous les bus</option>
+              </select>
+            </div>
+            <div class="pdv-field-group" style="margin:0;flex:0 0 140px;">
+              <label>Statut</label>
+              <select class="pdv-select" id="resaFiltreStatut">
+                <option value="">Tous statuts</option>
+                <option value="confirmée">Confirmées</option>
+                <option value="annulée">Annulées</option>
+                <option value="retrait">Avec retrait passager</option>
+                <option value="reaffectee">Réaffectées</option>
+              </select>
+            </div>
+            <div class="pdv-field-group" style="margin:0;flex:1.4;min-width:180px;">
+              <label>Recherche</label>
+              <input type="text" class="pdv-input" id="resaRecherche" placeholder="Rechercher un passager ou téléphone">
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
+            <button class="btn-action-secondary" onclick="imprimerRapportReservations()" style="font-size:12px;padding:7px 14px;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <path d="M4 6V2h8v4M3 6h10a1 1 0 011 1v4a1 1 0 01-1 1h-2v2H5v-2H3a1 1 0 01-1-1V7a1 1 0 011-1z" stroke="currentColor"
+                stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="5" y="10" width="6" height="4" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              Imprimer
+            </button>
+            <button class="btn-action-secondary" onclick="genererRapportReservations()" style="font-size:12px;padding:7px 14px;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <path d="M2 14V2M2 14h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <rect x="4" y="8" width="2" height="4" fill="currentColor"/>
+                <rect x="7.5" y="5" width="2" height="7" fill="currentColor"/><rect x="11" y="9.5" width="2" height="2.5" fill="currentColor"/>
+              </svg>
+              Rapport Travio
+            </button>
+            <button class="btn-action-secondary" onclick="resetResaFiltres()" style="font-size:12px;padding:7px 14px;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <path d="M13 8A5 5 0 103 8M13 8V4M13 8H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Réinitialiser les filtres
+            </button>
+          </div>
+        </div>
+
+        <!-- Liste -->
+        <div class="overview-card" style="padding:0;overflow:hidden;min-height:400px;max-height:calc(100vh - 380px);overflow-y:auto;">
+          <div id="resaListContainer"></div>
+        </div>
+
+      </div>
+
+      <!-- ── PAGE : TRAJETS ── -->
+      <div class="page" id="page-trajets">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Trajets & Bus</h1>
+            <p class="page-subtitle">Gérez vos lignes, horaires et flotte de bus.</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn-action-secondary" onclick="openTypesBilletModal()">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M10 2v2.2M10 15.8V18M18 10h-2.2M4.2 10H2M15.5 4.5l-1.5 1.5M6 12.5l-1.5 1.5M15.5 15.5l-1.5-1.5M6 7.5l-1.5-1.5" stroke="currentColor" 
+                stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+              Types de billets
+            </button>
+            <button class="btn-action-primary" onclick="openCreateTrajet()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Nouveau trajet
+            </button>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;max-width:340px;">
+          <button id="trajetsTab-trajets" class="equipe-tab-btn active" onclick="switchTrajetsTab('trajets')">Trajets</button>
+          <button id="trajetsTab-bus" class="equipe-tab-btn" onclick="switchTrajetsTab('bus')">Flotte de bus</button>
+        </div>
+
+        <div id="trajetsPanel-trajets">
+          <div id="trajetsContainer"></div>
+        </div>
+
+        <div id="trajetsPanel-bus" style="display:none;">
+          <div id="busFlotteContainer"></div>
+        </div>
+      </div>
+
+      <!-- ── PAGE : FINANCES ── -->
+      <div class="page" id="page-finances">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Finances</h1>
+            <p class="page-subtitle">Suivez vos revenus, vos meilleures ventes et l'activité de vos points de vente.</p>
+            <span id="finPeriodeLabel" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);
+            color:var(--accent);font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:20px;">
+            </span>
+          </div>
+          <div class="page-header-actions">
+            <div id="finPeriodeFilters" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <button class="rqf-btn" onclick="setFinPeriode('today', this)">Aujourd'hui</button>
+              <button class="rqf-btn active" onclick="setFinPeriode('week', this)">Semaine</button>
+              <button class="rqf-btn" onclick="setFinPeriode('month', this)">Mois</button>
+              <button class="rqf-btn" onclick="setFinPeriode('all', this)">Tout</button>
+              <button class="rqf-btn" id="finCustomBtn" onclick="toggleFinCustomPicker()" style="display:flex;align-items:center;gap:5px;">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Période précise
+              </button>
+            </div>
+            <div id="finCustomPickerWrap" style="display:none;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                <div class="pdv-field-group" style="margin:0;">
+                  <label>Du</label>
+                  <input type="date" class="pdv-input" id="finCustomDebut">
+                </div>
+                <div class="pdv-field-group" style="margin:0;">
+                  <label>Au</label>
+                  <input type="date" class="pdv-input" id="finCustomFin">
+                </div>
+                <button class="btn-action-primary" onclick="applyFinCustomRange()" style="height:fit-content;">Appliquer</button>
+                <button class="btn-action-secondary" onclick="clearFinCustomRange()" style="height:fit-content;">Annuler</button>
+              </div>
+              <p style="font-size:11px;color:var(--muted);margin-top:8px;">Astuce : pour un seul jour, mettez la même date des deux côtés. Pour un mois entier, sélectionnez le 1er au dernier jour du mois.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtres avancés -->
+        <div class="overview-card" style="padding:14px 16px;">
+          <div class="resa-filters-row" style="align-items:flex-end;">
+            <div class="pdv-field-group" style="margin:0;flex:0 0 140px;">
+              <label>Ville(s)</label>
+              <select class="pdv-select" id="finFiltreVille">
+                <option value="">Toutes les villes</option>
+              </select>
+            </div>
+            <div class="pdv-field-group" style="margin:0;flex:1;min-width:160px;">
+              <label>PDV</label>
+              <select class="pdv-select" id="finFiltrePdv">
+                <option value="">Tous les PDV</option>
+              </select>
+            </div>
+            <div class="pdv-field-group" style="margin:0;flex:1;min-width:160px;">
+              <label>Trajet</label>
+              <select class="pdv-select" id="finFiltreTrajet">
+                <option value="">Tous les trajets</option>
+              </select>
+            </div>
+            <div class="pdv-field-group" style="margin:0;flex:0 0 140px;">
+              <label>Bus</label>
+              <select class="pdv-select" id="finFiltreBus">
+                <option value="">Tous les bus</option>
+              </select>
+            </div>
+            <div class="pdv-field-group" style="margin:0;flex:0 0 150px;">
+              <label>Statut</label>
+              <select class="pdv-select" id="finFiltreStatut">
+                <option value="toutes">Toutes ventes</option>
+                <option value="confirmées">Confirmées</option>
+                <option value="annulées">Annulées</option>
+              </select>
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;padding:0 4px 9px;">
+              <input type="checkbox" id="finFiltreRetrait" style="accent-color:var(--accent);width:15px;height:15px;">
+              Avec retrait passager
+            </label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
+            <button class="btn-action-secondary" onclick="imprimerRapportFinances()" style="font-size:12px;padding:7px 14px;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <path d="M4 6V2h8v4M3 6h10a1 1 0 011 1v4a1 1 0 01-1 1h-2v2H5v-2H3a1 1 0 01-1-1V7a1 1 0 011-1z" stroke="currentColor" 
+                stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="5" y="10" width="6" height="4" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              Imprimer
+            </button>
+            <button class="btn-action-secondary" onclick="genererRapportFinances()" style="font-size:12px;padding:7px 14px;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <path d="M2 14V2M2 14h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <rect x="4" y="8" width="2" height="4" fill="currentColor"/>
+                <rect x="7.5" y="5" width="2" height="7" fill="currentColor"/>
+                <rect x="11" y="9.5" width="2" height="2.5" fill="currentColor"/>
+              </svg>
+              Rapport Travio
+            </button>
+            <button class="btn-action-secondary" onclick="resetFinFiltres()" style="font-size:12px;padding:7px 14px;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <path d="M13 8A5 5 0 103 8M13 8V4M13 8H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Réinitialiser les filtres
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Ce que vous avez encaissé</span>
+              <div class="stat-icon green">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><path d="M5 11h2M9 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="finCA">0 XAF</div>
+            <div class="stat-delta" id="finCAInfo">—</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Billets vendus</span>
+              <div class="stat-icon blue">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 4V3M11 4V3M5 12v1M11 12v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="finBillets">0</div>
+            <div class="stat-delta" id="finBilletsInfo">—</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Prix moyen par billet</span>
+              <div class="stat-icon purple">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v6M6 7h3a1 1 0 010 2H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="finMoyBillet">0 XAF</div>
+            <div class="stat-delta" id="finMoyInfo">—</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Taux d'annulation</span>
+              <div class="stat-icon orange">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="finAnnul">0%</div>
+            <div class="stat-delta" id="finAnnulInfo">—</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Réservations</span>
+              <div class="stat-icon purple">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 1v4M12 1v4M1 6h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="finResa">0</div>
+            <div class="stat-delta" id="finResaInfo">—</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Passagers déjà transportés</span>
+              <div class="stat-icon green">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="finBilletsTransportes">0</div>
+            <div class="stat-delta" id="finBilletsTransportesInfo">voyage déjà effectué</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Passagers retirés</span>
+              <div class="stat-icon orange">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11 4l3 3M14 4l-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="finRetraits">0</div>
+            <div class="stat-delta">sur la période</div>
+          </div>
+        </div>
+
+        <!-- Impact sur les revenus -->
+        <div class="overview-card" id="finImpactCard" style="margin-bottom:16px;">
+          <div class="overview-card-header">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <path d="M8 2v9M4 8l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Impact sur vos revenus
+            </h3>
+          </div>
+          <div id="finImpact"></div>
+        </div>
+
+        <!-- Trophée meilleur PDV -->
+        <div id="finTrophy" style="display:none;align-items:center;gap:12px;background:rgba(239,159,39,0.08);border:1px solid rgba(239,159,39,0.2);border-radius:12px;padding:12px 18px;"></div>
+
+        <!-- Graphique évolution -->
+        <div class="overview-card">
+          <div class="overview-card-header">
+            <h3 id="finEvolutionTitle">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <path d="M2 12l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M11 5h3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Ventes jour par jour
+            </h3>
+          </div>
+          <div id="finEvolution"></div>
+        </div>
+
+        <!-- Graphique jour de la semaine -->
+        <div class="overview-card">
+          <div class="overview-card-header">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Quel jour vend-on le plus ?
+            </h3>
+          </div>
+          <div id="finDow"></div>
+        </div>
+
+        <!-- PDV par ville + Trajets côte à côte -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="overview-card" style="margin-bottom:0">
+            <div class="overview-card-header">
+              <h3>
+                <svg width="16" height="16" viewBox="0 0 26 26" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                  <rect x="5" y="9" width="16" height="14" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M9 3h8v6H9z" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M9 13h2M9 17h2M15 13h2M15 17h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                Ventes par point de vente
+                <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:6px;">(du plus au moins rentable)</span>
+              </h3>
+            </div>
+            <div id="finPdvList"></div>
+          </div>
+          <div class="overview-card" style="margin-bottom:0">
+            <div class="overview-card-header">
+              <h3>
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                  <rect x="3" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                  <path d="M3 10h14" stroke="currentColor" stroke-width="1.6"/>
+                  <circle cx="6" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="14" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Trajets les plus rentables
+              </h3>
+            </div>
+            <div id="finTrajetList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAGE : ÉQUIPE — avec onglets PDV / Contrôleurs ── -->
+      <div class="page" id="page-equipe">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Équipe</h1>
+            <p class="page-subtitle">Gérez vos points de vente et vos contrôleurs.</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn-action-primary" id="equipeAddBtn" onclick="openCreatePDV()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Ajouter un PDV
+            </button>
+          </div>
+        </div>
+
+        <!-- Onglets -->
+        <div style="display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;max-width:400px;">
+          <button id="equipeTab-pdv" class="equipe-tab-btn active" onclick="switchEquipeTab('pdv')">
+            <svg width="15" height="15" viewBox="0 0 26 26" fill="none" style="vertical-align:-3px;margin-right:5px;">
+              <rect x="5" y="9" width="16" height="14" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M9 3h8v6H9z" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M9 13h2M9 17h2M15 13h2M15 17h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            Points de vente
+          </button>
+          <button id="equipeTab-controleurs" class="equipe-tab-btn" onclick="switchEquipeTab('controleurs')">
+            <svg width="15" height="15" viewBox="0 0 18 18" fill="none" style="vertical-align:-3px;margin-right:5px;">
+              <circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M3 16a6 6 0 0112 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M6.5 5.5l1 1.2 2-2.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Contrôleurs
+          </button>
+        </div>
+
+        <!-- Panneau PDV (existant) -->
+        <div id="equipePanel-pdv">
+          <div id="pdvStatsBarWrap"></div>
+          <div id="pdvContainer"></div>
+        </div>
+
+        <!-- Panneau Contrôleurs (nouveau) -->
+        <div id="equipePanel-controleurs" style="display:none;">
+          <div id="controleursStatsBarWrap"></div>
+          <div id="controleursContainer"></div>
+        </div>
+      </div>
+
+      <!-- ── PAGE : CONFIGURATION DES BILLETS ── -->
+      <div class="page" id="page-billets">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Configuration des billets</h1>
+            <p class="page-subtitle">Configurez comment les billets de votre agence seront générés et imprimés.</p>
+          </div>
+        </div>
+        <div id="billetConfigContainer"></div>
+      </div>
+
+      <!-- ── PAGE : GÉOLOCALISATION ── -->
+      <div class="page" id="page-geo">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Géolocalisation</h1>
+            <p class="page-subtitle">Suivez vos bus en temps réel sur la carte.</p>
+          </div>
+        </div>
+        <div id="geoContainer"></div>
+      </div>
+
+      <!-- ── PAGE : MON AGENCE ── -->
+      <div class="page" id="page-agence">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Mon agence</h1>
+            <p class="page-subtitle">Informations et présentation de votre agence.</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn-action-secondary" id="editAgenceBtn" onclick="openEditAgence()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3L4 13H1v-3L9 2z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Modifier
+            </button>
+          </div>
+        </div>
+        <div class="agence-profile" id="agenceProfile">
+          <!-- Rempli dynamiquement -->
+        </div>
+      </div>
+
+      <!-- ── PAGE : MON ESSAI GRATUIT ── -->
+      <div class="page" id="page-abonnement">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Mon essai gratuit</h1>
+            <p class="page-subtitle">Suivez votre période d'essai Travio.</p>
+          </div>
+        </div>
+        <div id="abonnementContainer"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="dashToast">
+    <span class="toast-icon" id="dashToastIcon"></span>
+    <span class="toast-msg" id="dashToastMsg"></span>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

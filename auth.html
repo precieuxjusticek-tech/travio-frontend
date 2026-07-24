@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRAVIO — Authentification</title>
+  <link rel="icon" type="image/png" href="images/travio-favicon.png">
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+
+  <!-- ══ PAGE D'ACCUEIL AUTH ══ -->
+  <div class="auth-screen active" id="screen-home">
+
+    <!-- Cercles décoratifs -->
+    <div class="circle c1"></div>
+    <div class="circle c2"></div>
+    <div class="circle c3"></div>
+
+    <div class="auth-home-inner">
+
+      <!-- Logo -->
+      <div class="auth-logo">
+        <div class="auth-logo-icon">
+          <img src="images/travio-favicon.png" alt="TRAVIO" class="auth-logo-img">
+        </div>
+        <span class="auth-logo-name">TRAVI<span>O</span></span>
+      </div>
+
+      <!-- Slogan -->
+      <p class="auth-slogan">Configurer. Vendre. Suivre.</p>
+
+      <!-- Tagline -->
+      <div class="auth-tagline">
+        <h1>Bienvenue sur<br>votre espace</h1>
+        <p>Connectez-vous ou créez votre agence pour commencer.</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="auth-actions">
+
+        <button class="btn-primary" onclick="goTo('screen-register')">
+          <span class="btn-icon">✦</span>
+          Créer un compte agence
+        </button>
+
+        <button class="btn-secondary" onclick="goTo('screen-login')">
+          Se connecter
+        </button>
+
+        <div class="auth-divider">
+          <span></span>
+          <p>accès partenaire</p>
+          <span></span>
+        </div>
+
+        <button class="btn-pdv" onclick="goTo('screen-pdv')">
+          <div class="btn-pdv-left">
+            <div class="btn-pdv-dot"></div>
+            <div>
+              <strong>Accès Point de vente</strong>
+              <small>Connectez-vous avec vos identifiants</small>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+      </div>
+
+      <!-- Footer -->
+      <p class="auth-footer-note">En continuant, vous acceptez les <a href="#">CGU</a> de Travio</p>
+      <p class="auth-brand-by">TRAVIO by <span>VTK</span></p>
+
+    </div>
+  </div>
+
+  <!-- ══ CRÉER UN COMPTE ══ -->
+  <div class="auth-screen" id="screen-register">
+
+    <div class="auth-topbar">
+      <button class="back-btn" onclick="goTo('screen-home')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-topbar-logo">TRAVI<span>O</span></div>
+      <div style="width:36px"></div>
+    </div>
+
+    <div class="auth-form-wrap">
+
+      <div class="auth-form-header">
+        <h2>Créer votre compte</h2>
+        <p>Ces informations sont les vôtres en tant que directeur / fondateur.</p>
+      </div>
+
+      <div class="auth-form">
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>Prénom</label>
+            <div class="field-wrap">
+              <input type="text" placeholder="Guyonne" id="reg-prenom">
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Nom</label>
+            <div class="field-wrap">
+              <input type="text" placeholder="KAYA" id="reg-nom">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Adresse email</label>
+          <div class="field-wrap">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="email" placeholder="vous@agence.com" id="reg-email">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Mot de passe</label>
+          <div class="field-wrap">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="password" placeholder="Min. 8 caractères" id="reg-password">
+            <button class="eye-btn" onclick="togglePassword('reg-password', this)" tabindex="-1">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Confirmer le mot de passe</label>
+          <div class="field-wrap">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="password" placeholder="Répétez le mot de passe" id="reg-confirm">
+            <button class="eye-btn" onclick="togglePassword('reg-confirm', this)" tabindex="-1">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-primary btn-submit" onclick="handleRegister()">
+          Créer mon compte →
+        </button>
+
+        <p class="auth-switch">Déjà un compte ? <a onclick="goTo('screen-login')">Se connecter</a></p>
+        <p class="auth-brand-by">TRAVIO by <span>VTK</span></p>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONNEXION ADMIN ══ -->
+  <div class="auth-screen" id="screen-login">
+
+    <div class="auth-topbar">
+      <button class="back-btn" onclick="goTo('screen-home')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-topbar-logo">TRAVI<span>O</span></div>
+      <div style="width:36px"></div>
+    </div>
+
+    <div class="auth-form-wrap">
+
+      <div class="auth-form-header">
+        <h2>Bon retour 👋</h2>
+        <p>Connectez-vous à votre espace agence.</p>
+      </div>
+
+      <div class="auth-form">
+
+        <div class="field-group">
+          <label>Adresse email</label>
+          <div class="field-wrap">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="email" placeholder="vous@agence.com" id="login-email">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label-row">
+            <label>Mot de passe</label>
+            <a class="forgot-link" onclick="goTo('screen-forgot')">Mot de passe oublié ?</a>
+          </div>
+          <div class="field-wrap">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="password" placeholder="Votre mot de passe" id="login-password">
+            <button class="eye-btn" onclick="togglePassword('login-password', this)" tabindex="-1">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-primary btn-submit" onclick="handleLogin()">
+          Se connecter →
+        </button>
+
+        <p class="auth-switch">Pas encore de compte ? <a onclick="goTo('screen-register')">Créer un compte</a></p>
+        <p class="auth-brand-by">TRAVIO by <span>VTK</span></p>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONNEXION POINT DE VENTE ══ -->
+  <div class="auth-screen" id="screen-pdv">
+
+    <div class="auth-topbar">
+      <button class="back-btn" onclick="goTo('screen-home')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-topbar-logo">TRAVI<span>O</span></div>
+      <div style="width:36px"></div>
+    </div>
+
+    <div class="auth-form-wrap">
+
+      <div class="auth-form-header">
+        <div class="pdv-badge">
+          <div class="pdv-badge-dot"></div>
+          Point de vente
+        </div>
+        <h2>Accès partenaire</h2>
+        <p>Connectez-vous avec les identifiants fournis par votre siège.</p>
+      </div>
+
+      <div class="auth-form">
+
+        <div class="field-group">
+          <label>Adresse email</label>
+          <div class="field-wrap">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="email" placeholder="votre@email.com" id="pdv-email">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Mot de passe</label>
+          <div class="field-wrap">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="password" placeholder="Mot de passe fourni par le siège" id="pdv-password">
+            <button class="eye-btn" onclick="togglePassword('pdv-password', this)" tabindex="-1">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Info box -->
+        <div class="info-box">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:1px">
+            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <p>Vos identifiants vous ont été envoyés par email par votre agence mère. Contactez votre siège si vous ne les avez pas reçus.</p>
+        </div>
+
+        <button class="btn-accent btn-submit" onclick="handlePdvLogin()">
+          Accéder à mon espace →
+        </button>
+
+        <p class="auth-brand-by">TRAVIO by <span>VTK</span></p>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MOT DE PASSE OUBLIÉ ══ -->
+  <div class="auth-screen" id="screen-forgot">
+
+    <div class="auth-topbar">
+      <button class="back-btn" onclick="goTo('screen-login')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="auth-topbar-logo">TRAVI<span>O</span></div>
+      <div style="width:36px"></div>
+    </div>
+
+    <div class="auth-form-wrap">
+
+      <div class="auth-form-header">
+        <h2>Mot de passe oublié</h2>
+        <p>Entrez votre email et nous vous enverrons un lien de réinitialisation.</p>
+      </div>
+
+      <div class="auth-form">
+
+        <div class="field-group">
+          <label>Adresse email</label>
+          <div class="field-wrap">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="email" placeholder="vous@agence.com" id="forgot-email">
+          </div>
+        </div>
+
+        <button class="btn-primary btn-submit" onclick="handleForgot()">
+          Envoyer le lien →
+        </button>
+
+        <p class="auth-switch"><a onclick="goTo('screen-login')">← Retour à la connexion</a></p>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="auth.js"></script>
+</body>
+</html>
