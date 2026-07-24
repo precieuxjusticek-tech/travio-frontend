@@ -34,7 +34,7 @@ const ICONS = {
   coin: '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5v7M6 6.2c0-.9.9-1.5 2-1.5s2 .6 2 1.4c0 1.8-4 1-4 2.8 0 .8.9 1.4 2 1.4s2-.6 2-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>',
   refresh: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M13 8A5 5 0 103 8M13 8V4M13 8H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
-const BACKEND = 'http://localhost:3000';
+const BACKEND = 'https://travio-backend-pa4q.onrender.com';
 
 const OFFSET_MS_FIN = 1 * 60 * 60 * 1000;
 function toBrazzaDate(isoStr) {

@@ -2,7 +2,7 @@ import { auth } from './firebase-client.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { showToast, TOAST_ICONS } from './toast-utils.js';
 
-const BACKEND = 'http://localhost:3000';
+const BACKEND = 'https://travio-backend-pa4q.onrender.com';
 let currentUserEmail = null;
 let currentAgenceId  = null;
 

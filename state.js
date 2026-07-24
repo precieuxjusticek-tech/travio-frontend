@@ -1,6 +1,6 @@
 // ─── TRAVIO — État partagé entre tous les modules ───
 
-export const BACKEND = 'http://localhost:3000';
+export const BACKEND = 'https://travio-backend-pa4q.onrender.com';
 
 export let currentUser    = null;
 export let agenceData     = null;

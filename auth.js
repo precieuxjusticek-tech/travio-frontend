@@ -6,7 +6,7 @@ import {
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const BACKEND = 'http://localhost:3000';
+const BACKEND = 'https://travio-backend-pa4q.onrender.com';
 
 // ════════════════════════════════
 //  ICÔNES TOAST
