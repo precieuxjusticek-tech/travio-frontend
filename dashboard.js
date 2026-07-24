@@ -61,7 +61,7 @@ onAuthStateChanged(auth, async (user) => {
   setCurrentUser(user);
 
   try {
-    const res  = await fetch('https://travio-backend-pa4q.onrender.com', {
+    const res  = await fetch('https://travio-backend-pa4q.onrender.com/auth/login', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ email: user.email }),
