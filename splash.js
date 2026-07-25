@@ -1,35 +1,107 @@
 // ─── TRAVIO — Splash Screen ───
+import { auth } from './firebase-client.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const BACKEND = 'https://travio-backend-pa4q.onrender.com';
 
 window.addEventListener('DOMContentLoaded', () => {
 
+  let splashAnimDone = false; // true quand l'animation visuelle est finie
+  let authDecision   = null;  // { type: 'guest' } ou { type: 'redirect', url }
+
+  // ─── On ne conclut que quand LES DEUX sont prêts ───
+  function tryConclude() {
+    if (!splashAnimDone || !authDecision) return;
+
+    const splash = document.getElementById('splash');
+    const app    = document.getElementById('app');
+
+    splash.classList.add('hide');
+    setTimeout(() => {
+      splash.style.display = 'none';
+
+      if (authDecision.type === 'redirect') {
+        window.location.href = authDecision.url;
+      } else {
+        app.classList.add('visible');
+        initOnboarding();
+      }
+    }, 650);
+  }
+
+  // ─── L'ANIMATION DÉMARRE TOUJOURS, IMMÉDIATEMENT ───
+  playSplashAnimation(() => {
+    splashAnimDone = true;
+    tryConclude();
+  });
+
+  // ─── Filet de sécurité : si Firebase/backend ne répond jamais,
+  // on ne reste pas bloqué indéfiniment (on traite comme "invité") ───
+  const safetyTimer = setTimeout(() => {
+    if (!authDecision) {
+      authDecision = { type: 'guest' };
+      tryConclude();
+    }
+  }, 10000);
+
+  // ─── La logique d'auth tourne EN PARALLÈLE, en arrière-plan ───
+  onAuthStateChanged(auth, async (user) => {
+    if (authDecision) return; // déjà tranché (ex: par le filet de sécurité)
+
+    if (!user) {
+      clearTimeout(safetyTimer);
+      authDecision = { type: 'guest' };
+      tryConclude();
+      return;
+    }
+
+    try {
+      const res  = await fetch(`${BACKEND}/auth/login`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: user.email }),
+      });
+      const data = await res.json();
+
+      clearTimeout(safetyTimer);
+
+      if (!res.ok) {
+        authDecision = { type: 'redirect', url: 'auth.html' };
+      } else {
+        authDecision = { type: 'redirect', url: (data.role === 'agent') ? 'dashboard-pdv.html' : 'dashboard.html' };
+      }
+      tryConclude();
+
+    } catch (err) {
+      console.error('Erreur vérification session :', err);
+      clearTimeout(safetyTimer);
+      authDecision = { type: 'redirect', url: 'auth.html' };
+      tryConclude();
+    }
+  });
+
+});
+
+// ─── Animation du splash (indépendante, joue toujours en entier) ───
+
+function playSplashAnimation(onComplete) {
   const logoIcon = document.getElementById('logoIcon');
   const logoName = document.getElementById('logoName');
   const slogan   = document.getElementById('slogan');
   const loader   = document.getElementById('loader');
-  const splash   = document.getElementById('splash');
-  const app      = document.getElementById('app');
-  const brandBy = document.getElementById('brandBy');
+  const brandBy  = document.getElementById('brandBy');
 
-  // Étape 1 — Apparition progressive
   setTimeout(() => logoIcon.classList.add('visible'), 100);
   setTimeout(() => logoName.classList.add('visible'), 300);
   setTimeout(() => slogan.classList.add('visible'),   500);
+  setTimeout(() => brandBy.classList.add('visible'),  600);
   setTimeout(() => loader.classList.add('visible'),   700);
-  setTimeout(() => brandBy.classList.add('visible'), 600);
 
-  // Étape 2 — Fin du splash → onboarding
-  setTimeout(() => {
-    splash.classList.add('hide');
-    setTimeout(() => {
-      splash.style.display = 'none';
-      app.classList.add('visible');
-      initOnboarding();
-    }, 650);
-  }, 6800);
+  // Durée totale d'affichage du splash avant de trancher
+  setTimeout(onComplete, 6800);
+}
 
-});
-
-// ─── TRAVIO — Onboarding ───
+// ─── TRAVIO — Onboarding ─── (inchangé)
 
 let currentSlide = 0;
 const totalSlides = 5;
@@ -81,12 +153,12 @@ function nextSlide() {
     currentSlide++;
     updateSlider();
   } else {
-    window.location.href = 'auth.html'
+    window.location.href = 'auth.html';
   }
 }
 
 function goToLogin() {
-    window.location.href = 'auth.html'
+  window.location.href = 'auth.html';
 }
 
 // Swipe tactile
@@ -101,3 +173,7 @@ document.addEventListener('touchend', (e) => {
     if (diff > 0) nextSlide();
   }
 }, { passive: true });
+
+// ─── Exposer au HTML (obligatoire maintenant qu'on est en module) ───
+window.goToLogin = goToLogin;
+window.nextSlide = nextSlide;

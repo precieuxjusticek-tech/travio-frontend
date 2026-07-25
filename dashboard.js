@@ -53,6 +53,9 @@ import { switchEquipeTab, loadControleurs, openCreateControleur, closeCreateCont
 // ── Géolocalisation ──
 import { renderGeoPage } from './geo.js';
 
+// ── Mode d'emploi ──
+import { renderGuidePage, toggleGuideSection, updateGuideBadge, checkGuideWelcomeModal, showGuideWelcomeModal, closeGuideWelcomeModal, goToGuideFromWelcome } from './guide.js';
+
 // ════════════════════════════════
 //  INIT AUTH
 // ════════════════════════════════
@@ -79,6 +82,9 @@ onAuthStateChanged(auth, async (user) => {
       await loadAgenceData(data.agenceId);
       await loadVehicules(data.agenceId);
       hideOnboarding();
+
+      updateGuideBadge();
+      checkGuideWelcomeModal();
 
       if (!isEssaiActifEtValide()) {
         showLockedOverlay();
@@ -112,6 +118,8 @@ window.showPage = function(pageId, navEl) {
   if (geoPage?.classList.contains('active')) renderGeoPage();
   const billetsPage = document.getElementById('page-billets');
   if (billetsPage?.classList.contains('active')) renderBilletConfigPage();
+  const guidePage = document.getElementById('page-guide');
+  if (guidePage?.classList.contains('active')) renderGuidePage();   // ← ajouté
 };
 
 // ════════════════════════════════
@@ -319,3 +327,12 @@ window.imprimerRapportFinances     = imprimerRapportFinances;
 
 // Géolocalisation
 window.renderGeoPage = renderGeoPage;
+
+// Mode d'emploi
+window.renderGuidePage    = renderGuidePage;
+window.toggleGuideSection = toggleGuideSection;
+window.updateGuideBadge       = updateGuideBadge;
+window.checkGuideWelcomeModal = checkGuideWelcomeModal;
+window.showGuideWelcomeModal  = showGuideWelcomeModal;   // ← AJOUTER
+window.closeGuideWelcomeModal = closeGuideWelcomeModal;
+window.goToGuideFromWelcome   = goToGuideFromWelcome;

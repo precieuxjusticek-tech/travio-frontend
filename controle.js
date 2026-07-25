@@ -44,6 +44,7 @@ export function switchEquipeTab(tab) {
     panelCtrl.style.display = 'none';
     btnPdv.classList.add('active');
     btnCtrl.classList.remove('active');
+    addBtn.style.display = 'flex';
     addBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Ajouter un PDV`;
     addBtn.onclick = () => openCreatePDVSafe();
   } else {
@@ -51,8 +52,7 @@ export function switchEquipeTab(tab) {
     panelCtrl.style.display = 'block';
     btnPdv.classList.remove('active');
     btnCtrl.classList.add('active');
-    addBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Ajouter un contrôleur`;
-    addBtn.onclick = () => openCreateControleur();
+    addBtn.style.display = 'none'; // ← on masque le bouton, rien à créer pour l'instant
     renderControleursPage();
   }
 }
@@ -83,25 +83,36 @@ export function renderControleursPage() {
   const container = document.getElementById('controleursContainer');
   if (!container) return;
 
-  if (controleurList.length === 0) {
-    container.innerHTML = `
-      <div class="overview-card">
-        <div class="empty-state large">
-          <svg width="48" height="48" viewBox="0 0 18 18" fill="none">
+  container.innerHTML = `
+    <div class="geo-soon-card">
+      <div class="geo-soon-icon-wrap">
+        <div class="geo-soon-icon-ring"></div>
+        <div class="geo-soon-icon-ring delay"></div>
+        <div class="geo-soon-icon">
+          <svg width="26" height="26" viewBox="0 0 18 18" fill="none">
             <circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.6"/>
             <path d="M3 16a6 6 0 0112 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M6.5 5.5l1 1.2 2-2.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <p>Aucun contrôleur créé</p>
-          <small>Créez des accès pour vos agents de contrôle à bord</small>
-          <button class="btn-action-primary" style="margin-top:12px" onclick="openCreateControleur()">Ajouter un contrôleur</button>
         </div>
-      </div>`;
-    return;
-  }
+      </div>
 
-  container.innerHTML = `
-    <div class="pdv-scroll-row">
-      ${controleurList.map(c => renderControleurCard(c)).join('')}
+      <span class="geo-soon-badge">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v4l2.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Bientôt disponible
+      </span>
+
+      <h2>La gestion des contrôleurs arrive</h2>
+      <p>Vous pourrez bientôt créer des accès pour vos contrôleurs à bord, les assigner à un bus et suivre leurs scans de billets en temps réel.</p>
+
+      <div class="geo-soon-features">
+        <div class="geo-soon-feature">${ICONS.person} Comptes contrôleurs</div>
+        <div class="geo-soon-feature">${ICONS.bus} Assignation par bus</div>
+        <div class="geo-soon-feature">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;"><path d="M2 8l4-4 8 8M14 8l-4 4-8-8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Suivi des scans
+        </div>
+      </div>
     </div>`;
 }
 

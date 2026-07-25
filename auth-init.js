@@ -88,7 +88,6 @@ document.addEventListener('click', (e) => {
 export async function handleLogout() {
   try {
     await signOut(auth);
-    sessionStorage.removeItem('travio_user');
     window.location.href = 'auth.html';
   } catch (err) {
     console.error(err);

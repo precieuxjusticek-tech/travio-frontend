@@ -213,14 +213,6 @@ async function handleLogin() {
       return;
     }
 
-    sessionStorage.setItem('travio_user', JSON.stringify({
-      uid:      data.uid,
-      prenom:   data.prenom,
-      nom:      data.nom,
-      role:     data.role,
-      agenceId: data.agenceId,
-    }));
-
     if (data.role === 'agent') {
       showToast('Utilisez l\'accès Point de vente pour vous connecter.', 'blocked');
       btn.disabled  = false;
@@ -288,16 +280,6 @@ async function handlePdvLogin() {
       return;
     }
 
-    sessionStorage.setItem('travio_pdv', JSON.stringify({
-      uid:      data.uid,
-      prenom:   data.prenom,
-      nom:      data.nom,
-      role:     data.role,
-      agenceId: data.agenceId,
-      pdvId:    data.pdvId || null,
-    }));
-
-    btn.innerHTML = `${TOAST_ICONS.wave} Bienvenue ${data.prenom} !`;
     showToast(`Bienvenue ${data.prenom} !`, 'wave');
     setTimeout(() => window.location.href = 'dashboard-pdv.html', 1500);
 
