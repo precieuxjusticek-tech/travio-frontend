@@ -4,6 +4,7 @@ import { BACKEND, agenceData, trajetList, setTrajetList, pdvList, resaList, busS
 import { showToast, showToastAction, TOAST_ICONS } from './toast-utils.js';
 import { openResolutionReservationsModal } from './bus-departs.js';
 import { formatDelaiFormalite } from './billet-template.js';
+import { apiFetch } from './api.js';
 
 const ICONS = {
   close:    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -45,7 +46,7 @@ function ageRangeLabel(type) {
 // ════════════════════════════════
 export async function loadTrajets(agenceId) {
   try {
-    const res  = await fetch(`${BACKEND}/trajets?agenceId=${agenceId}`);
+    const res = await apiFetch(`${BACKEND}/trajets?agenceId=${agenceId}`);
     const data = await res.json();
     if (!res.ok) return;
     setTrajetList(data.trajets || []);
@@ -546,7 +547,7 @@ export function confirmDeleteTrajet(trajetId, trajetLabel) {
 export async function deleteTrajet(trajetId) {
   closeDeleteTrajet();
   try {
-    const res  = await fetch(`${BACKEND}/trajet/${trajetId}`, { method: 'DELETE' });
+    const res = await apiFetch(`${BACKEND}/trajet/${trajetId}`, { method: 'DELETE' });
     const data = await res.json();
 
     if (res.status === 409 && data.code === 'RESA_BLOQUANTES') {
@@ -620,9 +621,8 @@ export function closeStatutTrajet() {
 export async function confirmToggleTrajetStatut(trajetId, nouvelEtat) {
   closeStatutTrajet();
   try {
-    const res = await fetch(`${BACKEND}/trajet/${trajetId}/statut`, {
+    const res = await apiFetch(`${BACKEND}/trajet/${trajetId}/statut`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ actif: nouvelEtat }),
     });
     const data = await res.json();
@@ -1039,10 +1039,9 @@ export async function doSubmitEditTrajet() {
   if (btn) { btn.disabled = true; btn.textContent = 'Sauvegarde...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/trajet/${trajetId}`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+    const res = await apiFetch(`${BACKEND}/trajet/${trajetId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur sauvegarde.', TOAST_ICONS.error); return; }
@@ -1162,10 +1161,9 @@ export async function submitTypesBillet() {
   if (btn) { btn.disabled = true; btn.textContent = 'Sauvegarde...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/agence/${agenceData.id}/types-billet`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ typesBillet }),
+    const res = await apiFetch(`${BACKEND}/agence/${agenceData.id}/types-billet`, {
+      method: 'PATCH',
+      body: JSON.stringify({ typesBillet }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur sauvegarde.', TOAST_ICONS.error); return; }
@@ -1655,10 +1653,9 @@ export async function submitCreateTrajet() {
   if (btn) { btn.disabled = true; btn.textContent = 'Création...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/trajet/create`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+    const res = await apiFetch(`${BACKEND}/trajet/create`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur création trajet.', TOAST_ICONS.error); return; }
@@ -1712,7 +1709,7 @@ export async function loadDeparts(trajetId, forceRefresh = false) {
   }
   const promise = (async () => {
     try {
-      const res  = await fetch(`${BACKEND}/trajet/${trajetId}/departs`);
+      const res  = await apiFetch(`${BACKEND}/trajet/${trajetId}/departs`);
       const data = await res.json();
       const departs = data.departs || [];
       setDepartsCache({ ...departsCache, [trajetId]: departs });
@@ -1738,7 +1735,7 @@ export async function loadAllDeparts(agenceId, forceRefresh = false) {
     return allDepartsCache;
   }
   try {
-    const res  = await fetch(`${BACKEND}/departs?agenceId=${agenceId}`);
+    const res  = await apiFetch(`${BACKEND}/departs?agenceId=${agenceId}`);
     const data = await res.json();
     const departs = data.departs || [];
     setAllDepartsCache(departs);

@@ -7,6 +7,7 @@ import { loadTrajets } from './trajets.js';
 import { loadPDV } from './pdv.js';
 import { loadReservationsAgence } from './reservations.js';
 import { updateOverviewStats } from './trajets.js';
+import { apiFetch } from './api.js';
 
 const ICONS = {
   lock:    '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.4"/></svg>',
@@ -26,7 +27,7 @@ const ICONS = {
 // ════════════════════════════════
 export async function loadAgenceData(agenceId) {
   try {
-    const res  = await fetch(`${BACKEND}/agence/${agenceId}`);
+    const res = await apiFetch(`${BACKEND}/agence/${agenceId}`);
     const data = await res.json();
     if (!res.ok) return;
     setAgenceData(data);
@@ -355,10 +356,9 @@ export async function submitAgency() {
   };
 
   try {
-    const res  = await fetch(`${BACKEND}/agence/create`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(agencePayload),
+    const res = await apiFetch(`${BACKEND}/agence/create`, {
+      method: 'POST',
+      body: JSON.stringify(agencePayload),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -618,10 +618,9 @@ export async function submitEditFiche() {
   if (btn) { btn.disabled = true; btn.textContent = 'Sauvegarde...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/agence/${agenceData.id}`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+    const res = await apiFetch(`${BACKEND}/agence/${agenceData.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur sauvegarde.', TOAST_ICONS.error); return; }
@@ -793,10 +792,9 @@ export async function submitEditImages() {
   if (btn) { btn.disabled = true; btn.textContent = 'Sauvegarde...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/agence/${agenceData.id}/images`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
+    const res = await apiFetch(`${BACKEND}/agence/${agenceData.id}/images`, {
+      method: 'PATCH',
+      body: JSON.stringify({
         logoBase64:     editNewLogo,
         photosToAdd:    editPhotosToAdd,
         photosToDelete: editPhotosToDelete,

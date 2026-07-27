@@ -4,6 +4,7 @@ import { BACKEND, agenceData, pdvList, setPdvList, trajetList, resaList } from '
 import { loadDeparts } from './trajets.js';
 import { getDerniereVentePdv, formatDerniereVente, getStatsMoisPdv, estPdvInactif } from './pdv-utils.js';
 import { showToast, togglePdvPassword, toggleDetailPassword, TOAST_ICONS } from './toast-utils.js';
+import { apiFetch } from './api.js';
 
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -29,7 +30,7 @@ const ICONS = {
 // ════════════════════════════════
 export async function loadPDV(agenceId) {
   try {
-    const res  = await fetch(`${BACKEND}/pdv?agenceId=${agenceId}`);
+    const res = await apiFetch(`${BACKEND}/pdv?agenceId=${agenceId}`);
     const data = await res.json();
     if (!res.ok) return;
     setPdvList(data.pdvs || []);
@@ -164,7 +165,7 @@ function loadPDVCardStats(pdvId) {
 
   const promise = (async () => {
     try {
-      const res  = await fetch(`${BACKEND}/pdv/${pdvId}/stats?agenceId=${agenceData.id}`);
+      const res = await apiFetch(`${BACKEND}/pdv/${pdvId}/stats?agenceId=${agenceData.id}`);
       const data = await res.json();
       if (!res.ok) return;
 
@@ -391,7 +392,7 @@ export async function loadPDVTrajets(pdvId, forceRefresh = false) {
   }
 
   try {
-    const res     = await fetch(`${BACKEND}/pdv/${pdvId}/trajets?agenceId=${agenceData.id}`);
+    const res = await apiFetch(`${BACKEND}/pdv/${pdvId}/trajets?agenceId=${agenceData.id}`);
     const data    = await res.json();
     const trajets = data.trajets || [];
     pdvTrajetsCache[pdvId] = trajets;
@@ -639,10 +640,9 @@ export async function submitCreatePDV() {
   if (btn) { btn.disabled = true; btn.textContent = 'Création...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/pdv/create`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+    const res = await apiFetch(`${BACKEND}/pdv/create`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur création PDV.', TOAST_ICONS.error); return; }
@@ -763,10 +763,9 @@ export async function submitEditPDV(pdvId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Sauvegarde...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/pdv/${pdvId}`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+    const res = await apiFetch(`${BACKEND}/pdv/${pdvId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur sauvegarde.', TOAST_ICONS.error); return; }
@@ -818,7 +817,7 @@ export function closeDeletePDV() {
 export async function deletePDV(pdvId) {
   closeDeletePDV();
   try {
-    const res  = await fetch(`${BACKEND}/pdv/${pdvId}`, { method: 'DELETE' });
+    const res = await apiFetch(`${BACKEND}/pdv/${pdvId}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur suppression.', TOAST_ICONS.error); return; }
 
@@ -869,10 +868,9 @@ export async function confirmToggleStatut(pdvId, nouvelEtat) {
   closeStatutPDV();
   closePDVDetail();
   try {
-    const res  = await fetch(`${BACKEND}/pdv/${pdvId}/statut`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ actif: nouvelEtat }),
+    const res = await apiFetch(`${BACKEND}/pdv/${pdvId}/statut`, {
+      method: 'PATCH',
+      body: JSON.stringify({ actif: nouvelEtat }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
@@ -948,10 +946,9 @@ export async function submitResetPassword(pdvId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Réinitialisation...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/pdv/${pdvId}/reset-password`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ newPassword }),
+    const res = await apiFetch(`${BACKEND}/pdv/${pdvId}/reset-password`, {
+      method: 'PATCH',
+      body: JSON.stringify({ newPassword }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }

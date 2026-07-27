@@ -3,6 +3,8 @@
 import { auth } from './firebase-client.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+import { apiFetch } from './api.js';
+
 import { initInstallPrompt } from './install-prompt.js';
 
 // ── State ──
@@ -64,10 +66,9 @@ onAuthStateChanged(auth, async (user) => {
   setCurrentUser(user);
 
   try {
-    const res  = await fetch('https://travio-backend-pa4q.onrender.com/auth/login', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email: user.email }),
+    const res = await apiFetch('https://travio-backend-pa4q.onrender.com/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({}),
     });
     const data = await res.json();
     if (!res.ok) {

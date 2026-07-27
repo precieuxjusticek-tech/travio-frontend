@@ -4,6 +4,7 @@ import { auth } from './firebase-client.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { TICKET_CSS, buildTicketHTML, formatFromMode, formatDelaiFormalite } from './billet-template.js';
 import { initInstallPrompt } from './install-prompt.js';
+import { apiFetch } from './api.js';
 
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -92,9 +93,8 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     // Récupérer le rôle et le pdvId directement depuis le backend (session toujours à jour)
-    const authRes  = await fetch(`${BACKEND}/auth/login`, {
+    const authRes  = await apiFetch(`${BACKEND}/auth/login`, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ email: user.email }),
     });
     const pdvSession = await authRes.json();
@@ -105,7 +105,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     // Charger les données du PDV
-    const res  = await fetch(`${BACKEND}/pdv/${pdvSession.pdvId}`);
+    const res  = await apiFetch(`${BACKEND}/pdv/${pdvSession.pdvId}`);
     const data = await res.json();
 
     if (!res.ok || !data) {
@@ -120,8 +120,8 @@ onAuthStateChanged(auth, async (user) => {
     // Charger les données de l'agence
     if (data.agenceId) {
       await loadAgenceData(data.agenceId);
-      updateGuideBadgePDV();          // ← AJOUTER
-      checkGuideWelcomeModalPDV();    // ← AJOUTER
+      updateGuideBadgePDV();          
+      checkGuideWelcomeModalPDV();
     }
 
     // Charger les trajets et réservations
@@ -198,7 +198,7 @@ function renderPolitiqueAnnulPDV() {
 // ════════════════════════════════
 async function loadAgenceData(agenceId) {
   try {
-    const res  = await fetch(`${BACKEND}/agence/${agenceId}`);
+    const res  = await apiFetch(`${BACKEND}/agence/${agenceId}`);
     const data = await res.json();
     if (!res.ok) return;
     agenceData = data;
@@ -215,7 +215,7 @@ async function loadAgenceData(agenceId) {
 // ════════════════════════════════
 async function loadTrajets(agenceId, pdvId) {
   try {
-    const res  = await fetch(`${BACKEND}/trajets?agenceId=${agenceId}`);
+    const res  = await apiFetch(`${BACKEND}/trajets?agenceId=${agenceId}`);
     const data = await res.json();
     if (!res.ok) return;
 
@@ -558,7 +558,7 @@ function renderAccueilTrajets() {
 // ════════════════════════════════
 async function loadReservations(pdvId) {
   try {
-    const res  = await fetch(`${BACKEND}/reservations?pdvId=${pdvId}`);
+    const res  = await apiFetch(`${BACKEND}/reservations?pdvId=${pdvId}`);
     const data = await res.json();
     if (!res.ok) return;
     resaList = data.reservations || [];
@@ -835,7 +835,7 @@ const departsParTrajetCache = new Map(); // trajetId -> Promise<departs[]>
 function getDepartsForTrajet(trajetId) {
   if (!trajetId) return Promise.resolve([]);
   if (!departsParTrajetCache.has(trajetId)) {
-    const p = fetch(`${BACKEND}/trajet/${trajetId}/departs`)
+    const p = apiFetch(`${BACKEND}/trajet/${trajetId}/departs`)
       .then(r => r.json())
       .then(d => d.departs || [])
       .catch(err => {
@@ -1228,7 +1228,7 @@ async function loadSessionsDisponibles(trajetId) {
     // Récupérer les sessions de chaque départ
     const allSessions = [];
     for (const depart of departs) {
-      const sRes  = await fetch(`${BACKEND}/sessions?departId=${depart.id}`);
+      const sRes  = await apiFetch(`${BACKEND}/sessions?departId=${depart.id}`);
       const sData = await sRes.json();
       (sData.sessions || []).forEach(s => {
         if (s.statut !== 'annulée') {
@@ -1815,9 +1815,8 @@ async function submitVente() {
   }
 
   try {
-    const res  = await fetch(`${BACKEND}/reservations/create`, {
+    const res  = await apiFetch(`${BACKEND}/reservations/create`, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload),
     });
     const data = await res.json();
@@ -3091,9 +3090,8 @@ async function confirmerRetraitPassagerPDV(resaId, passagerIndex) {
   if (btn) { btn.disabled = true; btn.textContent = 'Retrait en cours...'; }
 
   try {
-    const res = await fetch(`${BACKEND}/reservations/${resaId}/retirer-passager`, {
+    const res = await apiFetch(`${BACKEND}/reservations/${resaId}/retirer-passager`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ passagerIndex }),
     });
     const data = await res.json();
@@ -3131,9 +3129,8 @@ async function confirmerAnnulationPdv(resaId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Annulation en cours...'; }
 
   try {
-    const res = await fetch(`${BACKEND}/reservations/${resaId}/annuler`, {
+    const res = await apiFetch(`${BACKEND}/reservations/${resaId}/annuler`, {
       method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ pdvId: pdvData.id }),
     });
     const data = await res.json();
@@ -3416,8 +3413,8 @@ async function confirmerModificationResa(resaId) {
   payload.raisonModification = raisonVal || null;
 
   try {
-    const res = await fetch(`${BACKEND}/reservations/${resaId}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+    const res = await apiFetch(`${BACKEND}/reservations/${resaId}`, {
+      method: 'PATCH', body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur modification.', ICONS.banned); return; }
@@ -3480,7 +3477,7 @@ async function renderMonPDVPage() {
   // Taux moyen via API stats (avec cache)
   try {
     if (!statsPdvCache) {
-      const res  = await fetch(`${BACKEND}/pdv/${pdvData.id}/stats?agenceId=${pdvData.agenceId}`);
+      const res  = await apiFetch(`${BACKEND}/pdv/${pdvData.id}/stats?agenceId=${pdvData.agenceId}`);
       statsPdvCache = await res.json();
     }
     const data = statsPdvCache;

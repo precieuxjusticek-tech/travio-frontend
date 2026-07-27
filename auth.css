@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600&display=swap');
 
 :root {
   --primary: #0046D1;
@@ -15,7 +15,7 @@
 html, body {
   height: 100%;
   width: 100%;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--dark);
   color: var(--white);
   overflow: hidden;
@@ -153,7 +153,7 @@ html, body {
 }
 
 .auth-logo-name {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 20px;
   font-weight: 800;
   letter-spacing: 4px;
@@ -170,7 +170,7 @@ html, body {
 
 /* Tagline */
 .auth-tagline h1 {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: clamp(22px, 4vw, 30px);
   font-weight: 800;
   color: var(--white);
@@ -201,7 +201,7 @@ html, body {
   padding: 14px 20px;
   font-size: 14px;
   font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -228,7 +228,7 @@ html, body {
   padding: 14px 20px;
   font-size: 14px;
   font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
 }
@@ -268,7 +268,7 @@ html, body {
   justify-content: space-between;
   transition: background 0.2s, border-color 0.2s, transform 0.15s;
   color: var(--white);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 .btn-pdv:active { transform: scale(0.98); }
 .btn-pdv:hover  { border-color: rgba(0,229,160,0.4); background: rgba(0,229,160,0.04); }
@@ -364,7 +364,7 @@ html, body {
 .back-btn:hover  { background: rgba(255,255,255,0.08); }
 
 .auth-topbar-logo {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 3px;
@@ -393,7 +393,7 @@ html, body {
 }
 
 .auth-form-header h2 {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: clamp(20px, 3vw, 26px);
   font-weight: 800;
   color: var(--white);
@@ -460,7 +460,7 @@ input {
   border-radius: 11px;
   padding: 12px 38px 12px 38px;
   font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   color: var(--white);
   outline: none;
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
@@ -526,7 +526,7 @@ input.no-icon { padding-left: 14px; }
   padding: 14px 20px;
   font-size: 14px;
   font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;

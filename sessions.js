@@ -2,6 +2,7 @@
 
 import { BACKEND, trajetList } from './state.js';
 import { showToast, TOAST_ICONS } from './toast-utils.js';
+import { apiFetch } from './api.js';
 
 const ICONS = {
   close:    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -25,7 +26,7 @@ export async function loadBusSessions(departId, hasArrets, trajet) {
   if (!container) return;
 
   try {
-    const res      = await fetch(`${BACKEND}/sessions?departId=${departId}`);
+    const res = await apiFetch(`${BACKEND}/sessions?departId=${departId}`);
     const data     = await res.json();
     const sessions = data.sessions || [];
 
@@ -154,7 +155,7 @@ export async function loadBusSessions(departId, hasArrets, trajet) {
 export async function deleteSession(sessionId, departId) {
   if (!confirm('Supprimer cette session ?')) return;
   try {
-    const res  = await fetch(`${BACKEND}/session/${sessionId}`, { method: 'DELETE' });
+    const res = await apiFetch(`${BACKEND}/session/${sessionId}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur suppression.', TOAST_ICONS.error); return; }
     showToast('Session supprimée.', TOAST_ICONS.success, true);
@@ -271,10 +272,9 @@ export async function submitEditSession(sessionId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Sauvegarde...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/session/${sessionId}`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
+    const res = await apiFetch(`${BACKEND}/session/${sessionId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
         arretsActifs,
         heureDepart,
         heureArrivee: document.getElementById('editSession-heure-arrivee')?.value || null,
@@ -377,10 +377,9 @@ export async function submitIncidentSession(sessionId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/session/${sessionId}/incident`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ cause, details }),
+    const res = await apiFetch(`${BACKEND}/session/${sessionId}/incident`, {
+      method: 'PATCH',
+      body: JSON.stringify({ cause, details }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }

@@ -3,13 +3,14 @@
 import { BACKEND, agenceData, vehiculeList, setVehiculeList, trajetList } from './state.js';
 import { showToast, showToastAction } from './toast-utils.js';
 import { closeTrajetDetail, openTrajetDetail, invalidateAllDepartsCache } from './trajets.js';
+import { apiFetch } from './api.js';
 
 // ════════════════════════════════
 //  VÉHICULES — CHARGEMENT
 // ════════════════════════════════
 export async function loadVehicules(agenceId) {
   try {
-    const res  = await fetch(`${BACKEND}/vehicule/all?agenceId=${agenceId}`);
+    const res = await apiFetch(`${BACKEND}/vehicule/all?agenceId=${agenceId}`);
     const data = await res.json();
     if (!res.ok) return;
     setVehiculeList(data.vehicules || []);
@@ -79,10 +80,9 @@ export async function submitCreateVehicule() {
   if (btn) { btn.disabled = true; btn.textContent = 'Création...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/vehicule/create`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ agenceId: agenceData?.id, nom, type, capacite: parseInt(capacite) }),
+    const res = await apiFetch(`${BACKEND}/vehicule/create`, {
+      method: 'POST',
+      body: JSON.stringify({ agenceId: agenceData?.id, nom, type, capacite: parseInt(capacite) }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur création.', '❌'); return; }
@@ -162,10 +162,9 @@ export async function submitEditVehicule(vehiculeId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Sauvegarde...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/vehicule/${vehiculeId}`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ nom, type, capacite: parseInt(capacite) }),
+    const res = await apiFetch(`${BACKEND}/vehicule/${vehiculeId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ nom, type, capacite: parseInt(capacite) }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', '❌'); return; }
@@ -227,24 +226,20 @@ export async function confirmScopeChoice(scope, action, departId, trajetId, vehi
     let res;
 
     if (scope === 'one') {
-      // Comportement existant, limité à ce trajet (inchangé)
       if (action === 'delete') {
-        res = await fetch(`${BACKEND}/depart/${departId}`, { method: 'DELETE' });
+        res = await apiFetch(`${BACKEND}/depart/${departId}`, { method: 'DELETE' });
       } else {
-        res = await fetch(`${BACKEND}/depart/${departId}/statut`, {
+        res = await apiFetch(`${BACKEND}/depart/${departId}/statut`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ actif: nouvelEtat }),
         });
       }
     } else {
-      // Cascade sur tous les trajets via le véhicule
       if (action === 'delete') {
-        res = await fetch(`${BACKEND}/vehicule/${vehiculeId}`, { method: 'DELETE' });
+        res = await apiFetch(`${BACKEND}/vehicule/${vehiculeId}`, { method: 'DELETE' });
       } else {
-        res = await fetch(`${BACKEND}/vehicule/${vehiculeId}/statut`, {
+        res = await apiFetch(`${BACKEND}/vehicule/${vehiculeId}/statut`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ actif: nouvelEtat }),
         });
       }
@@ -307,7 +302,7 @@ export function closeDeleteVehicule() {
 export async function deleteVehicule(vehiculeId) {
   closeDeleteVehicule();
   try {
-    const res  = await fetch(`${BACKEND}/vehicule/${vehiculeId}`, { method: 'DELETE' });
+    const res = await apiFetch(`${BACKEND}/vehicule/${vehiculeId}`, { method: 'DELETE' });
     const data = await res.json();
 
     if (res.status === 409 && data.code === 'RESA_BLOQUANTES') {

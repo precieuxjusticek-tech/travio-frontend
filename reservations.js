@@ -5,6 +5,7 @@ import { estPdvInactif, getDerniereVentePdv, formatDerniereVente } from './pdv-u
 import { showToast, TOAST_ICONS } from './toast-utils.js';
 import { updateOverviewStats, loadDeparts, loadAllDeparts } from './trajets.js';
 import { agenceData } from './state.js';
+import { apiFetch } from './api.js';
 
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -169,7 +170,7 @@ function getTypeTrajetInfo(trajet) {
 // ════════════════════════════════
 export async function loadReservationsAgence(agenceId) {
   try {
-    const res  = await fetch(`${BACKEND}/reservations/agence?agenceId=${agenceId}`)
+    const res  = await apiFetch(`${BACKEND}/reservations/agence?agenceId=${agenceId}`)
     const data = await res.json();
     if (!res.ok) { setResaList([]); return; }
     setResaList(data.reservations || []);
@@ -1334,10 +1335,8 @@ export async function confirmerModificationResa(resaId) {
   payload.raisonModification = raisonVal || null;
 
   try {
-    const res = await fetch(`${BACKEND}/reservations/${resaId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+    const res = await apiFetch(`${BACKEND}/reservations/${resaId}`, {
+      method: 'PATCH', body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur modification.', TOAST_ICONS.error); return; }
@@ -1360,7 +1359,7 @@ export async function confirmerModificationResa(resaId) {
 
 export async function marquerBaisseVerifiee(resaId) {
   try {
-    const res  = await fetch(`${BACKEND}/reservations/${resaId}/verifier-baisse`, { method: 'PATCH' });
+    const res  = await apiFetch(`${BACKEND}/reservations/${resaId}/verifier-baisse`, { method: 'PATCH' });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
 
@@ -1703,10 +1702,8 @@ async function confirmerRetraitPassager(resaId, passagerIndex) {
   if (btn) { btn.disabled = true; btn.textContent = 'Retrait en cours...'; }
 
   try {
-    const res = await fetch(`${BACKEND}/reservations/${resaId}/retirer-passager`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ passagerIndex }),
+    const res = await apiFetch(`${BACKEND}/reservations/${resaId}/retirer-passager`, {
+      method: 'PATCH', body: JSON.stringify({ passagerIndex }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur retrait passager.', TOAST_ICONS.error); return; }
@@ -1740,10 +1737,7 @@ export async function confirmerAnnulation(resaId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Annulation en cours...'; }
 
   try {
-    const res = await fetch(`${BACKEND}/reservations/${resaId}/annuler`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const res = await apiFetch(`${BACKEND}/reservations/${resaId}/annuler`, { method: 'PATCH' });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur annulation.', TOAST_ICONS.error); return; }
 

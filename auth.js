@@ -1,6 +1,7 @@
 // ─── TRAVIO — Auth (connecté Firebase + Backend) ───
 
 import { auth } from './firebase-client.js';
+import { apiFetch } from './api.js';
 import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail
@@ -198,10 +199,9 @@ async function handleLogin() {
   try {
     await signInWithEmailAndPassword(auth, email, password);
 
-    const res  = await fetch(`${BACKEND}/auth/login`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email }),
+    const res = await apiFetch(`${BACKEND}/auth/login`, {
+      method: 'POST',
+      body: JSON.stringify({}),
     });
 
     const data = await res.json();
@@ -258,10 +258,9 @@ async function handlePdvLogin() {
   try {
     await signInWithEmailAndPassword(auth, email, password);
 
-    const res  = await fetch(`${BACKEND}/auth/login`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email }),
+    const res = await apiFetch(`${BACKEND}/auth/login`, {
+      method: 'POST',
+      body: JSON.stringify({}),
     });
 
     const data = await res.json();

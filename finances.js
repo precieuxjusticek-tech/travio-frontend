@@ -3,6 +3,7 @@
 import { BACKEND, agenceData, resaList, pdvList, trajetList } from './state.js';
 import { loadDeparts, loadAllDeparts } from './trajets.js';
 import { showToast, TOAST_ICONS } from './toast-utils.js';
+import { apiFetch } from './api.js';
 
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -889,7 +890,7 @@ function getFinPdvStatsCacheKey(pdvId) {
 
 async function loadFinPdvStats(pdvId, cacheKey) {
   if (finPdvStatsCache[cacheKey]) return finPdvStatsCache[cacheKey];
-  const res  = await fetch(buildStatsUrl(pdvId));
+  const res = await apiFetch(buildStatsUrl(pdvId));
   const data = await res.json();
   finPdvStatsCache[cacheKey] = data;
   return data;
@@ -1369,7 +1370,7 @@ export function openFinanceTrajetDetail(trajetId) {
       if (debut2 && fin2) {
         url += `?dateDebut=${debut2}&dateFin=${fin2}`;
       }
-      const res  = await fetch(url);
+      const res = await apiFetch(url);
       const data = await res.json();
       const container = document.getElementById('financeTrajetTauxReel');
       if (!container) return;

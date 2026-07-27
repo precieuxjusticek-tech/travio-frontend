@@ -4,6 +4,7 @@ import { BACKEND, agenceData, trajetList, setTrajetList, departSteps, setDepartS
 import { loadDeparts, invalidateDeparts, invalidateAllDepartsCache, renderDepartItem, closeTrajetDetail, openTrajetDetail, renderTrajetsPage, updateOverviewStats } from './trajets.js';
 import { loadBusSessions } from './sessions.js';
 import { showToast, showToastAction, toggleTousJours, toggleJour, TOAST_ICONS } from './toast-utils.js';
+import { apiFetch } from './api.js';
 
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -256,10 +257,9 @@ export async function submitCreateDepart(trajetId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Création...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/trajet/${trajetId}/depart/create`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+    const res = await apiFetch(`${BACKEND}/trajet/${trajetId}/depart/create`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
@@ -455,10 +455,9 @@ export async function submitEditDepart(departId, trajetId) {
     };
     if (arretsActifs !== undefined) payload.arretsActifs = arretsActifs;
 
-    const res  = await fetch(`${BACKEND}/depart/${departId}`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+    const res = await apiFetch(`${BACKEND}/depart/${departId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
@@ -524,7 +523,7 @@ export function closeDepartDelete() {
 export async function deleteDepart(departId, trajetId) {
   closeDepartDelete();
   try {
-    const res  = await fetch(`${BACKEND}/depart/${departId}`, { method: 'DELETE' });
+    const res = await apiFetch(`${BACKEND}/depart/${departId}`, { method: 'DELETE' });
     const data = await res.json();
 
     if (res.status === 409 && data.code === 'RESA_BLOQUANTES') {
@@ -582,10 +581,9 @@ export async function confirmToggleDepartStatut(departId, trajetId, nouvelEtat) 
   closeStatutDepart();
   closeBusDetail();
   try {
-    const res  = await fetch(`${BACKEND}/depart/${departId}/statut`, {
-      method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ actif: nouvelEtat }),
+    const res = await apiFetch(`${BACKEND}/depart/${departId}/statut`, {
+      method: 'PATCH',
+      body: JSON.stringify({ actif: nouvelEtat }),
     });
     const data = await res.json();
 
@@ -857,9 +855,8 @@ export async function reaffecterSessionResolution(sessionId) {
   if (!nouveauDepartId) return;
 
   try {
-    const res = await fetch(`${BACKEND}/session/${sessionId}/reaffecter`, {
+    const res = await apiFetch(`${BACKEND}/session/${sessionId}/reaffecter`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nouveauDepartId }),
     });
     const data = await res.json();
@@ -881,9 +878,8 @@ export async function toutReaffecterVersResolution(nouveauDepartId, busNom) {
 
   for (const s of restantes) {
     try {
-      const res = await fetch(`${BACKEND}/session/${s.sessionId}/reaffecter`, {
+      const res = await apiFetch(`${BACKEND}/session/${s.sessionId}/reaffecter`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nouveauDepartId }),
       });
       const data = await res.json();
@@ -931,7 +927,7 @@ export async function annulerSessionResolution(sessionId) {
 
   const wrap = document.getElementById('annulResaListWrap');
   try {
-    const res  = await fetch(`${BACKEND}/session/${sessionId}/reservations`);
+    const res = await apiFetch(`${BACKEND}/session/${sessionId}/reservations`);
     const data = await res.json();
     const reservations = data.reservations || [];
     const totalRembourse = reservations.reduce((sum, r) => sum + (r.montantRembourse || 0), 0);
@@ -978,7 +974,7 @@ export function closeConfirmAnnulerSession() {
 export async function confirmAnnulerSessionResolution(sessionId) {
   closeConfirmAnnulerSession();
   try {
-    const res = await fetch(`${BACKEND}/session/${sessionId}/annuler-toutes`, { method: 'POST' });
+    const res = await apiFetch(`${BACKEND}/session/${sessionId}/annuler-toutes`, { method: 'POST' });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur annulation.', TOAST_ICONS.error); return; }
 
@@ -1004,7 +1000,7 @@ async function finaliserResolution() {
     await confirmToggleDepartStatut(ctx.departId, ctx.trajetId, ctx.nouvelEtat);
   } else if (ctx.actionType === 'vehicule-delete') {
     try {
-      const res  = await fetch(`${BACKEND}/vehicule/${ctx.vehiculeId}`, { method: 'DELETE' });
+      const res = await apiFetch(`${BACKEND}/vehicule/${ctx.vehiculeId}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
       showToast(data.message, TOAST_ICONS.success, true);
@@ -1015,10 +1011,9 @@ async function finaliserResolution() {
     }
   } else if (ctx.actionType === 'vehicule-statut') {
     try {
-      const res  = await fetch(`${BACKEND}/vehicule/${ctx.vehiculeId}/statut`, {
-        method:  'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ actif: ctx.nouvelEtat }),
+      const res = await apiFetch(`${BACKEND}/vehicule/${ctx.vehiculeId}/statut`, {
+        method: 'PATCH',
+        body: JSON.stringify({ actif: ctx.nouvelEtat }),
       });
       const data = await res.json();
       if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
@@ -1030,7 +1025,7 @@ async function finaliserResolution() {
     }
   } else if (ctx.actionType === 'delete-trajet') {
     try {
-      const res  = await fetch(`${BACKEND}/trajet/${ctx.trajetId}`, { method: 'DELETE' });
+      const res = await apiFetch(`${BACKEND}/trajet/${ctx.trajetId}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
       invalidateDeparts(ctx.trajetId);
@@ -1044,10 +1039,9 @@ async function finaliserResolution() {
     }
   } else if (ctx.actionType === 'statut-trajet') {
     try {
-      const res  = await fetch(`${BACKEND}/trajet/${ctx.trajetId}/statut`, {
-        method:  'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ actif: ctx.nouvelEtat }),
+      const res = await apiFetch(`${BACKEND}/trajet/${ctx.trajetId}/statut`, {
+        method: 'PATCH',
+        body: JSON.stringify({ actif: ctx.nouvelEtat }),
       });
       const data = await res.json();
       if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
@@ -1074,10 +1068,9 @@ async function finaliserResolution() {
 // ════════════════════════════════
 export async function genererSessions(departId) {
   try {
-    const res  = await fetch(`${BACKEND}/depart/${departId}/generer-sessions`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ nbJours: 14 }),
+    const res = await apiFetch(`${BACKEND}/depart/${departId}/generer-sessions`, {
+      method: 'POST',
+      body: JSON.stringify({ nbJours: 14 }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
@@ -1092,10 +1085,9 @@ export async function handleGenererSessions(departId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Génération...'; }
 
   try {
-    const res  = await fetch(`${BACKEND}/depart/${departId}/generer-sessions`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ nbJours: 14 }),
+    const res = await apiFetch(`${BACKEND}/depart/${departId}/generer-sessions`, {
+      method: 'POST',
+      body: JSON.stringify({ nbJours: 14 }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }

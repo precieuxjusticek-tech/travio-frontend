@@ -3,6 +3,8 @@
 import { BACKEND, agenceData, setAgenceData } from './state.js';
 import { ensureCssInjected, buildTicketHTML, formatFromMode } from './billet-template.js';
 import { showToast, TOAST_ICONS } from './toast-utils.js';
+// À ajouter avec les autres imports
+import { apiFetch } from './api.js';
 
 const MANUAL_PREVIEW_CSS = `
 <style id="manualPreviewStyles">
@@ -268,9 +270,8 @@ export async function submitBilletConfig() {
   if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
 
   try {
-    const res = await fetch(`${BACKEND}/agence/${agenceData.id}/billet-config`, {
+    const res = await apiFetch(`${BACKEND}/agence/${agenceData.id}/billet-config`, {
       method:  'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ billetMode: selectedMode, billetDesign: selectedDesign }),
     });
     const data = await res.json();

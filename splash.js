@@ -1,6 +1,7 @@
 // ─── TRAVIO — Splash Screen ───
 import { auth } from './firebase-client.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { apiFetch } from './api.js';
 
 const BACKEND = 'https://travio-backend-pa4q.onrender.com';
 
@@ -56,10 +57,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res  = await fetch(`${BACKEND}/auth/login`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email: user.email }),
+      const res = await apiFetch(`${BACKEND}/auth/login`, {
+        method: 'POST',
+        body:   JSON.stringify({ email: user.email }),
       });
       const data = await res.json();
 
