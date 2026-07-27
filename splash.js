@@ -37,10 +37,17 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // ─── Filet de sécurité : si Firebase/backend ne répond jamais,
-  // on ne reste pas bloqué indéfiniment (on traite comme "invité") ───
+  // on ne reste pas bloqué indéfiniment. Mais si Firebase indique
+  // qu'un utilisateur EST connecté, on ne le traite jamais comme "invité" —
+  // le backend est juste lent (cold start Render) : on l'envoie vers
+  // dashboard.html qui gérera lui-même l'attente. ───
   const safetyTimer = setTimeout(() => {
     if (!authDecision) {
-      authDecision = { type: 'guest' };
+      if (auth.currentUser) {
+        authDecision = { type: 'redirect', url: 'dashboard.html' };
+      } else {
+        authDecision = { type: 'guest' };
+      }
       tryConclude();
     }
   }, 10000);
