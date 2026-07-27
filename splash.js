@@ -105,7 +105,7 @@ function playSplashAnimation(onComplete) {
   setTimeout(() => loader.classList.add('visible'),   700);
 
   // Durée totale d'affichage du splash avant de trancher
-  setTimeout(onComplete, 6800);
+  setTimeout(onComplete, 1800);
 }
 
 // ─── TRAVIO — Onboarding ─── (inchangé)
