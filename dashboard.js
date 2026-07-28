@@ -44,7 +44,7 @@ import { loadReservationsAgence, applyResaFiltres, filtrerParAlerteTrajets, filt
 import { renderFinancePage, setFinPeriode, openFinancePdvDetail, closeFinancePdvDetail, openFinanceTrajetDetail, closeFinanceTrajetDetail, openFinanceJourDetail, closeFinanceJourDetail, openFinanceBusDetail, closeFinanceBusDetail } from './finances.js';
 
 // ── Toast utils ──
-import { togglePdvPassword, toggleDetailPassword, toggleTousJours, toggleJour, showToastAction } from './toast-utils.js';
+import { togglePdvPassword, toggleTousJours, toggleJour, showToastAction } from './toast-utils.js';
 
 // ── Rapports ──
 import { genererRapportReservations, imprimerRapportReservations, genererRapportFinances, imprimerRapportFinances } from './reports.js';
@@ -57,6 +57,9 @@ import { renderGeoPage } from './geo.js';
 
 // ── Mode d'emploi ──
 import { renderGuidePage, toggleGuideSection, updateGuideBadge, checkGuideWelcomeModal, showGuideWelcomeModal, closeGuideWelcomeModal, goToGuideFromWelcome } from './guide.js';
+
+// retour
+import { initBackGuard } from './back-guard.js';
 
 // ════════════════════════════════
 //  INIT AUTH
@@ -78,6 +81,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     setUserUI(data);
+    initBackGuard();
 
     if (data.agenceId) {
       await loadAgenceData(data.agenceId);
@@ -120,13 +124,14 @@ window.showPage = function(pageId, navEl) {
   const billetsPage = document.getElementById('page-billets');
   if (billetsPage?.classList.contains('active')) renderBilletConfigPage();
   const guidePage = document.getElementById('page-guide');
-  if (guidePage?.classList.contains('active')) renderGuidePage();   // ← ajouté
+  if (guidePage?.classList.contains('active')) renderGuidePage();
 };
 
 // ════════════════════════════════
 //  SUPPORT
 // ════════════════════════════════
 initSupportBubble();
+
 
 // Listener annulation radio — onboarding
 document.addEventListener('change', (e) => {
@@ -316,7 +321,6 @@ window.closeFinanceBusDetail    = closeFinanceBusDetail;
 window.showToast          = showToast;
 window.showToastAction    = showToastAction;
 window.togglePdvPassword  = togglePdvPassword;
-window.toggleDetailPassword = toggleDetailPassword;
 window.toggleTousJours    = toggleTousJours;
 window.toggleJour         = toggleJour;
 

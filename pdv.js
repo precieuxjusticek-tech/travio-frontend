@@ -3,7 +3,7 @@
 import { BACKEND, agenceData, pdvList, setPdvList, trajetList, resaList } from './state.js';
 import { loadDeparts } from './trajets.js';
 import { getDerniereVentePdv, formatDerniereVente, getStatsMoisPdv, estPdvInactif } from './pdv-utils.js';
-import { showToast, togglePdvPassword, toggleDetailPassword, TOAST_ICONS } from './toast-utils.js';
+import { showToast, togglePdvPassword, TOAST_ICONS } from './toast-utils.js';
 import { apiFetch } from './api.js';
 
 const ICONS = {
@@ -320,7 +320,7 @@ export async function openPDVDetail(pdvId) {
             <span class="pdv-detail-label">Mot de passe</span>
             <span class="pdv-detail-val pdv-password-row">
               <span class="pdv-password-dots" id="detailPassword">••••••••</span>
-              <button class="pdv-eye-btn-sm" type="button" onclick="toggleDetailPassword('${pdv.password || ''}', this)">
+              <button class="pdv-eye-btn-sm" type="button" id="revealPasswordBtn" onclick="revealPdvPassword('${pdv.id}', this)">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
               </button>
             </span>
@@ -930,6 +930,50 @@ export function openResetPassword(pdvId, pdvNom) {
   requestAnimationFrame(() => overlay.classList.add('show'));
 }
 
+// ════════════════════════════════
+//  PDV — RÉVÉLER LE MOT DE PASSE (à la demande)
+// ════════════════════════════════
+export async function revealPdvPassword(pdvId, btn) {
+  const dotsEl = document.getElementById('detailPassword');
+  if (!dotsEl) return;
+
+  // Si déjà révélé, on remasque au clic
+  if (dotsEl.dataset.revealed === 'true') {
+    dotsEl.textContent = '••••••••';
+    dotsEl.dataset.revealed = 'false';
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await apiFetch(`${BACKEND}/pdv/${pdvId}/reveal-password`, { method: 'POST' });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showToast(data.message || 'Erreur lors de la récupération du mot de passe.', TOAST_ICONS.error);
+      return;
+    }
+
+    dotsEl.textContent = data.password || '—';
+    dotsEl.dataset.revealed = 'true';
+
+    // Auto-masquage après 10 secondes pour limiter l'exposition à l'écran
+    setTimeout(() => {
+      if (dotsEl.dataset.revealed === 'true') {
+        dotsEl.textContent = '••••••••';
+        dotsEl.dataset.revealed = 'false';
+      }
+    }, 10000);
+
+  } catch (err) {
+    console.error('Erreur reveal password :', err);
+    showToast('Impossible de contacter le serveur.', TOAST_ICONS.error);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 export function closeResetPassword() {
   const o = document.getElementById('resetPasswordOverlay');
   if (o) { o.classList.remove('show'); setTimeout(() => o.remove(), 350); }
@@ -952,9 +996,6 @@ export async function submitResetPassword(pdvId) {
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
-
-    const pdv = pdvList.find(p => p.id === pdvId);
-    if (pdv) pdv.password = newPassword;
 
     closeResetPassword();
     showToast('Mot de passe réinitialisé avec succès.', ICONS.key, true);
@@ -995,4 +1036,4 @@ window.openResetPassword    = openResetPassword;
 window.closeResetPassword   = closeResetPassword;
 window.submitResetPassword  = submitResetPassword;
 window.togglePdvPassword    = togglePdvPassword;
-window.toggleDetailPassword = toggleDetailPassword;
+window.revealPdvPassword    = revealPdvPassword;

@@ -440,6 +440,7 @@ html, body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 40px);
 }
 
 /* ══════════════════════════════
@@ -1794,7 +1795,9 @@ html, body {
   .pdv-brand span { display: none; }
   .pdv-topbar { padding: 0 12px; }
   .vente-field-row { grid-template-columns: 1fr; }
-  .pdv-page { padding: 16px; }
+  .pdv-page {
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px) + 24px);
+  }
 
   .vente-step-head { flex-wrap: wrap; }
   .vente-step-body { padding: 12px; }
