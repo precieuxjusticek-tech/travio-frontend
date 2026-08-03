@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+        <title>Travio — Accès chauffeur</title>
+        <link rel="stylesheet" href="chauffeur.css">
+    </head>
+    <body>
+
+        <div class="ch-app">
+
+            <!-- ── HEADER ── -->
+            <header class="ch-header">
+            <div class="ch-brand">
+                <span class="ch-brand-mark">TRAV<em>IO</em></span>
+                <span class="ch-brand-sub">Accès chauffeur</span>
+            </div>
+            </header>
+
+            <main class="ch-main">
+
+            <!-- ══════════════════════════════
+                ÉCRAN 1 — RECHERCHE
+            ══════════════════════════════ -->
+            <section class="ch-screen ch-screen-search" id="chScreenSearch">
+                <div class="ch-search-card">
+                <div class="ch-search-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M17 10.5H20.2C20.6 10.5 20.9 10.7 21.1 11L22.5 13.5V19H17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="19" r="1.6" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="19" r="1.6" stroke="currentColor" stroke-width="1.6"/></svg>
+                </div>
+                <h1>Entrez le code du colis</h1>
+                <p>Le code est inscrit sur l'étiquette du colis (ex : TRV-4F7K2Q).</p>
+
+                <div class="ch-field-wrap">
+                    <input
+                    type="text"
+                    id="chCodeInput"
+                    class="ch-input"
+                    placeholder="TRV-XXXXXX"
+                    autocomplete="off"
+                    autocapitalize="characters"
+                    spellcheck="false"
+                    maxlength="14"
+                    >
+                </div>
+
+                <button class="ch-btn-primary" id="chBtnVerifier" onclick="verifierCode()">
+                    <span class="ch-btn-label">Vérifier</span>
+                </button>
+
+                <div class="ch-error" id="chSearchError" style="display:none;"></div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════
+                ÉCRAN 2 — RÉSULTAT / DÉTAIL COLIS
+            ══════════════════════════════ -->
+            <section class="ch-screen ch-screen-result" id="chScreenResult" style="display:none;">
+
+                <button class="ch-back-btn" onclick="retourRecherche()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Nouveau code
+                </button>
+
+                <div class="ch-colis-card" id="chColisCard"></div>
+
+                <div class="ch-action-zone" id="chActionZone"></div>
+
+            </section>
+
+            <!-- ══════════════════════════════
+                ÉCRAN 3 — CONFIRMATION
+            ══════════════════════════════ -->
+            <section class="ch-screen ch-screen-confirm" id="chScreenConfirm" style="display:none;">
+                <div class="ch-confirm-card">
+                <div class="ch-confirm-icon" id="chConfirmIcon">✓</div>
+                <h2 id="chConfirmTitle">Colis mis à jour</h2>
+                <p id="chConfirmSub">Le statut a bien été enregistré.</p>
+                <button class="ch-btn-primary" onclick="retourRecherche()">
+                    <span class="ch-btn-label">Scanner un autre colis</span>
+                </button>
+                </div>
+            </section>
+
+            </main>
+
+            <footer class="ch-footer">Propulsé par Travio</footer>
+        </div>
+
+        <script src="chauffeur.js"></script>
+    </body>
+</html>

@@ -5,6 +5,7 @@ import { loadDeparts } from './trajets.js';
 import { getDerniereVentePdv, formatDerniereVente, getStatsMoisPdv, estPdvInactif } from './pdv-utils.js';
 import { showToast, togglePdvPassword, TOAST_ICONS } from './toast-utils.js';
 import { apiFetch } from './api.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -84,10 +85,10 @@ export function renderPDVPage() {
         <div class="pdv-ville-header">
           <div class="pdv-ville-title">
             <span class="pdv-ville-pin">${ICONS.pin}</span>
-            <h3>${ville}</h3>
+            <h3>${escapeHtml(ville)}</h3>
             <span class="pdv-ville-count">${pdvs.length} PDV</span>
           </div>
-          ${pdvs.length > 4 ? `<button class="pdv-voir-tout" onclick="openPDVVille('${ville}')">Voir tout →</button>` : ''}
+          ${pdvs.length > 4 ? `<button class="pdv-voir-tout" onclick="openPDVVille('${escapeJsAttr(ville)}')">Voir tout →</button>` : ''}
         </div>
         <div class="pdv-scroll-row">
           ${pdvs.slice(0, 4).map(pdv => renderPDVCard(pdv)).join('')}
@@ -111,13 +112,13 @@ export function renderPDVCard(pdv) {
   loadPDVCardStats(pdv.id);
 
   return `
-    <div class="pdv-card" id="pdvCard-${pdv.id}" onclick="openPDVDetail('${pdv.id}')">
+    <div class="pdv-card" id="pdvCard-${escapeHtml(pdv.id)}" onclick="openPDVDetail('${escapeJsAttr(pdv.id)}')">
       <div class="pdv-card-header">
         <div style="display:flex;align-items:center;gap:9px;min-width:0;flex:1;">
-          <div class="pdv-card-avatar" style="flex-shrink:0;">${pdv.nom?.[0] || 'P'}</div>
+          <div class="pdv-card-avatar" style="flex-shrink:0;">${escapeHtml(pdv.nom?.[0]) || 'P'}</div>
           <div style="min-width:0;">
-            <div class="pdv-card-name">${pdv.nom}</div>
-            <div style="font-size:11px;color:var(--muted);">${ICONS.pin} ${pdv.ville || '—'}</div>
+            <div class="pdv-card-name">${escapeHtml(pdv.nom)}</div>
+            <div style="font-size:11px;color:var(--muted);">${ICONS.pin} ${escapeHtml(pdv.ville) || '—'}</div>
           </div>
         </div>
         <span class="pdv-status-badge ${statusClass}" style="flex-shrink:0;align-self:flex-start;white-space:nowrap;">
@@ -125,26 +126,26 @@ export function renderPDVCard(pdv) {
         </span>
       </div>
       <div class="pdv-card-body">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">${ICONS.person} ${pdv.responsable || '—'}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">${ICONS.person} ${escapeHtml(pdv.responsable) || '—'}</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;">
-          <span>${ICONS.phone} ${pdv.telephone || '—'}</span>
+          <span>${ICONS.phone} ${escapeHtml(pdv.telephone) || '—'}</span>
           <span style="color:var(--white);font-weight:600;">${nbTrajets} trajet${nbTrajets > 1 ? 's' : ''}</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:8px;padding:6px 8px;background:var(--surface2);border-radius:8px;">
           <span style="color:var(--muted);">${ICONS.clock} Dernière vente</span>
-          <span id="pdvLastSale-${pdv.id}" style="color:var(--white);font-weight:600;">—</span>
+          <span id="pdvLastSale-${escapeHtml(pdv.id)}" style="color:var(--white);font-weight:600;">—</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;">
           <div style="background:var(--surface2);border-radius:8px;padding:7px;text-align:center;">
-            <div id="pdvStatBillets-${pdv.id}" style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--white);">—</div>
+            <div id="pdvStatBillets-${escapeHtml(pdv.id)}" style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--white);">—</div>
             <div style="font-size:10px;color:var(--muted);margin-top:1px;line-height:1.3;">billets<br>ce mois</div>
           </div>
           <div style="background:var(--surface2);border-radius:8px;padding:7px;text-align:center;">
-            <div id="pdvStatTaux-${pdv.id}" style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--accent);">—</div>
+            <div id="pdvStatTaux-${escapeHtml(pdv.id)}" style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--accent);">—</div>
             <div style="font-size:10px;color:var(--muted);margin-top:1px;line-height:1.3;">taux de<br>vente</div>
           </div>
           <div style="background:var(--surface2);border-radius:8px;padding:7px;text-align:center;">
-            <div id="pdvStatRev-${pdv.id}" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--white);">—</div>
+            <div id="pdvStatRev-${escapeHtml(pdv.id)}" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--white);">—</div>
             <div style="font-size:10px;color:var(--muted);margin-top:1px;line-height:1.3;">XAF<br>ce mois</div>
           </div>
         </div>
@@ -179,14 +180,11 @@ function loadPDVCardStats(pdvId) {
       const couleurTaux = tauxMoyen >= 75 ? 'var(--accent)' : tauxMoyen >= 50 ? '#FFB23F' : '#FF4D6A';
       const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-      setEl(`pdvLastSale-${pdvId}`, derniereLabel);
-      setEl(`pdvStatBillets-${pdvId}`, nbBillets.toLocaleString());
-      setEl(`pdvStatTaux-${pdvId}`, tauxMoyen > 0 ? tauxMoyen + '%' : '—');
-      setEl(`pdvStatRev-${pdvId}`,
-        revMois >= 1000 ? Math.round(revMois / 1000) + 'k' : revMois.toLocaleString()
-      );
-
-      const tauxEl = document.getElementById(`pdvStatTaux-${pdvId}`);
+      setEl(`pdvLastSale-${escapeHtml(pdvId)}`, derniereLabel);
+      setEl(`pdvStatBillets-${escapeHtml(pdvId)}`, nbBillets.toLocaleString());
+      setEl(`pdvStatTaux-${escapeHtml(pdvId)}`, tauxMoyen > 0 ? tauxMoyen + '%' : '—');
+      setEl(`pdvStatRev-${escapeHtml(pdvId)}`, revMois >= 1000 ? Math.round(revMois / 1000) + 'k' : revMois.toLocaleString());
+      const tauxEl = document.getElementById(`pdvStatTaux-${escapeHtml(pdvId)}`);
       if (tauxEl) tauxEl.style.color = couleurTaux;
 
     } catch (err) {
@@ -247,7 +245,7 @@ export function openPDVVille(ville) {
     <div class="pdv-overlay-panel" style="max-width:760px;">
       <div class="pdv-overlay-header">
         <div>
-          <h2>${ICONS.pin} ${ville}</h2>
+          <h2>${ICONS.pin} ${escapeHtml(ville)}</h2>
           <p>${pdvs.length} point${pdvs.length > 1 ? 's' : ''} de vente</p>
         </div>
         <button class="pdv-overlay-close" onclick="closePDVVille()">${ICONS.close}</button>
@@ -282,8 +280,8 @@ export async function openPDVDetail(pdvId) {
 
       <div class="pdv-overlay-header">
         <div>
-          <h2>${pdv.nom}</h2>
-          <p>${ICONS.pin} ${pdv.ville || '—'}${pdv.adresse ? ' · ' + pdv.adresse : ''}</p>
+          <h2>${escapeHtml(pdv.nom)}</h2>
+          <p>${ICONS.pin} ${escapeHtml(pdv.ville) || '—'}${pdv.adresse ? ' · ' + escapeHtml(pdv.adresse) : ''}</p>
         </div>
         <button class="pdv-overlay-close" onclick="closePDVDetail()">${ICONS.close}</button>
       </div>
@@ -295,11 +293,11 @@ export async function openPDVDetail(pdvId) {
 
       <div id="pdvPanel-infos">
         <div style="display:flex;align-items:center;gap:12px;padding:0 0 16px;border-bottom:1px solid var(--border);margin-bottom:16px;">
-          <div style="width:44px;height:44px;border-radius:12px;background:rgba(0,87,255,0.12);border:1px solid rgba(0,87,255,0.2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#5B9BFF;flex-shrink:0;">${pdv.nom?.[0] || 'P'}</div>
+          <div style="width:44px;height:44px;border-radius:12px;background:rgba(0,87,255,0.12);border:1px solid rgba(0,87,255,0.2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#5B9BFF;flex-shrink:0;">${escapeHtml(pdv.nom?.[0]) || 'P'}</div>
           <div style="flex:1;min-width:0;">
-            <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pdv.nom}</div>
+            <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(pdv.nom)}</div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:3px;">
-              <span style="font-size:12px;color:var(--muted);">${ICONS.pin} ${pdv.ville || '—'}</span>
+               <span style="font-size:12px;color:var(--muted);">${ICONS.pin} ${escapeHtml(pdv.ville) || '—'}</span>
               <span class="pdv-status-badge ${pdv.actif ? 'active' : 'inactive'}" style="font-size:10px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${pdv.actif ? 'var(--accent)' : '#FF4D6A'};margin-right:5px;flex-shrink:0;"></span>${pdv.actif ? 'Actif' : 'Inactif'}</span>
             </div>
           </div>
@@ -307,20 +305,20 @@ export async function openPDVDetail(pdvId) {
 
         <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Coordonnées</div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:14px;">
-          <div class="pdv-detail-row"><span class="pdv-detail-label">Responsable</span><span class="pdv-detail-val">${pdv.responsable || '—'}</span></div>
-          <div class="pdv-detail-row"><span class="pdv-detail-label">Téléphone</span><span class="pdv-detail-val">${pdv.telephone || '—'}</span></div>
-          <div class="pdv-detail-row"><span class="pdv-detail-label">Adresse</span><span class="pdv-detail-val" style="text-align:right;max-width:55%;">${pdv.adresse || '—'}</span></div>
-          ${pdv.emailContact ? `<div class="pdv-detail-row" style="border-bottom:none;"><span class="pdv-detail-label">Email contact</span><span class="pdv-detail-val" style="color:#5B9BFF;">${pdv.emailContact}</span></div>` : ''}
+          <div class="pdv-detail-row"><span class="pdv-detail-label">Responsable</span><span class="pdv-detail-val">${escapeHtml(pdv.responsable) || '—'}</span></div>
+          <div class="pdv-detail-row"><span class="pdv-detail-label">Téléphone</span><span class="pdv-detail-val">${escapeHtml(pdv.telephone) || '—'}</span></div>
+          <div class="pdv-detail-row"><span class="pdv-detail-label">Adresse</span><span class="pdv-detail-val" style="text-align:right;max-width:55%;">${escapeHtml(pdv.adresse) || '—'}</span></div>
+          ${pdv.emailContact ? `<div class="pdv-detail-row" style="border-bottom:none;"><span class="pdv-detail-label">Email contact</span><span class="pdv-detail-val" style="color:#5B9BFF;">${escapeHtml(pdv.emailContact)}</span></div>` : ''}
         </div>
 
         <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Accès agent</div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:16px;">
-          <div class="pdv-detail-row"><span class="pdv-detail-label">Email connexion</span><span class="pdv-detail-val">${pdv.emailConnexion || '—'}</span></div>
+          <div class="pdv-detail-row"><span class="pdv-detail-label">Email connexion</span><span class="pdv-detail-val">${escapeHtml(pdv.emailConnexion) || '—'}</span></div>
           <div class="pdv-detail-row" style="border-bottom:none;">
             <span class="pdv-detail-label">Mot de passe</span>
             <span class="pdv-detail-val pdv-password-row">
               <span class="pdv-password-dots" id="detailPassword">••••••••</span>
-              <button class="pdv-eye-btn-sm" type="button" id="revealPasswordBtn" onclick="revealPdvPassword('${pdv.id}', this)">
+              <button class="pdv-eye-btn-sm" type="button" id="revealPasswordBtn" onclick="revealPdvPassword('${escapeJsAttr(pdv.id)}', this)">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
               </button>
             </span>
@@ -328,12 +326,12 @@ export async function openPDVDetail(pdvId) {
         </div>
 
         <div class="pdv-detail-actions">
-          <button class="pdv-action-btn" onclick="openEditPDV('${pdv.id}')">${ICONS.edit} Modifier les infos</button>
-          <button class="pdv-action-btn" onclick="openResetPassword('${pdv.id}', '${pdv.nom}')">${ICONS.key} Réinitialiser le mot de passe</button>
-          <button class="pdv-action-btn danger" onclick="togglePDVStatut('${pdv.id}', ${pdv.actif})">
+          <button class="pdv-action-btn" onclick="openEditPDV('${escapeJsAttr(pdv.id)}')">${ICONS.edit} Modifier les infos</button>
+          <button class="pdv-action-btn" onclick="openResetPassword('${escapeJsAttr(pdv.id)}', '${escapeJsAttr(pdv.nom)}')">${ICONS.key} Réinitialiser le mot de passe</button>
+          <button class="pdv-action-btn danger" onclick="togglePDVStatut('${escapeJsAttr(pdv.id)}', ${pdv.actif})">
             ${pdv.actif ? ICONS.stop + ' Désactiver le PDV' : ICONS.play + ' Activer le PDV'}
           </button>
-          <button class="pdv-action-btn delete" onclick="confirmDeletePDV('${pdv.id}', '${pdv.nom}')">${ICONS.trash} Supprimer le PDV</button>
+          <button class="pdv-action-btn delete" onclick="confirmDeletePDV('${escapeJsAttr(pdv.id)}', '${escapeJsAttr(pdv.nom)}')">${ICONS.trash} Supprimer le PDV</button>
         </div>
       </div>
 
@@ -423,7 +421,7 @@ async function renderPDVTrajetsDOM(trajets, pdvId, container) {
     <div style="max-width:440px;margin:0 auto;width:100%;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <span style="font-size:13px;font-weight:600;color:var(--white);">${nbTotal} trajet${nbTotal > 1 ? 's' : ''} assigné${nbTotal > 1 ? 's' : ''}</span>
-        <span style="font-size:12px;color:var(--muted);">${(pdvList.find(p => p.id === pdvId))?.nom || ''}</span>
+        <span style="font-size:12px;color:var(--muted);">${escapeHtml((pdvList.find(p => p.id === pdvId))?.nom) || ''}</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${trajets.map(t => {
@@ -453,7 +451,7 @@ async function renderPDVTrajetsDOM(trajets, pdvId, container) {
           <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;${t.actif === false ? 'opacity:0.6;' : ''}">
             <div style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
               <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.villeDepart} → ${t.villeArrivee}</div>
+                <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</div>
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                   ${roleBadge}${statutBadge}
                   <span style="font-size:11px;color:var(--muted);">${t.typeTrajet === 'arrets' ? 'Avec arrêts' : 'Direct'} ${heureLabel}</span>
@@ -462,7 +460,7 @@ async function renderPDVTrajetsDOM(trajets, pdvId, container) {
               <div style="text-align:right;flex-shrink:0;margin-left:12px;">
                 ${Object.entries(t.prixParType || {}).map(([typeId, prix]) => {
                   const type = (agenceData.typesBillet || []).find(x => x.id === typeId);
-                  return `<div style="font-size:12px;color:var(--white);"><strong>${Number(prix).toLocaleString()}</strong> <span style="color:var(--muted);font-size:10px;">${type?.nom || typeId}</span></div>`;
+                  return `<div style="font-size:12px;color:var(--white);"><strong>${Number(prix).toLocaleString()}</strong> <span style="color:var(--muted);font-size:10px;">${escapeHtml(type?.nom || typeId)}</span></div>`;
                 }).join('')}
               </div>
             </div>
@@ -650,7 +648,7 @@ export async function submitCreatePDV() {
     setPdvList([...pdvList, data.pdv]);
     renderPDVPage();
     closeCreatePDV();
-    showToast(`PDV "${payload.nom}" créé avec succès !`, TOAST_ICONS.success, true);
+    showToast(`PDV "${escapeHtml(payload.nom)}" créé avec succès !`, TOAST_ICONS.success, true);
 
   } catch (err) {
     console.error('Erreur création PDV :', err);
@@ -675,11 +673,11 @@ export function openEditPDV(pdvId) {
     <div class="pdv-overlay-backdrop" onclick="closeEditPDV()"></div>
     <div class="pdv-overlay-panel" style="max-width:560px;">
       <div class="pdv-overlay-header">
-        <div><h2>${ICONS.edit} Modifier le PDV</h2><p>${pdv.nom}</p></div>
+        <div><h2>${ICONS.edit} Modifier le PDV</h2><p>${escapeHtml(pdv.nom)}</p></div>
         <button class="pdv-overlay-close" onclick="closeEditPDV()">${ICONS.close}</button>
       </div>
       <div class="pdv-create-fields">
-        <div class="pdv-field-group"><label>Nom du point de vente <span class="req">*</span></label><input type="text" class="pdv-input" id="editpdv-nom" value="${pdv.nom || ''}"></div>
+        <div class="pdv-field-group"><label>Nom du point de vente <span class="req">*</span></label><input type="text" class="pdv-input" id="editpdv-nom" value="${escapeHtml(pdv.nom) || ''}"></div>
         <div class="pdv-field-group">
           <label>Ville <span class="req">*</span></label>
           <select class="pdv-select" id="editpdv-ville" onchange="toggleEditAutreVille()">
@@ -701,13 +699,13 @@ export function openEditPDV(pdvId) {
           <label>Précisez la ville <span class="req">*</span></label>
           <input type="text" class="pdv-input" id="editpdv-ville-autre" placeholder="Ex : Kinkala">
         </div>
-        <div class="pdv-field-group"><label>Adresse / Quartier <span class="req">*</span></label><input type="text" class="pdv-input" id="editpdv-adresse" value="${pdv.adresse || ''}"></div>
-        <div class="pdv-field-group"><label>Nom du responsable <span class="req">*</span></label><input type="text" class="pdv-input" id="editpdv-responsable" value="${pdv.responsable || ''}"></div>
-        <div class="pdv-field-group"><label>Téléphone du responsable <span class="req">*</span></label><input type="tel" class="pdv-input" id="editpdv-telephone" value="${pdv.telephone || ''}"></div>
-        <div class="pdv-field-group"><label>Email personnel</label><input type="email" class="pdv-input" id="editpdv-emailContact" value="${pdv.emailContact || ''}"></div>
-        <div class="pdv-field-group"><label>Email de connexion <span class="req">*</span></label><input type="email" class="pdv-input" id="editpdv-emailConnexion" value="${pdv.emailConnexion || ''}"></div>
+        <div class="pdv-field-group"><label>Adresse / Quartier <span class="req">*</span></label><input type="text" class="pdv-input" id="editpdv-adresse" value="${escapeHtml(pdv.adresse) || ''}"></div>
+        <div class="pdv-field-group"><label>Nom du responsable <span class="req">*</span></label><input type="text" class="pdv-input" id="editpdv-responsable" value="${escapeHtml(pdv.responsable) || ''}"></div>
+        <div class="pdv-field-group"><label>Téléphone du responsable <span class="req">*</span></label><input type="tel" class="pdv-input" id="editpdv-telephone" value="${escapeHtml(pdv.telephone) || ''}"></div>
+        <div class="pdv-field-group"><label>Email personnel</label><input type="email" class="pdv-input" id="editpdv-emailContact" value="${escapeHtml(pdv.emailContact) || ''}"></div>
+        <div class="pdv-field-group"><label>Email de connexion <span class="req">*</span></label><input type="email" class="pdv-input" id="editpdv-emailConnexion" value="${escapeHtml(pdv.emailConnexion) || ''}"></div>
       </div>
-      <button class="pdv-btn-next" id="editPDVSubmitBtn" onclick="submitEditPDV('${pdv.id}')">Sauvegarder</button>
+      <button class="pdv-btn-next" id="editPDVSubmitBtn" onclick="submitEditPDV('${escapeJsAttr(pdv.id)}')">Sauvegarder</button>
     </div>
   `;
 
@@ -798,9 +796,9 @@ export function confirmDeletePDV(pdvId, pdvNom) {
     <div class="pdv-overlay-panel pdv-confirm-panel">
       <div class="pdv-confirm-icon">${ICONS.trash}</div>
       <h2>Supprimer ce PDV ?</h2>
-      <p>Vous êtes sur le point de supprimer <strong>${pdvNom}</strong>. Cette action est <strong>irréversible</strong> — le compte de l'agent sera également supprimé.</p>
+      <p>Vous êtes sur le point de supprimer <strong>${escapeHtml(pdvNom)}</strong>. Cette action est <strong>irréversible</strong> — le compte de l'agent sera également supprimé.</p>
       <div class="pdv-confirm-actions">
-        <button class="pdv-btn-next delete-confirm" onclick="deletePDV('${pdvId}')">Oui, supprimer</button>
+        <button class="pdv-btn-next delete-confirm" onclick="deletePDV('${escapeJsAttr(pdvId)}')">Oui, supprimer</button>
         <button class="pdv-btn-back" onclick="closeDeletePDV()">Annuler</button>
       </div>
     </div>
@@ -848,7 +846,7 @@ export async function togglePDVStatut(pdvId, actifActuel) {
       <div class="pdv-confirm-actions">
         <button class="pdv-btn-next ${nouvelEtat ? '' : 'delete-confirm'}"
           style="${nouvelEtat ? 'background: var(--accent); color: var(--dark);' : ''}"
-          onclick="confirmToggleStatut('${pdvId}', ${nouvelEtat})">
+          onclick="confirmToggleStatut('${escapeJsAttr(pdvId)}', ${nouvelEtat})">
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${nouvelEtat ? 'var(--accent)' : 'white'};margin-right:6px;vertical-align:middle;"></span>${nouvelEtat ? 'Oui, activer' : 'Oui, désactiver'}
         </button>
         <button class="pdv-btn-back" onclick="closeStatutPDV()">Annuler</button>
@@ -899,7 +897,7 @@ export function openResetPassword(pdvId, pdvNom) {
     <div class="pdv-overlay-backdrop" onclick="closeResetPassword()"></div>
     <div class="pdv-overlay-panel pdv-reset-panel">
       <div class="pdv-overlay-header">
-        <div><h2>${ICONS.key} Nouveau mot de passe</h2><p>${pdvNom}</p></div>
+        <div><h2>${ICONS.key} Nouveau mot de passe</h2><p>${escapeHtml(pdvNom)}</p></div>
         <button class="pdv-overlay-close" onclick="closeResetPassword()">${ICONS.close}</button>
       </div>
       <div class="pdv-create-fields">
@@ -923,7 +921,7 @@ export function openResetPassword(pdvId, pdvNom) {
           </div>
         </div>
       </div>
-      <button class="pdv-btn-next" id="resetPasswordBtn" onclick="submitResetPassword('${pdvId}')">${ICONS.key} Réinitialiser le mot de passe</button>
+      <button class="pdv-btn-next" id="resetPasswordBtn" onclick="submitResetPassword('${escapeJsAttr(pdvId)}')">${ICONS.key} Réinitialiser le mot de passe</button>
     </div>
   `;
   document.body.appendChild(overlay);

@@ -6,6 +6,7 @@ import { showToast, TOAST_ICONS } from './toast-utils.js';
 import { updateOverviewStats, loadDeparts, loadAllDeparts } from './trajets.js';
 import { agenceData } from './state.js';
 import { apiFetch } from './api.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -196,7 +197,7 @@ function initResaFiltres() {
   if (villeSelect) {
     const villes = [...new Set(pdvList.map(p => p.ville).filter(Boolean))].sort();
     villeSelect.innerHTML = `<option value="">Toutes les villes</option>` +
-      villes.map(v => `<option value="${v}">${v}</option>`).join('');
+      villes.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
   }
 
   // CASCADE — PDV / Trajet / Bus démarrent non filtrés
@@ -226,7 +227,7 @@ function populatePdvSelectCascade(ville) {
   if (!pdvSelect) return;
   const pdvsFiltres = ville ? pdvList.filter(p => p.ville === ville) : pdvList;
   pdvSelect.innerHTML = `<option value="">Tous les PDV</option>` +
-    pdvsFiltres.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+    pdvsFiltres.map(p => `<option value="${p.id}">${escapeHtml(p.nom)}</option>`).join('');
 }
 
 function populateTrajetSelectCascade(pdvId, ville) {
@@ -255,7 +256,7 @@ function populateTrajetSelectCascade(pdvId, ville) {
   trajetSelect.innerHTML = `<option value="">Tous les trajets</option>` +
     trajetsFiltres.map(t => {
       const info = getTypeTrajetInfo(t);
-      return `<option value="${t.id}">${t.villeDepart} → ${t.villeArrivee} · ${info.label}</option>`;
+      return `<option value="${t.id}">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)} · ${info.label}</option>`;
     }).join('');
 }
 
@@ -271,7 +272,7 @@ async function populateBusSelectCascade(trajetId) {
 
     const busNoms = [...new Set(departs.map(d => d.busNom).filter(Boolean))].sort();
     busSelect.innerHTML = `<option value="">Tous les bus</option>` +
-      busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('') +
+      busNoms.map(nom => `<option value="${escapeHtml(nom)}">${escapeHtml(nom)}</option>`).join('') +
       `<option value="__supprimes__">— Bus supprimés —</option>`;
   } catch (err) {
     console.error('Erreur chargement bus filtre réservations :', err);
@@ -545,7 +546,7 @@ export function filtrerParAlerteTrajets() {
     return `
       <div class="pdv-detail-row">
         <span class="pdv-detail-label">
-          ${t.villeDepart} → ${t.villeArrivee}
+          ${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}
           <span class="trajet-type-badge ${typeInfo.cls}">${typeInfo.icon} ${typeInfo.label}</span>
         </span>
         <div style="display:flex;align-items:center;gap:10px;">
@@ -577,11 +578,11 @@ export function filtrerParAlertePdv() {
     return `
       <div class="pdv-detail-row">
         <div>
-          <div style="font-size:13px;font-weight:600;color:var(--white)">${p.nom}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--white)">${escapeHtml(p.nom)}</div>
           <div style="font-size:11px;color:var(--muted)">Dernière vente : ${dateLabel}</div>
         </div>
         <button class="pdv-action-btn" style="padding:6px 12px;font-size:12px;"
-          onclick="closeAlerteModal();openPDVDetail('${p.id}')">
+          onclick="closeAlerteModal();openPDVDetail('${escapeJsAttr(p.id)}')">
           Voir →
         </button>
       </div>`;
@@ -603,8 +604,8 @@ export function filtrerParAlerteAnnulations() {
 
   const rows = annulations.map(r => {
     const trajet = trajetList.find(t => t.id === r.trajetId);
-    const route = r.routeLabel || (trajet ? `${trajet.villeDepart} → ${trajet.villeArrivee}` : '—');
-    const nom = `${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager';
+    const route = escapeHtml(r.routeLabel || (trajet ? `${trajet.villeDepart} → ${trajet.villeArrivee}` : '—'));
+    const nom = escapeHtml(`${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager');
     const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', timeZone: 'Africa/Brazzaville' }) : '—';
     return `
       <div class="pdv-detail-row">
@@ -629,15 +630,15 @@ export function filtrerParAlerteBaisses() {
   const resas = resaList.filter(r => ids.includes(r.id));
 
   const rows = resas.map(r => {
-    const nom = `${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager';
+    const nom = escapeHtml(`${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager');
     return `
       <div class="pdv-detail-row">
         <div>
           <div style="font-size:13px;font-weight:600;color:var(--white)">${nom}</div>
-          <div style="font-size:11px;color:var(--muted)">${r.routeLabel || '—'} · −${Number(r.ecartMontant || 0).toLocaleString()} XAF</div>
+          <div style="font-size:11px;color:var(--muted)">${escapeHtml(r.routeLabel) || '—'} · −${Number(r.ecartMontant || 0).toLocaleString()} XAF</div>
         </div>
         <button class="pdv-action-btn" style="padding:6px 12px;font-size:12px;"
-          onclick="closeAlerteModal();openResaDetail('${r.id}')">
+          onclick="closeAlerteModal();openResaDetail('${escapeJsAttr(r.id)}')">
           Voir →
         </button>
       </div>`;
@@ -687,26 +688,26 @@ function renderResaList(groupMode = null) {
       (trajet ? `${r.arretMontee || trajet.villeDepart} → ${r.arretDescente || trajet.villeArrivee}` : '—');
     const dateObj   = r.dateDepart ? new Date(r.dateDepart + 'T00:00:00') : null;
     const dateLabel = formatDateCourte(dateObj);
-    const nomComplet = `${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager';
+    const nomComplet = escapeHtml(`${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager');
     const isAnnulee  = r.statut === 'annulée';
     const typeInfo = trajet ? getTypeTrajetInfo(trajet) : null;
 
     return `
-      <tr onclick="openResaDetail('${r.id}')" style="cursor:pointer">
+      <tr onclick="openResaDetail('${escapeJsAttr(r.id)}')" style="cursor:pointer">
         <td data-label="Passager">
           <div class="resa-row-name">${nomComplet}</div>
-          <div class="resa-row-tel">${r.telephonePassager || '—'}</div>
+          <div class="resa-row-tel">${escapeHtml(r.telephonePassager) || '—'}</div>
           ${r.nbPassagers > 1 ? `<div class="resa-row-meta" style="margin-top:2px;">${r.nbPassagers} passagers</div>` : ''}
         </td>
         <td data-label="Trajet">
           <div class="resa-row-route">
-            ${routeLabel}
+            ${escapeHtml(routeLabel)}
             ${typeInfo ? `<span class="trajet-type-badge ${typeInfo.cls}">${typeInfo.icon} ${typeInfo.label}</span>` : ''}
           </div>
-          <div class="resa-row-meta">${dateLabel} · ${r.heureDepart || '—'} · ${r.busNom || '—'}</div>
-          ${r.pdvEmbarquementNom ? `<div class="resa-row-meta" style="margin-top:2px;">&#8593; ${r.pdvEmbarquementNom}${r.pdvDebarquementNom ? ' &#8594; ' + r.pdvDebarquementNom : ''}</div>` : ''}
+          <div class="resa-row-meta">${dateLabel} · ${escapeHtml(r.heureDepart) || '—'} · ${escapeHtml(r.busNom) || '—'}</div>
+          ${r.pdvEmbarquementNom ? `<div class="resa-row-meta" style="margin-top:2px;">&#8593; ${escapeHtml(r.pdvEmbarquementNom)}${r.pdvDebarquementNom ? ' &#8594; ' + escapeHtml(r.pdvDebarquementNom) : ''}</div>` : ''}
         </td>
-        <td data-label="PDV" class="resa-row-pdv-cell">${pdv?.nom || '—'}</td>
+        <td data-label="PDV" class="resa-row-pdv-cell">${escapeHtml(pdv?.nom) || '—'}</td>
         <td data-label="Montant" class="resa-row-prix">${Number(r.prixTotal || 0).toLocaleString()} XAF</td>
         <td data-label="Statut">
           <span class="pdv-status-badge ${isAnnulee ? 'inactive' : 'active'}">
@@ -831,9 +832,9 @@ export function openResaDetail(resaId) {
 
   const pdv        = pdvList.find(p => p.id === r.pdvId);
   const trajet     = trajetList.find(t => t.id === r.trajetId);
-  const nomComplet = `${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager';
-  const routeLabel = r.routeLabel ||
-    (trajet ? `${r.arretMontee || trajet.villeDepart} → ${r.arretDescente || trajet.villeArrivee}` : '—');
+  const nomComplet = escapeHtml(`${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager');
+  const routeLabel = escapeHtml(r.routeLabel ||
+    (trajet ? `${r.arretMontee || trajet.villeDepart} → ${r.arretDescente || trajet.villeArrivee}` : '—'));
   const isAnnulee  = r.statut === 'annulée';
   const peutModifier = peutModifierResa(r);
 
@@ -863,19 +864,17 @@ export function openResaDetail(resaId) {
           <div class="recap-card">
             <div class="recap-row"><span>Ligne</span><strong>${routeLabel}</strong></div>
             <div class="recap-row"><span>Date</span><strong>${dateStr}</strong></div>
-            <div class="recap-row"><span>Heure de départ</span><strong>${r.heureDepart || '—'}</strong></div>
-            <div class="recap-row"><span>Bus</span><strong>${r.busNom || '—'}</strong></div>
-            <div class="recap-row"><span>Vendu par</span><strong>${pdv?.nom || '—'}</strong></div>
+            <div class="recap-row"><span>Heure de départ</span><strong>${escapeHtml(r.heureDepart) || '—'}</strong></div>
+            <div class="recap-row"><span>Bus</span><strong>${escapeHtml(r.busNom) || '—'}</strong></div>
+            <div class="recap-row"><span>Vendu par</span><strong>${escapeHtml(pdv?.nom) || '—'}</strong></div>
             <div class="recap-row">
               <span>Vendu le</span>
               <strong>
                 ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) + ' à ' + new Date(r.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' }) : '—'}
               </strong>
             </div>
-            <div class="recap-row"><span>Ville de montée</span><strong>${r.arretMontee || trajet?.villeDepart || '—'}</strong></div>
-            <div class="recap-row"><span>Ville de descente</span><strong>${r.arretDescente || trajet?.villeArrivee || '—'}</strong></div>
-            <div class="recap-row"><span>Embarquement</span><strong>${r.pdvEmbarquementNom || '—'}${r.pdvEmbarquementVille ? ' — ' + r.pdvEmbarquementVille : ''}</strong></div>
-            <div class="recap-row"><span>Débarquement</span><strong>${r.pdvDebarquementNom || '—'}${r.pdvDebarquementVille ? ' — ' + r.pdvDebarquementVille : ''}</strong></div>
+            <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(r.pdvEmbarquementNom) || '—'}${(r.arretMontee || trajet?.villeDepart) ? ' (' + escapeHtml(r.arretMontee || trajet?.villeDepart) + ')' : ''}</strong></div>
+            <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(r.pdvDebarquementNom) || '—'}${(r.arretDescente || trajet?.villeArrivee) ? ' (' + escapeHtml(r.arretDescente || trajet?.villeArrivee) + ')' : ''}</strong></div>>
             ${isMulti ? `<div class="recap-row"><span>Nb. passagers</span><strong>${nbPass} personnes</strong></div>` : ''}
             <div class="recap-row"><span>Statut</span>
               <span class="pdv-status-badge ${isAnnulee ? 'inactive' : 'active'}">
@@ -891,26 +890,35 @@ export function openResaDetail(resaId) {
           ${isMulti ? r.passagers.map((p, i) => `
             <div class="recap-passager-card">
               <div class="recap-passager-title">Passager ${i + 1}</div>
-              <div class="recap-row"><span>Nom complet</span><strong>${p.prenom || '—'} ${p.nom || ''}</strong></div>
-              ${p.telephone ? `<div class="recap-row"><span>Téléphone</span><strong>${p.telephone}</strong></div>` : ''}
-              <div class="recap-row"><span>Type</span><strong>${nomTypePassager(p)}</strong></div>
-              ${p.siege ? `<div class="recap-row"><span>Siège</span><strong>${p.siege}</strong></div>` : ''}
-              ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.prixBagages > 0 ? ' (+' + Number(p.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
+              <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(p.prenom) || '—'} ${escapeHtml(p.nom) || ''}</strong></div>
+              ${p.telephone ? `<div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(p.telephone)}</strong></div>` : ''}
+              <div class="recap-row"><span>Type</span><strong>${escapeHtml(nomTypePassager(p))}</strong></div>
+              ${p.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(p.siege)}</strong></div>` : ''}
+              ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.nombreBagages > 0 ? ' · ' + p.nombreBagages + ' colis' : ''}${p.prixBagages > 0 ? ' (+' + Number(p.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
+              ${p.colisSoute ? `
+                <div class="recap-row"><span>Colis en soute</span><strong>${p.colisSoute.nature || '—'} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+                ${p.colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${p.colisSoute.poids} kg</strong></div>` : ''}
+                ${p.colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(p.colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
+              ` : ''}
               <div class="recap-row"><span>Sous-total</span><strong style="color:var(--accent)">${Number(p.sousTotal || 0).toLocaleString()} XAF</strong></div>
             </div>`).join('') : `
-          <div class="recap-card">
-            <div class="recap-row"><span>Nom complet</span><strong>${r.prenomPassager || '—'} ${r.nomPassager || ''}</strong></div>
-            <div class="recap-row"><span>Téléphone</span><strong>${r.telephonePassager || '—'}</strong></div>
-            <div class="recap-row"><span>Type</span><strong>${nomTypeResa(r)}</strong></div>
-            ${r.siege ? `<div class="recap-row"><span>Siège</span><strong>${r.siege}</strong></div>` : ''}
-            ${r.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${r.bagages} kg${r.prixBagages > 0 ? ' (+' + Number(r.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
-          </div>`}
-        </div>
+            <div class="recap-card">
+              <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(r.prenomPassager) || '—'} ${escapeHtml(r.nomPassager) || ''}</strong></div>
+              <div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(r.telephonePassager) || '—'}</strong></div>
+              <div class="recap-row"><span>Type</span><strong>${escapeHtml(nomTypeResa(r))}</strong></div>
+              ${r.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(r.siege)}</strong></div>` : ''}
+              ${r.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${r.bagages} kg${r.nombreBagages > 0 ? ' · ' + r.nombreBagages + ' colis' : ''}${r.prixBagages > 0 ? ' (+' + Number(r.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
+              ${r.passagers?.[0]?.colisSoute ? `
+                <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(r.passagers[0].colisSoute.nature) || '—'} (${Number(r.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+                ${r.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${r.passagers[0].colisSoute.poids} kg</strong></div>` : ''}
+                ${r.passagers[0].colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(r.passagers[0].colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
+              ` : ''}
+            </div>`}
 
         ${r.remarques ? `
         <div>
           <div class="recap-section-title">Remarques</div>
-          <div class="recap-card"><div class="recap-row" style="display:block;"><span>${r.remarques}</span></div></div>
+          <div class="recap-card"><div class="recap-row" style="display:block;"><span>${escapeHtml(r.remarques)}</span></div></div>
         </div>` : ''}
 
         <div class="recap-total-row">
@@ -922,24 +930,24 @@ export function openResaDetail(resaId) {
           <div class="recap-section-title">Billet de contrôle</div>
           <div class="recap-card" style="padding:14px 16px;">
             <div style="display:flex;gap:6px;margin-bottom:12px;">
-              <button class="rqf-btn active" id="billetToggleCode-${r.id}" onclick="toggleBilletView('${r.id}','code')">Code</button>
-              <button class="rqf-btn" id="billetToggleQr-${r.id}" onclick="toggleBilletView('${r.id}','qr')">QR Code</button>
+              <button class="rqf-btn active" id="billetToggleCode-${escapeHtml(r.id)}" onclick="toggleBilletView('${escapeJsAttr(r.id)}','code')">Code</button>
+              <button class="rqf-btn" id="billetToggleQr-${escapeHtml(r.id)}" onclick="toggleBilletView('${escapeJsAttr(r.id)}','qr')">QR Code</button>
             </div>
-            <div id="billetViewCode-${r.id}" style="text-align:center;padding:18px 0;">
+            <div id="billetViewCode-${escapeHtml(r.id)}" style="text-align:center;padding:18px 0;">
               <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:6px;color:${r.codeControle ? 'var(--white)' : 'var(--muted)'};background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;padding:16px;">
-                ${r.codeControle || '------'}
+                ${escapeHtml(r.codeControle) || '------'}
               </div>
               <div style="font-size:11px;color:var(--muted);margin-top:8px;">
                 ${r.codeControle ? 'Code de vérification à 6 caractères' : 'Code de vérification — bientôt disponible'}
               </div>
             </div>
-            <div id="billetViewQr-${r.id}" style="display:none;text-align:center;padding:18px 0;">
+            <div id="billetViewQr-${escapeHtml(r.id)}" style="display:none;text-align:center;padding:18px 0;">
               <div style="width:140px;height:140px;margin:0 auto;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;display:flex;align-items:center;justify-content:center;">
                 <svg width="36" height="36" viewBox="0 0 16 16" fill="none" style="opacity:.35;"><rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="10" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><path d="M10 10h2v2h-2zM13 10h2v2h-2zM10 13h2v2h-2zM13 13h2v2h-2z" fill="currentColor"/></svg>
               </div>
               <div style="font-size:11px;color:var(--muted);margin-top:8px;">QR code — bientôt disponible</div>
             </div>
-            <button class="pdv-action-btn" style="width:100%;margin-top:10px;" onclick="imprimerBillet('${r.id}')">
+            <button class="pdv-action-btn" style="width:100%;margin-top:10px;" onclick="imprimerBillet('${escapeJsAttr(r.id)}')">
               ${ICONS.impression} Imprimer le billet
             </button>
           </div>
@@ -950,7 +958,7 @@ export function openResaDetail(resaId) {
           <div class="resa-retrait-info-title">${ICONS.person} Retrait de passager</div>
           ${(r.historiqueRetraits || []).map(h => `
             <p>
-              <strong>${h.nom}</strong> retiré le ${new Date(h.retireAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' })}
+              <strong>${escapeHtml(h.nom)}</strong> retiré le ${new Date(h.retireAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' })}
               — ${Number(h.montantRembourse).toLocaleString()} XAF remboursés
             </p>
           `).join('')}
@@ -960,7 +968,7 @@ export function openResaDetail(resaId) {
         <div class="resa-retrait-info-box">
           <div class="resa-retrait-info-title">${ICONS.refresh} Réservation réaffectée</div>
           <p>
-            Déplacée de <strong>${r.ancienBusNom || '—'}</strong> vers <strong>${r.nouveauBusNom || '—'}</strong>
+            Déplacée de <strong>${escapeHtml(r.ancienBusNom) || '—'}</strong> vers <strong>${escapeHtml(r.nouveauBusNom) || '—'}</strong>
             le ${r.dateReaffectation ? new Date(r.dateReaffectation).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) + ' à ' + new Date(r.dateReaffectation).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' }) : '—'}.
           </p>
         </div>` : ''}
@@ -968,15 +976,15 @@ export function openResaDetail(resaId) {
         ${r.busSupprime ? `
         <div class="resa-retrait-info-box">
           <div class="resa-retrait-info-title">${ICONS.warning} Bus supprimé</div>
-          <p>Le bus <strong>${r.busNomSupprime || r.busNom || '—'}</strong> utilisé pour ce trajet a été retiré de la flotte depuis. Cette réservation reste conservée pour l'historique.</p>
+          <p>Le bus <strong>${escapeHtml(r.busNomSupprime) || escapeHtml(r.busNom) || '—'}</strong> utilisé pour ce trajet a été retiré de la flotte depuis. Cette réservation reste conservée pour l'historique.</p>
         </div>` : ''}
 
         ${r.baisseNonVerifiee ? `
         <div class="resa-baisse-alert-box" id="baisseAlertBox">
           <div class="resa-baisse-alert-title">${ICONS.warning} Vérification requise</div>
           <p>Pense à vérifier ce billet au plus vite — une modification a fait baisser le prix de <strong>${Number(r.ecartMontant || 0).toLocaleString()} XAF</strong>.</p>
-          <p>Raison indiquée par le vendeur : <strong>${r.raisonModification || '—'}</strong></p>
-          <button class="pdv-action-btn" style="width:100%;margin-top:8px;" onclick="marquerBaisseVerifiee('${r.id}')">
+          <p>Raison indiquée par le vendeur : <strong>${escapeHtml(r.raisonModification) || '—'}</strong></p>
+          <button class="pdv-action-btn" style="width:100%;margin-top:8px;" onclick="marquerBaisseVerifiee('${escapeJsAttr(r.id)}')">
             Marquer comme vérifié
           </button>
         </div>` : ''}
@@ -987,10 +995,10 @@ export function openResaDetail(resaId) {
           <div style="background:rgba(255,178,63,0.08);border:1px solid rgba(255,178,63,0.2);border-radius:10px;padding:9px 13px;font-size:12px;color:#FFB23F;text-align:center;">
             ${ICONS.warning} Ce voyage est déjà passé — modification et annulation impossibles
           </div>` : ''}
-          <button class="pdv-action-btn" style="width:100%;${peutModifier ? '' : 'opacity:0.4;cursor:not-allowed;'}" ${peutModifier ? `onclick="handleModifierResa('${r.id}')"` : 'disabled title="Voyage déjà passé — modification impossible"'}>
+          <button class="pdv-action-btn" style="width:100%;${peutModifier ? '' : 'opacity:0.4;cursor:not-allowed;'}" ${peutModifier ? `onclick="handleModifierResa('${escapeJsAttr(r.id)}')"` : 'disabled title="Voyage déjà passé — modification impossible"'}>
             Modifier cette réservation
           </button>
-          <button class="pdv-action-btn delete" style="width:100%;${peutModifier ? '' : 'opacity:0.4;cursor:not-allowed;'}" ${peutModifier ? `onclick="handleAnnulerResa('${r.id}')"` : 'disabled title="Voyage déjà passé — annulation impossible"'}>
+          <button class="pdv-action-btn delete" style="width:100%;${peutModifier ? '' : 'opacity:0.4;cursor:not-allowed;'}" ${peutModifier ? `onclick="handleAnnulerResa('${escapeJsAttr(r.id)}')"` : 'disabled title="Voyage déjà passé — annulation impossible"'}>
             Annuler cette réservation
           </button>` : ''}
         </div>
@@ -1101,40 +1109,40 @@ export function handleModifierResa(resaId) {
           <div class="recap-passager-title">Passager ${i + 1}</div>
           <div class="pdv-field-group">
             <label>Prénom</label>
-            <input type="text" class="pdv-input" id="modifPrenom_${i}" value="${p.prenom || ''}">
+            <input type="text" class="pdv-input" id="modifPrenom_${i}" value="${escapeHtml(p.prenom) || ''}">
           </div>
           <div class="pdv-field-group">
             <label>Nom</label>
-            <input type="text" class="pdv-input" id="modifNom_${i}" value="${p.nom || ''}">
+            <input type="text" class="pdv-input" id="modifNom_${i}" value="${escapeHtml(p.nom) || ''}">
           </div>
           <div class="pdv-field-group">
             <label>Téléphone</label>
-            <input type="text" class="pdv-input" id="modifTel_${i}" value="${p.telephone || ''}">
+            <input type="text" class="pdv-input" id="modifTel_${i}" value="${escapeHtml(p.telephone) || ''}">
           </div>
           <div class="pdv-field-group">
             <label>Type de billet</label>
             <select class="pdv-select modif-passager-type" id="modifType_${i}" onchange="recalculerTotalModif()">
-              ${(agenceData?.typesBillet || []).map(t => `<option value="${t.id}" ${t.id === p.type ? 'selected' : ''}>${t.nom} (${ageRangeLabel(t)})</option>`).join('')}
+              ${(agenceData?.typesBillet || []).map(t => `<option value="${escapeHtml(t.id)}" ${t.id === p.type ? 'selected' : ''}>${escapeHtml(t.nom)} (${ageRangeLabel(t)})</option>`).join('')}
             </select>
           </div>
         </div>`).join('')
     : `
         <div class="pdv-field-group">
           <label>Prénom</label>
-          <input type="text" class="pdv-input" id="modifPrenom" value="${r.prenomPassager || ''}">
+          <input type="text" class="pdv-input" id="modifPrenom" value="${escapeHtml(r.prenomPassager) || ''}">
         </div>
         <div class="pdv-field-group">
           <label>Nom</label>
-          <input type="text" class="pdv-input" id="modifNom" value="${r.nomPassager || ''}">
+          <input type="text" class="pdv-input" id="modifNom" value="${escapeHtml(r.nomPassager) || ''}">
         </div>
         <div class="pdv-field-group">
           <label>Téléphone</label>
-          <input type="text" class="pdv-input" id="modifTel" value="${r.telephonePassager || ''}">
+          <input type="text" class="pdv-input" id="modifTel" value="${escapeHtml(r.telephonePassager) || ''}">
         </div>
         <div class="pdv-field-group">
           <label>Type de billet</label>
           <select class="pdv-select modif-passager-type" id="modifType_0" onchange="recalculerTotalModif()">
-            ${(agenceData?.typesBillet || []).map(t => `<option value="${t.id}" ${t.id === r.typeBillet ? 'selected' : ''}>${t.nom} (${ageRangeLabel(t)})</option>`).join('')}
+            ${(agenceData?.typesBillet || []).map(t => `<option value="${escapeHtml(t.id)}" ${t.id === r.typeBillet ? 'selected' : ''}>${escapeHtml(t.nom)} (${ageRangeLabel(t)})</option>`).join('')}
           </select>
         </div>`;
 
@@ -1161,26 +1169,26 @@ export function handleModifierResa(resaId) {
 
         <div class="recap-section-title" style="margin-top:6px;">Trajet</div>
         <div class="recap-card">
-          <div class="recap-row"><span>Ville de montée</span><strong>${r.arretMontee || trajet?.villeDepart || '—'}</strong></div>
+          <div class="recap-row"><span>Ville de montée</span><strong>${escapeHtml(r.arretMontee) || escapeHtml(trajet?.villeDepart) || '—'}</strong></div>
 
           <div class="pdv-field-group" style="margin-top:10px;">
             <label>Lieu d'embarquement</label>
             <select class="pdv-select" id="modifPdvEmbarquement">
-              ${getPdvsAtPoint(trajet, r.arretMontee || trajet?.villeDepart).map(p => `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}" ${p.id === r.pdvEmbarquementId ? 'selected' : ''}>${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`).join('') || '<option value="">Aucun point de vente</option>'}
+              ${getPdvsAtPoint(trajet, r.arretMontee || trajet?.villeDepart).map(p => `<option value="${escapeHtml(p.id)}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}" ${p.id === r.pdvEmbarquementId ? 'selected' : ''}>${escapeHtml(p.nom)}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`).join('') || '<option value="">Aucun point de vente</option>'}
             </select>
           </div>
 
           <div class="pdv-field-group">
             <label>Ville de descente</label>
             <select class="pdv-select" id="modifDescente" onchange="onDescenteModifChange();recalculerTotalModif()">
-              ${pointsDescente.map(p => `<option value="${p}" ${p === (r.arretDescente || trajet?.villeArrivee) ? 'selected' : ''}>${p}</option>`).join('')}
+              ${pointsDescente.map(p => `<option value="${escapeHtml(p)}" ${p === (r.arretDescente || trajet?.villeArrivee) ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('')}
             </select>
           </div>
 
           <div class="pdv-field-group">
             <label>Lieu de débarquement</label>
             <select class="pdv-select" id="modifPdvDebarquement">
-              ${getPdvsAtPoint(trajet, r.arretDescente || trajet?.villeArrivee).map(p => `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}" ${p.id === r.pdvDebarquementId ? 'selected' : ''}>${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`).join('') || '<option value="">Aucun point de vente</option>'}
+              ${getPdvsAtPoint(trajet, r.arretDescente || trajet?.villeArrivee).map(p => `<option value="${escapeHtml(p.id)}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}" ${p.id === r.pdvDebarquementId ? 'selected' : ''}>${escapeHtml(p.nom)}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`).join('') || '<option value="">Aucun point de vente</option>'}
             </select>
           </div>
         </div>
@@ -1192,7 +1200,7 @@ export function handleModifierResa(resaId) {
 
         <div class="pdv-field-group">
           <label>Remarques</label>
-          <input type="text" class="pdv-input" id="modifRemarques" value="${r.remarques || ''}">
+          <input type="text" class="pdv-input" id="modifRemarques" value="${escapeHtml(r.remarques) || ''}">
         </div>
 
         <div class="pdv-field-group" id="modifRaisonGroup" data-required="false">
@@ -1207,7 +1215,7 @@ export function handleModifierResa(resaId) {
         <input type="hidden" id="modifPrixTotal" value="${r.prixTotal || 0}">
 
       </div>
-      <button class="pdv-btn-next" onclick="confirmerModificationResa('${resaId}')">
+      <button class="pdv-btn-next" onclick="confirmerModificationResa('${escapeJsAttr(resaId)}')">
         Enregistrer les modifications
       </button>
     </div>
@@ -1230,7 +1238,7 @@ function onDescenteModifChange() {
   if (!selDeb || !trajet) return;
   const pdvs = getPdvsAtPoint(trajet, descenteVal);
   selDeb.innerHTML = pdvs.length > 0
-    ? pdvs.map(p => `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}">${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`).join('')
+    ? pdvs.map(p => `<option value="${escapeHtml(p.id)}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}">${escapeHtml(p.nom)}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`).join('')
     : `<option value="">Aucun point de vente à ce lieu</option>`;
 }
 
@@ -1498,15 +1506,15 @@ function ouvrirAnnulationComplete(resaId) {
       <div style="padding:0 0 8px;">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:4px;">
           <div style="font-size:13px;font-weight:600;color:var(--white);">
-            ${r.prenomPassager || ''} ${r.nomPassager || ''}
+            ${escapeHtml(r.prenomPassager) || ''} ${escapeHtml(r.nomPassager) || ''}
           </div>
           <div style="font-size:12px;color:var(--muted);margin-top:3px;">
-            ${r.routeLabel || '—'} · ${r.dateDepart || '—'} à ${r.heureDepart || '—'}
+            ${escapeHtml(r.routeLabel) || '—'} · ${escapeHtml(r.dateDepart) || '—'} à ${escapeHtml(r.heureDepart) || '—'}
           </div>
         </div>
         ${resumeHTML}
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
-          <button class="pdv-btn-next" style="background:#FF4D6A;" onclick="confirmerAnnulation('${resaId}')">
+          <button class="pdv-btn-next" style="background:#FF4D6A;" onclick="confirmerAnnulation('${escapeJsAttr(resaId)}')">
             ${ICONS.banned} Confirmer l'annulation
           </button>
           <button class="pdv-btn-back" style="width:100%;text-align:center;" onclick="closeAnnulConfirm()">
@@ -1540,14 +1548,14 @@ function ouvrirListePassagersAnnulation(resaId) {
   const rowsHTML = (r.passagers || []).map((p, i) => `
     <div class="pdv-detail-row">
       <div>
-        <div style="font-size:13px;font-weight:600;color:var(--white);">${p.prenom || ''} ${p.nom || ''}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(p.prenom) || ''} ${escapeHtml(p.nom) || ''}</div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">
-          ${p.type === 'enfant' ? 'Enfant' : 'Adulte'}${p.siege ? ' · Siège ' + p.siege : ''} · ${Number(p.sousTotal || 0).toLocaleString()} XAF
+          ${p.type === 'enfant' ? 'Enfant' : 'Adulte'}${p.siege ? ' · Siège ' + escapeHtml(p.siege) : ''} · ${Number(p.sousTotal || 0).toLocaleString()} XAF
         </div>
       </div>
       ${nbPass > 1 ? `
       <button class="pdv-action-btn delete" style="padding:8px 14px;font-size:12px;flex-shrink:0;"
-        onclick="ouvrirConfirmationRetraitPassager('${resaId}', ${i})">
+        onclick="ouvrirConfirmationRetraitPassager('${escapeJsAttr(resaId)}', ${i})">
         Retirer
       </button>` : ''}
     </div>`).join('');
@@ -1561,14 +1569,14 @@ function ouvrirListePassagersAnnulation(resaId) {
       <div class="pdv-overlay-header">
         <div>
           <h2>Annuler / Retirer un passager</h2>
-          <p>${r.routeLabel || '—'} · ${r.dateDepart || '—'} à ${r.heureDepart || '—'}</p>
+          <p>${escapeHtml(r.routeLabel) || '—'} · ${escapeHtml(r.dateDepart) || '—'} à ${escapeHtml(r.heureDepart) || '—'}</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeAnnulListePassagers()">${ICONS.close}</button>
       </div>
       <div class="pdv-detail-info" style="margin-top:0">
         ${rowsHTML}
       </div>
-      <button class="pdv-btn-next" style="background:#FF4D6A;" onclick="closeAnnulListePassagers();ouvrirAnnulationComplete('${resaId}')">
+      <button class="pdv-btn-next" style="background:#FF4D6A;" onclick="closeAnnulListePassagers();ouvrirAnnulationComplete('${escapeJsAttr(resaId)}')">
         ${ICONS.banned} Annuler tout le billet
       </button>
     </div>
@@ -1670,7 +1678,7 @@ function ouvrirConfirmationRetraitPassager(resaId, passagerIndex) {
       <div style="padding:0 0 8px;">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:4px;">
           <div style="font-size:13px;font-weight:600;color:var(--white);">
-            Vous voulez retirer ${p.prenom || ''} ${p.nom || ''} du trajet ${r.routeLabel || '—'}.
+            Vous voulez retirer ${escapeHtml(p.prenom) || ''} ${escapeHtml(p.nom) || ''} du trajet ${escapeHtml(r.routeLabel) || '—'}.
           </div>
           <div style="font-size:12px;color:var(--muted);margin-top:3px;">
             Sa place ne sera plus comptée.
@@ -1678,7 +1686,7 @@ function ouvrirConfirmationRetraitPassager(resaId, passagerIndex) {
         </div>
         ${resumeHTML}
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
-          <button class="pdv-btn-next" style="background:#FF4D6A;" onclick="confirmerRetraitPassager('${resaId}', ${passagerIndex})">
+          <button class="pdv-btn-next" style="background:#FF4D6A;" onclick="confirmerRetraitPassager('${escapeJsAttr(resaId)}', ${passagerIndex})">
             ${ICONS.banned} Confirmer le retrait
           </button>
           <button class="pdv-btn-back" style="width:100%;text-align:center;" onclick="closeRetraitPassagerConfirm()">
@@ -1759,6 +1767,16 @@ export async function confirmerAnnulation(resaId) {
   }
 }
 
+// ════════════════════════════════
+//  RÉSERVATIONS — ONGLETS
+// ════════════════════════════════
+function switchResaTab(tab) {
+  document.getElementById('resaTab-overview')?.classList.toggle('active', tab === 'overview');
+  document.getElementById('resaTab-detail')?.classList.toggle('active', tab === 'detail');
+  document.getElementById('resaPanel-overview').style.display = tab === 'overview' ? '' : 'none';
+  document.getElementById('resaPanel-detail').style.display   = tab === 'detail'   ? '' : 'none';
+}
+
 export function resetResaFiltres() {
   document.getElementById('resaFiltrePdv').value    = '';
   document.getElementById('resaFiltreTrajet').value = '';
@@ -1807,3 +1825,4 @@ window.toggleBilletView       = toggleBilletView;
 window.toggleResaCustomPicker = toggleResaCustomPicker;
 window.applyResaCustomRange   = applyResaCustomRange;
 window.clearResaCustomRange   = clearResaCustomRange;
+window.switchResaTab          = switchResaTab;

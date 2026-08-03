@@ -26,6 +26,309 @@ function toBrazzaDate(isoStr) {
   return new Date(new Date(isoStr).getTime() + OFFSET_MS_BRAZZA).toISOString().split('T')[0];
 }
 
+// ════════════════════════════════
+//  COLIS — chargé une fois, filtré par la période active de Finance
+// ════════════════════════════════
+let colisListeFin  = [];
+let colisFinLoaded = false;
+
+async function ensureColisFinLoaded() {
+  if (colisFinLoaded) return;
+  try {
+    const res  = await apiFetch(`${BACKEND}/colis/agence?agenceId=${agenceData.id}`, { method: 'GET' });
+    const data = await res.json();
+    if (res.ok) colisListeFin = data.colis || [];
+    colisFinLoaded = true;
+  } catch (err) {
+    console.error('Erreur chargement colis (finances) :', err);
+    colisFinLoaded = true;
+  }
+}
+
+function calculerColisStats() {
+  const filtrerColis = (liste, debut, fin) => liste.filter(c => {
+    const d = toBrazzaDate(c.createdAt);
+    if (debut && d < debut) return false;
+    if (fin   && d > fin)   return false;
+    if (finFiltrePdv    && c.pdvId    !== finFiltrePdv)    return false;
+    if (finFiltreTrajet && c.trajetId !== finFiltreTrajet) return false;
+    if (finFiltreBus    && c.busNom   !== finFiltreBus)    return false;
+    if (finFiltreVille) {
+      const pdv = pdvList.find(p => p.id === c.pdvId);
+      if ((pdv?.ville || '') !== finFiltreVille) return false;
+    }
+    return true;
+  });
+
+  const { debut, fin } = getBornesEffectives();
+  const colisPeriode = filtrerColis(colisListeFin, debut, fin);
+
+  const { debut: pDebut, fin: pFin } = getBornesPeriodePrecedente(finPeriode, debut, fin);
+  const colisPrecedent = (pDebut && pFin) ? filtrerColis(colisListeFin, pDebut, pFin) : [];
+
+  const revenuColis     = colisPeriode.reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+  const revenuColisPrec = colisPrecedent.reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+  const total     = colisPeriode.length;
+  const enTransit = colisPeriode.filter(c => c.statut === 'en_transit').length;
+  const arrive    = colisPeriode.filter(c => c.statut === 'arrive').length;
+  const retire    = colisPeriode.filter(c => c.statut === 'retire').length;
+  const prixMoyenColis = total > 0 ? Math.round(revenuColis / total) : 0;
+
+  return { revenuColis, revenuColisPrec, total, enTransit, arrive, retire, prixMoyenColis };
+}
+
+function _renderFinanceColis() {
+  const container = document.getElementById('finColisStats');
+  if (!container) return;
+
+  const fmt = n => n >= 1_000_000
+    ? (n/1_000_000).toFixed(1).replace(/\.0$/,'') + 'M XAF'
+    : n >= 1_000 ? Math.round(n/1_000) + 'k XAF'
+    : n.toLocaleString() + ' XAF';
+
+  const { revenuColis, revenuColisPrec, total, enTransit, arrive, retire, prixMoyenColis } = calculerColisStats();
+
+  let deltaHTML = `<span style="color:var(--muted);font-size:11px;">— pas encore de données à comparer</span>`;
+  if (revenuColisPrec > 0) {
+    const pct     = Math.round((revenuColis - revenuColisPrec) / revenuColisPrec * 100);
+    const couleur = pct >= 0 ? 'var(--accent)' : '#FF4D6A';
+    const fleche  = pct >= 0 ? '↑' : '↓';
+    const signe   = pct >= 0 ? '+' : '';
+    deltaHTML = `<span style="color:${couleur};font-size:11px;">${fleche} ${signe}${pct}% vs période précédente</span>`;
+  } else if (revenuColis > 0) {
+    deltaHTML = `<span style="color:var(--accent);font-size:11px;">Nouveau — rien sur la période précédente</span>`;
+  }
+
+  container.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <span class="stat-label">Revenu colis</span>
+        <div class="stat-icon green">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><path d="M5 11h2M9 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+      <div class="stat-value">${fmt(revenuColis)}</div>
+      <div class="stat-delta">${deltaHTML}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header"><span class="stat-label">Total colis</span></div>
+      <div class="stat-value">${total}</div>
+      <div class="stat-delta">Prix moyen : ${fmt(prixMoyenColis)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header"><span class="stat-label">En transit</span></div>
+      <div class="stat-value">${enTransit}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header"><span class="stat-label">Arrivés</span></div>
+      <div class="stat-value">${arrive}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header"><span class="stat-label">Retirés</span></div>
+      <div class="stat-value">${retire}</div>
+    </div>
+  `;
+}
+
+function _renderFinanceColisDow() {
+  const container = document.getElementById('finColisDow');
+  if (!container) return;
+
+  const filtrerColis = (liste, debut, fin) => liste.filter(c => {
+    const d = toBrazzaDate(c.createdAt);
+    if (debut && d < debut) return false;
+    if (fin   && d > fin)   return false;
+    if (finFiltrePdv    && c.pdvId    !== finFiltrePdv)    return false;
+    if (finFiltreTrajet && c.trajetId !== finFiltreTrajet) return false;
+    if (finFiltreBus    && c.busNom   !== finFiltreBus)    return false;
+    if (finFiltreVille) {
+      const pdv = pdvList.find(p => p.id === c.pdvId);
+      if ((pdv?.ville || '') !== finFiltreVille) return false;
+    }
+    return true;
+  });
+
+  const { debut, fin } = getBornesEffectives();
+  const colisPeriode = filtrerColis(colisListeFin, debut, fin);
+
+  if (colisPeriode.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const JOURS_SEMAINE = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const ORDRE_JOURS   = [1,2,3,4,5,6,0];
+  const dowCA = Array(7).fill(0);
+  colisPeriode.forEach(c => {
+    if (!c.createdAt) return;
+    const dow = new Date(toBrazzaDate(c.createdAt)+'T00:00:00').getDay();
+    dowCA[dow] += Number(c.prixTransport || 0);
+  });
+  const maxDow  = Math.max(...dowCA, 1);
+  const bestDow = dowCA.indexOf(Math.max(...dowCA));
+
+  container.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">
+      Quel jour expédie-t-on le plus de colis ?
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:8px;">
+      ${ORDRE_JOURS.map((i, pos) => {
+        const pct    = Math.max(Math.round(dowCA[i] / maxDow * 100), 2);
+        const isBest = i === bestDow && dowCA[i] > 0;
+        const couleur = isBest ? 'var(--accent)' : 'var(--primary)';
+        return `
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="height:40px;width:100%;display:flex;align-items:flex-end;">
+              <div style="width:100%;height:${pct}%;background:${couleur};border-radius:2px 2px 0 0;opacity:.85;min-height:3px;"></div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);">${JOURS_SEMAINE[pos]}</div>
+            <div style="font-size:10px;color:var(--muted);opacity:.7;">${dowCA[i]>0?Math.round(dowCA[i]/1000)+'k':'-'}</div>
+          </div>`;
+      }).join('')}
+    </div>
+    ${dowCA[bestDow] > 0 ? `
+    <div style="font-size:12px;color:var(--muted);">
+      Vos meilleures expéditions de colis ont lieu le <strong style="color:var(--white);">${JOURS_SEMAINE[ORDRE_JOURS.indexOf(bestDow)]}</strong>.
+    </div>` : ''}`;
+}
+
+function _renderFinanceColisEvolution() {
+  const container = document.getElementById('finColisEvolution');
+  const titleEl   = document.getElementById('finColisEvolutionTitle');
+  if (!container) return;
+
+  const fmt = n => n >= 1_000_000
+    ? (n/1_000_000).toFixed(1).replace(/\.0$/,'') + 'M XAF'
+    : n >= 1_000 ? Math.round(n/1_000) + 'k XAF'
+    : n.toLocaleString() + ' XAF';
+
+  const passeFiltresColis = (c) => {
+    if (finFiltrePdv    && c.pdvId    !== finFiltrePdv)    return false;
+    if (finFiltreTrajet && c.trajetId !== finFiltreTrajet) return false;
+    if (finFiltreBus    && c.busNom   !== finFiltreBus)    return false;
+    if (finFiltreVille) {
+      const pdv = pdvList.find(p => p.id === c.pdvId);
+      if ((pdv?.ville || '') !== finFiltreVille) return false;
+    }
+    return true;
+  };
+
+  const periode = finPeriode;
+  let cols = [];
+
+  if (finCustomRange) {
+    const dDebut = new Date(finCustomRange.debut + 'T00:00:00Z');
+    const dFin   = new Date(finCustomRange.fin + 'T00:00:00Z');
+    const nbJoursRange = Math.round((dFin - dDebut) / 86400000) + 1;
+
+    if (nbJoursRange <= 31) {
+      for (let i = 0; i < nbJoursRange; i++) {
+        const d   = new Date(dDebut.getTime() + i * 86400000);
+        const str = d.toISOString().split('T')[0];
+        const val = colisListeFin.filter(c =>
+          passeFiltresColis(c) && toBrazzaDate(c.createdAt) === str
+        ).reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+        cols.push({ label: `${d.getUTCDate()}/${d.getUTCMonth()+1}`, val });
+      }
+    } else {
+      const moisNoms = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+      let curseur = new Date(Date.UTC(dDebut.getUTCFullYear(), dDebut.getUTCMonth(), 1));
+      while (curseur <= dFin) {
+        const moisStr = curseur.toISOString().slice(0, 7);
+        const val = colisListeFin.filter(c =>
+          passeFiltresColis(c) && toBrazzaDate(c.createdAt).startsWith(moisStr)
+        ).reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+        cols.push({ label: `${moisNoms[curseur.getUTCMonth()]} ${curseur.getUTCFullYear()}`, val });
+        curseur = new Date(Date.UTC(curseur.getUTCFullYear(), curseur.getUTCMonth() + 1, 1));
+      }
+    }
+    if (titleEl) titleEl.textContent = 'Expéditions sur la période sélectionnée';
+
+  } else if (periode === 'today') {
+    const today  = new Date(Date.now() + OFFSET_MS_BRAZZA).toISOString().split('T')[0];
+    const heures = [6, 8, 10, 12, 14, 16, 18, 20];
+    cols = heures.map(h => {
+      const val = colisListeFin.filter(c => {
+        if (!passeFiltresColis(c)) return false;
+        if (!c.createdAt) return false;
+        const heureBrazza = new Date(new Date(c.createdAt).getTime() + OFFSET_MS_BRAZZA).getUTCHours();
+        return toBrazzaDate(c.createdAt) === today && heureBrazza >= h && heureBrazza < h + 2;
+      }).reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+      return { label: `${h}h`, val };
+    });
+    if (titleEl) titleEl.textContent = "Expéditions d'aujourd'hui par heure";
+
+  } else if (periode === 'week') {
+    const joursNoms = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    const { debut: lundiStr, fin: aujourdHui } = getBornesEffectives();
+    const lundiDate = new Date(lundiStr + 'T00:00:00Z');
+    for (let i = 0; i < 7; i++) {
+      const dStr = new Date(lundiDate.getTime() + i * 86400000).toISOString().split('T')[0];
+      const val = colisListeFin.filter(c =>
+        passeFiltresColis(c) && toBrazzaDate(c.createdAt) === dStr
+      ).reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+      cols.push({ label: joursNoms[i], val });
+      if (dStr === aujourdHui) break;
+    }
+    if (titleEl) titleEl.textContent = "Expéditions de la semaine (lundi → aujourd'hui)";
+
+  } else if (periode === 'month') {
+    const month = new Date(Date.now() + OFFSET_MS_BRAZZA).toISOString().slice(0, 7);
+    for (let w = 0; w < 4; w++) {
+      const debut = w * 7 + 1;
+      const fin   = Math.min((w + 1) * 7, 31);
+      const val = colisListeFin.filter(c => {
+        if (!passeFiltresColis(c)) return false;
+        const dBrazza = toBrazzaDate(c.createdAt);
+        if (!dBrazza.startsWith(month)) return false;
+        const jour = Number(dBrazza.slice(8, 10));
+        return jour >= debut && jour <= fin;
+      }).reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+      cols.push({ label: `S${w + 1}`, val });
+    }
+    if (titleEl) titleEl.textContent = 'Expéditions par semaine ce mois';
+
+  } else {
+    const moisNoms = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(Date.now() + OFFSET_MS_BRAZZA);
+      d.setUTCMonth(d.getUTCMonth() - i);
+      const str = d.toISOString().slice(0, 7);
+      const val = colisListeFin.filter(c =>
+        passeFiltresColis(c) && toBrazzaDate(c.createdAt).startsWith(str)
+      ).reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+      cols.push({ label: moisNoms[d.getUTCMonth()], val });
+    }
+    if (titleEl) titleEl.textContent = 'Expéditions des 6 derniers mois';
+  }
+
+  const max = Math.max(...cols.map(c => c.val), 1);
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:flex-end;gap:6px;height:90px;padding:0 2px;">
+        ${cols.map(c => {
+        const h = Math.max(4, Math.round((c.val / max) * 90));
+        return `
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;min-width:0;height:100%;">
+            <div title="${c.label} — ${fmt(c.val)}"
+                style="width:100%;background:var(--primary);border-radius:3px 3px 0 0;
+                height:${h}%;min-height:4px;opacity:.85;transition:opacity .15s;"
+                onmouseover="this.style.opacity=1;this.style.background='var(--accent)'"
+                onmouseout="this.style.opacity='.85';this.style.background='var(--primary)'">
+            </div>
+            </div>`;
+        }).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:5px 2px 0;font-size:10px;color:var(--muted);">
+      ${cols.map(c => `<span>${c.label}</span>`).join('')}
+    </div>`;
+}
+
+export async function getFinColisDonneesRapport() {
+  await ensureColisFinLoaded();
+  return calculerColisStats();
+}
+
 function buildStatsUrl(pdvId) {
   const { debut, fin } = getBornesEffectives();
 
@@ -540,17 +843,6 @@ export function renderFinancePage() {
   const billetsAnnulesPrev = resasPrev.filter(r => r.statut === 'annulée').reduce((s,r) => s + (r.nbPassagers||1), 0);
   const billets = conf.reduce((s,r) => s + (r.nbPassagers||1), 0) + billetsAnnules;
   const bilPrev = confPrev.reduce((s,r) => s + (r.nbPassagers||1), 0) + billetsAnnulesPrev;
-  
-  const maintenantFin = Date.now();
-  const dejaTransportesFin = conf.filter(r => {
-    if (!r.dateDepart) return false;
-    const departInstant = new Date(`${r.dateDepart}T${r.heureDepart || '23:59'}:00Z`).getTime() - OFFSET_MS_BRAZZA;
-    return departInstant < maintenantFin;
-  });
-  const billetsTransportes = dejaTransportesFin.reduce((s, r) => s + (r.nbPassagers || 1), 0);
-
-  // NOUVEAU — nombre de passagers retirés sur la période
-  const totalRetraitsFin = resas.reduce((s, r) => s + (r.historiqueRetraits?.length || 0), 0);
 
   const nbResa     = resas.length;
   const nbResaPrev = resasPrev.length;
@@ -584,8 +876,6 @@ export function renderFinancePage() {
   setEl('finBilletsInfo', cmpHtml(billets, bilPrev) +
     (billetsAnnules > 0 ? ` <span style="color:#FF4D6A;font-weight:600;">· dont ${billetsAnnules} annulé${billetsAnnules > 1 ? 's' : ''}</span>` : ''));
   
-  setEl('finBilletsTransportes', billetsTransportes.toLocaleString());
-  setEl('finRetraits', totalRetraitsFin.toLocaleString());
   setEl('finMoyBillet',   fmt(moy));
   setEl('finMoyInfo',     cmpHtml(moy, moyPrev));
   setEl('finAnnul',       tauxA + '%');
@@ -601,6 +891,14 @@ export function renderFinancePage() {
   _renderFinanceImpact(fmt);
   _renderFinancePdv(conf, fmt);
   _renderFinanceTrajets(conf, fmt);
+  ensureColisFinLoaded().then(() => {
+    _renderFinanceColis();
+    _renderFinanceColisEvolution();
+    _renderFinanceColisDow();
+    const { revenuColis } = calculerColisStats();
+    setEl('finRevenuColisOverview', fmt(revenuColis));
+    setEl('finCATotal', fmt(CA + revenuColis));
+  });
 }
 
 // ════════════════════════════════
@@ -1503,6 +1801,20 @@ function getBornesPeriodePrecedente(periode, bDebut, bFin) {
 }
 
 // ════════════════════════════════
+//  ONGLETS AFFICHAGE (Vue d'ensemble / Billets / Colis)
+//  N'affecte QUE l'affichage écran — aucune donnée n'est recalculée ici,
+//  et le rapport imprimé (reports.js) ne dépend pas du DOM.
+// ════════════════════════════════
+export function switchFinanceTab(tab) {
+  ['overview', 'billets', 'colis'].forEach(t => {
+    const panel = document.getElementById(`finPanel-${t}`);
+    const btn   = document.getElementById(`finTab-${t}`);
+    if (panel) panel.style.display = (t === tab) ? '' : 'none';
+    if (btn)   btn.classList.toggle('active', t === tab);
+  });
+}
+
+// ════════════════════════════════
 //  EXPOSER AU HTML
 // ════════════════════════════════
 window.renderFinancePage       = renderFinancePage;
@@ -1518,3 +1830,4 @@ window.closeFinanceJourDetail   = closeFinanceJourDetail;
 window.toggleFinCustomPicker = toggleFinCustomPicker;
 window.applyFinCustomRange   = applyFinCustomRange;
 window.clearFinCustomRange   = clearFinCustomRange;
+window.switchFinanceTab      = switchFinanceTab;

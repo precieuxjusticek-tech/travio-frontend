@@ -4,6 +4,7 @@ import { BACKEND, agenceData, vehiculeList, setVehiculeList, trajetList } from '
 import { showToast, showToastAction } from './toast-utils.js';
 import { closeTrajetDetail, openTrajetDetail, invalidateAllDepartsCache } from './trajets.js';
 import { apiFetch } from './api.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
 // ════════════════════════════════
 //  VÉHICULES — CHARGEMENT
@@ -54,6 +55,14 @@ export function openCreateVehicule(onCreated) {
           <label>Capacité (places) <span class="req">*</span></label>
           <input type="number" class="pdv-input" id="cv-capacite" placeholder="Ex : 50" min="1">
         </div>
+        <div class="pdv-field-group">
+          <label>Nom du chauffeur</label>
+          <input type="text" class="pdv-input" id="cv-chauffeur-nom" placeholder="Ex : Jean Mbemba">
+        </div>
+        <div class="pdv-field-group">
+          <label>Téléphone du chauffeur</label>
+          <input type="tel" class="pdv-input" id="cv-chauffeur-tel" placeholder="Ex : 06 xxx xx xx">
+        </div>
       </div>
       <button class="pdv-btn-next" id="createVehiculeBtn" onclick="submitCreateVehicule()">🚀 Créer le véhicule</button>
     </div>
@@ -71,6 +80,8 @@ export async function submitCreateVehicule() {
   const nom      = document.getElementById('cv-nom')?.value.trim();
   const type     = document.getElementById('cv-type')?.value;
   const capacite = document.getElementById('cv-capacite')?.value;
+  const chauffeurNom = document.getElementById('cv-chauffeur-nom')?.value.trim() || null;
+  const chauffeurTel = document.getElementById('cv-chauffeur-tel')?.value.trim() || null;
 
   if (!nom)      { showToast('Entrez le nom du véhicule.', '⚠️'); return; }
   if (!type)     { showToast('Sélectionnez le type.', '⚠️'); return; }
@@ -82,7 +93,7 @@ export async function submitCreateVehicule() {
   try {
     const res = await apiFetch(`${BACKEND}/vehicule/create`, {
       method: 'POST',
-      body: JSON.stringify({ agenceId: agenceData?.id, nom, type, capacite: parseInt(capacite) }),
+      body: JSON.stringify({ agenceId: agenceData?.id, nom, type, capacite: parseInt(capacite), chauffeurNom, chauffeurTel }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur création.', '❌'); return; }
@@ -116,13 +127,13 @@ export function openEditVehicule(vehiculeId) {
     <div class="pdv-overlay-backdrop" onclick="closeEditVehicule()"></div>
     <div class="pdv-overlay-panel" style="max-width:480px;">
       <div class="pdv-overlay-header">
-        <div><h2>✏️ Modifier le véhicule</h2><p>${v.nom}</p></div>
+        <div><h2>✏️ Modifier le véhicule</h2><p>${escapeHtml(v.nom)}</p></div>
         <button class="pdv-overlay-close" onclick="closeEditVehicule()">✕</button>
       </div>
       <div class="pdv-create-fields">
         <div class="pdv-field-group">
           <label>Nom / Immatriculation <span class="req">*</span></label>
-          <input type="text" class="pdv-input" id="ev-nom" value="${v.nom || ''}">
+          <input type="text" class="pdv-input" id="ev-nom" value="${escapeHtml(v.nom) || ''}">
         </div>
         <div class="pdv-field-group">
           <label>Type <span class="req">*</span></label>
@@ -134,6 +145,14 @@ export function openEditVehicule(vehiculeId) {
         <div class="pdv-field-group">
           <label>Capacité <span class="req">*</span></label>
           <input type="number" class="pdv-input" id="ev-capacite" value="${v.capacite || ''}">
+        </div>
+        <div class="pdv-field-group">
+          <label>Nom du chauffeur</label>
+          <input type="text" class="pdv-input" id="ev-chauffeur-nom" value="${escapeHtml(v.chauffeurNom) || ''}" placeholder="Ex : Jean Mbemba">
+        </div>
+        <div class="pdv-field-group">
+          <label>Téléphone du chauffeur</label>
+          <input type="tel" class="pdv-input" id="ev-chauffeur-tel" value="${escapeHtml(v.chauffeurTel) || ''}" placeholder="Ex : 06 xxx xx xx">
         </div>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:14px;padding:8px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
@@ -155,6 +174,8 @@ export async function submitEditVehicule(vehiculeId) {
   const nom      = document.getElementById('ev-nom')?.value.trim();
   const type     = document.getElementById('ev-type')?.value;
   const capacite = document.getElementById('ev-capacite')?.value;
+  const chauffeurNom = document.getElementById('ev-chauffeur-nom')?.value.trim() || null;
+  const chauffeurTel = document.getElementById('ev-chauffeur-tel')?.value.trim() || null;
 
   if (!nom || !type || !capacite) { showToast('Remplissez tous les champs.', '⚠️'); return; }
 
@@ -164,13 +185,13 @@ export async function submitEditVehicule(vehiculeId) {
   try {
     const res = await apiFetch(`${BACKEND}/vehicule/${vehiculeId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ nom, type, capacite: parseInt(capacite) }),
+      body: JSON.stringify({ nom, type, capacite: parseInt(capacite), chauffeurNom, chauffeurTel }),
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.message || 'Erreur.', '❌'); return; }
 
     const v = vehiculeList.find(v => v.id === vehiculeId);
-    if (v) { v.nom = nom; v.type = type; v.capacite = parseInt(capacite); }
+    if (v) { v.nom = nom; v.type = type; v.capacite = parseInt(capacite); v.chauffeurNom = chauffeurNom; v.chauffeurTel = chauffeurTel; }
 
     closeEditVehicule();
     showToast(data.message || 'Véhicule mis à jour.', '✅', true);
@@ -197,7 +218,7 @@ export function openScopeChoice({ action, departId, trajetId, vehiculeId, busNom
     <div class="pdv-overlay-panel pdv-confirm-panel">
       <div class="pdv-confirm-icon">${icone}</div>
       <h2>${titre}</h2>
-      <p><strong>${busNom}</strong> est peut-être utilisé sur d'autres trajets. Que veux-tu faire ?</p>
+      <p><strong>${escapeHtml(busNom)}</strong> est peut-être utilisé sur d'autres trajets. Que veux-tu faire ?</p>
       <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0;">
         <button class="pdv-action-btn" onclick="confirmScopeChoice('one', '${action}', '${departId}', '${trajetId}', '${vehiculeId}', ${nouvelEtat})">
           📍 Seulement sur ce trajet
@@ -283,7 +304,7 @@ export function confirmDeleteVehicule(vehiculeId, nom) {
     <div class="pdv-overlay-panel pdv-confirm-panel">
       <div class="pdv-confirm-icon">🗑️</div>
       <h2>Supprimer ce véhicule ?</h2>
-      <p>Tu es sur le point de supprimer <strong>${nom}</strong> de la flotte. S'il est utilisé sur des trajets, ces bus seront aussi supprimés.</p>
+      <p>Tu es sur le point de supprimer <strong>${escapeHtml(nom)}</strong> de la flotte. S'il est utilisé sur des trajets, ces bus seront aussi supprimés.</p>
       <div class="pdv-confirm-actions">
         <button class="pdv-btn-next delete-confirm" onclick="deleteVehicule('${vehiculeId}')">Oui, supprimer</button>
         <button class="pdv-btn-back" onclick="closeDeleteVehicule()">Annuler</button>
@@ -411,7 +432,7 @@ export function renderBusFlottePage() {
           </div>
 
           <div class="bf-row-main">
-            <div class="bf-row-name">${v.nom}</div>
+            <div class="bf-row-name">${escapeHtml(v.nom)}</div>
             <div class="bf-row-meta">
               ${busTypeBadge(v.type)}
               <span class="bf-row-capacite">
@@ -430,7 +451,7 @@ export function renderBusFlottePage() {
             <button class="bf-icon-btn" title="Modifier" onclick="openEditVehicule('${v.id}')">
               <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3L4 13H1v-3L9 2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <button class="bf-icon-btn danger" title="Supprimer" onclick="confirmDeleteVehicule('${v.id}', '${v.nom}')">
+            <button class="bf-icon-btn danger" title="Supprimer" onclick="confirmDeleteVehicule('${v.id}', '${escapeJsAttr(v.nom)}')">
               <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2h4v2M4 4l1 10h6l1-10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </div>
@@ -453,4 +474,17 @@ window.confirmScopeChoice    = confirmScopeChoice;
 window.confirmDeleteVehicule = confirmDeleteVehicule;
 window.closeDeleteVehicule   = closeDeleteVehicule;
 window.deleteVehicule        = deleteVehicule;
+export async function loadChauffeursListe() {
+  try {
+    const res = await apiFetch(`${BACKEND}/vehicule/chauffeurs/liste?agenceId=${agenceData?.id}`);
+    const data = await res.json();
+    if (!res.ok) return [];
+    return data.chauffeurs || [];
+  } catch (err) {
+    console.error('Erreur chargement chauffeurs :', err);
+    return [];
+  }
+}
+
 window.renderBusFlottePage   = renderBusFlottePage;
+window.loadChauffeursListe   = loadChauffeursListe;

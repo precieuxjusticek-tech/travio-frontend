@@ -113,6 +113,16 @@
             </svg>
             Trajets disponibles
           </a>
+
+          <a class="drawer-nav-item" data-page="colis" onclick="showPage('colis', this)">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="2" y="6" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M2 6l7-4 7 4M9 2v14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Colis
+            <span class="drawer-nav-badge" id="drawerBadgeColis">0</span>
+          </a>
+
           <a class="drawer-nav-item" data-page="finance" onclick="showPage('finance', this)">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
@@ -266,8 +276,29 @@
 
           <div class="page-header" style="flex-direction:column;">
             <div>
-              <h1 class="page-title">Vente de billets</h1>
+              <h1 class="page-title" id="ventePageTitle">Vente de billets</h1>
               <p class="page-subtitle">Sélectionnez un trajet et renseignez le passager.</p>
+              
+              <div class="trajet-type-toggle" id="venteModeToggle" style="margin-top:10px;">
+                <button class="trajet-type-btn active" id="btnModeBillet" onclick="setVenteMode('billet')">
+                  <span class="ttb-icon">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 5V4a3 3 0 016 0v1" stroke="currentColor" stroke-width="1.5"/></svg>
+                  </span>
+                  <div>
+                    <div class="ttb-label">Billet</div>
+                    <div class="ttb-desc">Vendre un passage</div>
+                  </div>
+                </button>
+                <button class="trajet-type-btn" id="btnModeColis" onclick="setVenteMode('colis')">
+                  <span class="ttb-icon">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 5l6-3 6 3v6l-6 3-6-3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M2 5l6 3 6-3M8 8v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                  <div>
+                    <div class="ttb-label">Colis</div>
+                    <div class="ttb-desc">Expédier un colis</div>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -387,64 +418,123 @@
               </div>
               <div class="vente-step-body">
 
-                <!-- Liste des passagers -->
-                <div id="passagersList">
-                  <!-- Passager 1 (non supprimable) -->
-                  <div class="passager-block" data-index="0">
-                    <div class="passager-block-header">
-                      <span class="passager-block-num">Passager 1</span>
-                    </div>
-                    <div class="vente-field-row">
-                      <div class="vente-field-group">
-                        <label>Prénom <span class="req">*</span></label>
-                        <input type="text" class="vente-input p-prenom" placeholder="Ex : Jean">
+                <div id="secteurBillet" style="display:flex;flex-direction:column;gap:14px;">
+
+                  <!-- Liste des passagers -->
+                  <div id="passagersList">
+                    <!-- Passager 1 (non supprimable) -->
+                    <div class="passager-block" data-index="0">
+                      <div class="passager-block-header">
+                        <span class="passager-block-num">Passager 1</span>
                       </div>
-                      <div class="vente-field-group">
-                        <label>Nom <span class="req">*</span></label>
-                        <input type="text" class="vente-input p-nom" placeholder="Ex : Moukala">
-                      </div>
-                    </div>
-                    <div class="vente-field-row">
-                      <div class="vente-field-group">
-                        <label>Téléphone <span class="req">*</span></label>
-                        <input type="tel" class="vente-input p-tel" placeholder="+242 06 xxx xx xx">
-                      </div>
-                      <div class="vente-field-group">
-                        <label>Type de billet <span class="req">*</span></label>
-                        <select class="vente-select p-type" onchange="updatePrixPreview()"></select>
-                      </div>
-                    </div>
-                    <div class="more-options-toggle" onclick="toggleMoreOptions(this)">
-                      <span class="more-icon">＋</span> Bagages, siège (facultatif)
-                    </div>
-                    <div class="more-options">
                       <div class="vente-field-row">
                         <div class="vente-field-group">
-                          <label>Bagages (kg)</label>
-                          <input type="number" class="vente-input p-bagages" placeholder="0" min="0" oninput="updatePrixPreview()">
+                          <label>Prénom <span class="req">*</span></label>
+                          <input type="text" class="vente-input p-prenom" placeholder="Ex : Jean">
                         </div>
                         <div class="vente-field-group">
-                          <label>Siège (optionnel)</label>
-                          <input type="text" class="vente-input p-siege" placeholder="Ex : 12A">
+                          <label>Nom <span class="req">*</span></label>
+                          <input type="text" class="vente-input p-nom" placeholder="Ex : Moukala">
                         </div>
                       </div>
+                      <div class="vente-field-row">
+                        <div class="vente-field-group">
+                          <label>Téléphone <span class="req">*</span></label>
+                          <input type="tel" class="vente-input p-tel" placeholder="+242 06 xxx xx xx">
+                        </div>
+                        <div class="vente-field-group">
+                          <label>Type de billet <span class="req">*</span></label>
+                          <select class="vente-select p-type" onchange="updatePrixPreview()"></select>
+                        </div>
+                      </div>
+                      <div class="more-options-toggle" onclick="toggleMoreOptions(this)">
+                        <span class="more-icon">＋</span> Bagages, siège (facultatif)
+                      </div>
+                      <div class="more-options">
+                        <div class="vente-field-row">
+                          <div class="vente-field-group">
+                            <label>Bagages (kg)</label>
+                            <input type="number" class="vente-input p-bagages" placeholder="0" min="0" oninput="updatePrixPreview()">
+                          </div>
+                          <div class="vente-field-group">
+                            <label>Nombre de bagages</label>
+                            <input type="number" class="vente-input p-bagages-nombre" placeholder="0" min="0">
+                          </div>
+                        </div>
+                        <div class="vente-field-row">
+                          <div class="vente-field-group">
+                            <label>Siège (optionnel)</label>
+                            <input type="text" class="vente-input p-siege" placeholder="Ex : 12A">
+                          </div>
+                        </div>
                     </div>
+                  </div>
+
+                  <!-- Bouton ajouter passager -->
+                  <button class="btn-add-passager" onclick="addPassager()">
+                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    Ajouter un passager
+                  </button>
+
+                  <!-- Remarques globales -->
+                  <div class="vente-field-group">
+                    <label>Remarques (optionnel)</label>
+                    <textarea class="vente-textarea" id="vente-remarques" placeholder="Notes sur la réservation..." rows="2"></textarea>
                   </div>
                 </div>
 
-                <!-- Bouton ajouter passager -->
-                <button class="btn-add-passager" onclick="addPassager()">
-                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                  Ajouter un passager
-                </button>
+                <div id="secteurColis" style="display:none;flex-direction:column;gap:14px;">
+                  <div class="recap-section-title">Expéditeur</div>
+                  <div class="vente-field-row">
+                    <div class="vente-field-group">
+                      <label>Nom complet <span class="req">*</span></label>
+                      <input type="text" class="vente-input" id="colis-exp-nom" placeholder="Ex : Jean Moukala">
+                    </div>
+                    <div class="vente-field-group">
+                      <label>Téléphone <span class="req">*</span></label>
+                      <input type="tel" class="vente-input" id="colis-exp-tel" placeholder="+242 06 xxx xx xx">
+                    </div>
+                  </div>
 
-                <!-- Remarques globales -->
-                <div class="vente-field-group">
-                  <label>Remarques (optionnel)</label>
-                  <textarea class="vente-textarea" id="vente-remarques" placeholder="Notes sur la réservation..." rows="2"></textarea>
+                  <div class="recap-section-title" style="margin-top:6px;">Destinataire</div>
+                  <div class="vente-field-row">
+                    <div class="vente-field-group">
+                      <label>Nom complet <span class="req">*</span></label>
+                      <input type="text" class="vente-input" id="colis-dest-nom" placeholder="Ex : Marie Bakala">
+                    </div>
+                    <div class="vente-field-group">
+                      <label>Téléphone <span class="req">*</span></label>
+                      <input type="tel" class="vente-input" id="colis-dest-tel" placeholder="+242 06 xxx xx xx">
+                    </div>
+                  </div>
+
+                  <div class="recap-section-title" style="margin-top:6px;">Colis</div>
+                  <div class="vente-field-row">
+                    <div class="vente-field-group">
+                      <label>Nature du colis <span class="req">*</span></label>
+                      <input type="text" class="vente-input" id="colis-nature" placeholder="Ex : Documents, vêtements...">
+                    </div>
+                    <div class="vente-field-group">
+                      <label>Poids estimé (kg)</label>
+                      <input type="number" class="vente-input" id="colis-poids" min="0" placeholder="0">
+                    </div>
+                  </div>
+                  <div class="vente-field-row">
+                    <div class="vente-field-group">
+                      <label>Valeur déclarée (XAF)</label>
+                      <input type="number" class="vente-input" id="colis-valeur" min="0" placeholder="Optionnel">
+                    </div>
+                    <div class="vente-field-group">
+                      <label>Prix du transport (XAF) <span class="req">*</span></label>
+                      <input type="number" class="vente-input" id="colis-prix" min="0" placeholder="0" oninput="updateColisPrixPreview()">
+                    </div>
+                  </div>
+                  <div class="vente-field-group">
+                    <label>Remarques (optionnel)</label>
+                    <textarea class="vente-textarea" id="colis-remarques" placeholder="Fragile, à manipuler avec précaution..." rows="2"></textarea>
+                  </div>
                 </div>
 
-                <!-- Bloc Embarquement / Débarquement (trajet direct uniquement) -->
                 <div class="vente-field-row" id="embarquementDebarquementBlock">
                   <div class="vente-field-group">
                     <label>Ville de départ</label>
@@ -597,7 +687,7 @@
           </div>
 
           <!-- Liste -->
-          <div class="resa-list-panel" id="resaListPanel">
+          <div class="resa-list-panel" id="resaListPanel" style="max-height:65vh;overflow-y:auto;">
             <div class="empty-state large">
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="32" rx="5" stroke="currentColor" stroke-width="2"/><path d="M14 6v10M34 6v10M6 20h36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M15 30h7M15 35h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               <p>Aucune réservation trouvée</p>
@@ -771,6 +861,95 @@
         </div>
 
         <!-- ────────────────────────────────
+            PAGE : COLIS
+        ──────────────────────────────── -->
+        <div class="pdv-page" id="page-colis">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Colis</h1>
+              <p class="page-subtitle">Suivez les colis expédiés depuis votre point de vente.</p>
+            </div>
+          </div>
+
+          <div id="colisAlertesWrapPDV" style="margin-bottom:14px;"></div>
+
+          <div id="colisModeFilters" class="resa-quick-filters">
+            <button class="rqf-btn active" onclick="setColisModePDV('receptionner', this)">À réceptionner</button>
+            <button class="rqf-btn" onclick="setColisModePDV('envoyes', this)">Envoyés</button>
+          </div>
+
+          <!-- Période -->
+          <div class="resa-quick-filters" id="colisQuickFilters">
+            <button class="rqf-btn active" onclick="setColisPeriode('all', this)">Tout</button>
+            <button class="rqf-btn" onclick="setColisPeriode('today', this)">Aujourd'hui</button>
+            <button class="rqf-btn" onclick="setColisPeriode('week', this)">Cette semaine</button>
+            <button class="rqf-btn" onclick="setColisPeriode('month', this)">Ce mois</button>
+            <button class="rqf-btn" id="colisCustomBtnPDV" onclick="toggleColisCustomPickerPDV()">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px;">
+                <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Période précise
+            </button>
+          </div>
+          <div id="colisCustomPickerWrapPDV" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+              <div class="vente-field-group" style="margin:0;">
+                <label>Du</label>
+                <input type="date" class="vente-input" id="colisCustomDebutPDV">
+              </div>
+              <div class="vente-field-group" style="margin:0;">
+                <label>Au</label>
+                <input type="date" class="vente-input" id="colisCustomFinPDV">
+              </div>
+              <button class="vente-btn-next" style="width:auto;padding:10px 16px;" onclick="applyColisCustomRangePDV()">Appliquer</button>
+              <button class="vente-btn-back" onclick="clearColisCustomRangePDV()">Annuler</button>
+            </div>
+          </div>
+          <span id="colisPeriodeLabelPDV" style="display:inline-flex;align-items:center;gap:6px;margin:8px 0;background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);color:var(--accent);font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;"></span>
+
+          <div class="resa-search-bar">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" class="search-icon"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <input type="text" class="resa-search-input" id="colisSearchPDV" placeholder="Nom, téléphone, code de retrait..." oninput="filterColisPDV()">
+            <div class="resa-search-sep"></div>
+            <select class="resa-search-select" id="colisFiltreTrajet" onchange="onColisTrajetFiltreChangePDV()">
+              <option value="">Tous les trajets</option>
+            </select>
+            <div class="resa-search-sep"></div>
+            <select class="resa-search-select" id="colisFiltreBus" onchange="onColisBusFiltreChangePDV()">
+              <option value="">Tous les bus</option>
+            </select>
+            <div class="resa-search-sep"></div>
+            <select class="resa-search-select" id="colisFiltreStatutPDV" onchange="filterColisPDV()">
+              <option value="">Tous statuts</option>
+              <option value="en_transit">En transit</option>
+              <option value="arrive">Arrivé</option>
+              <option value="retire">Retiré</option>
+            </select>
+            <div class="resa-search-sep"></div>
+            <select class="resa-search-select" id="colisSortSelect" onchange="setColisSort(this.value)">
+              <option value="date_desc">↓ Plus récent</option>
+              <option value="date_asc">↑ Plus ancien</option>
+              <option value="prix_desc">↓ Prix décroissant</option>
+              <option value="prix_asc">↑ Prix croissant</option>
+            </select>
+          </div>
+          <button onclick="ouvrirVerificationCodeColisPDV()"
+            style="width:100%;margin-top:12px;background:var(--accent);color:var(--dark);border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.6"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.6"/></svg>
+            Vérifier un code de retrait
+          </button>
+
+          <div class="resa-counter" id="colisCounterPDV">
+            <span id="colisCountNumPDV">0</span> colis
+          </div>
+
+          <div class="resa-list-panel" id="colisPDVContainer" style="max-height:65vh;overflow-y:auto;">
+            <div class="empty-state large"><p>Chargement des colis...</p></div>
+          </div>
+        </div>
+
+        <!-- ────────────────────────────────
             PAGE : MODE D'EMPLOI
         ──────────────────────────────── -->
         <div class="pdv-page" id="page-guide">
@@ -808,6 +987,9 @@
             <div class="finance-hero-amount" id="finHeroTotal">0 XAF</div>
             <div class="finance-hero-sub" id="finHeroBillets">—</div>
           </div>
+
+          <!-- ── COLIS ── ← AJOUT -->
+          <div id="finColisStatsPDV" style="display:none; margin-top:14px;"></div>
 
           <!-- ── FILTRES PÉRIODE ── -->
           <div class="resa-quick-filters" id="finPeriodeFilters">

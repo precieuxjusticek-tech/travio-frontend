@@ -56,7 +56,11 @@ import { switchEquipeTab, loadControleurs, openCreateControleur, closeCreateCont
 import { renderGeoPage } from './geo.js';
 
 // ── Mode d'emploi ──
-import { renderGuidePage, toggleGuideSection, updateGuideBadge, checkGuideWelcomeModal, showGuideWelcomeModal, closeGuideWelcomeModal, goToGuideFromWelcome } from './guide.js';
+import { openPageHelp, closePageHelp } from './page-help.js';
+
+// ── Colis ──
+// ── Colis ──
+import { renderColisPage, openColisDetail, closeColisDetail, marquerColisArrive, marquerColisRetire, applyColisFiltres, updateColisBadge } from './colis-page.js';
 
 // retour
 import { initBackGuard } from './back-guard.js';
@@ -88,8 +92,7 @@ onAuthStateChanged(auth, async (user) => {
       await loadVehicules(data.agenceId);
       hideOnboarding();
 
-      updateGuideBadge();
-      checkGuideWelcomeModal();
+      renderColisPage();
 
       if (!isEssaiActifEtValide()) {
         showLockedOverlay();
@@ -123,8 +126,8 @@ window.showPage = function(pageId, navEl) {
   if (geoPage?.classList.contains('active')) renderGeoPage();
   const billetsPage = document.getElementById('page-billets');
   if (billetsPage?.classList.contains('active')) renderBilletConfigPage();
-  const guidePage = document.getElementById('page-guide');
-  if (guidePage?.classList.contains('active')) renderGuidePage();
+  const colisPage = document.getElementById('page-colis');
+  if (colisPage?.classList.contains('active')) renderColisPage();
 };
 
 // ════════════════════════════════
@@ -152,6 +155,11 @@ document.addEventListener('change', (e) => {
     if (editPrecisWrap) editPrecisWrap.style.display = val === 'remboursement' ? 'block' : 'none';
   }
 });
+
+function venteRapidePlaceholder() {
+  showToast('Vente depuis le siège — à connecter.', TOAST_ICONS.info);
+}
+window.venteRapidePlaceholder = venteRapidePlaceholder;
 
 // ════════════════════════════════
 //  EXPOSER TOUT AU HTML
@@ -333,11 +341,15 @@ window.imprimerRapportFinances     = imprimerRapportFinances;
 // Géolocalisation
 window.renderGeoPage = renderGeoPage;
 
-// Mode d'emploi
-window.renderGuidePage    = renderGuidePage;
-window.toggleGuideSection = toggleGuideSection;
-window.updateGuideBadge       = updateGuideBadge;
-window.checkGuideWelcomeModal = checkGuideWelcomeModal;
-window.showGuideWelcomeModal  = showGuideWelcomeModal;   // ← AJOUTER
-window.closeGuideWelcomeModal = closeGuideWelcomeModal;
-window.goToGuideFromWelcome   = goToGuideFromWelcome;
+// Aide contextuelle
+window.openPageHelp  = openPageHelp;
+window.closePageHelp = closePageHelp;
+
+// Colis
+window.renderColisPage    = renderColisPage;
+window.openColisDetail    = openColisDetail;
+window.closeColisDetail   = closeColisDetail;
+window.marquerColisArrive = marquerColisArrive;
+window.marquerColisRetire = marquerColisRetire;
+window.applyColisFiltres  = applyColisFiltres;
+window.updateColisBadge   = updateColisBadge;

@@ -51,8 +51,17 @@ let pdvData      = null;   // données du PDV connecté
 let agenceData   = null;   // données de l'agence parente
 let trajetList   = [];     // trajets disponibles
 let resaList     = [];     // réservations du PDV
+let colisList = [];
+let colisEnvoyesList = [];
+let colisModePDV = 'receptionner'; // 'receptionner' | 'envoyes'
+let colisPeriode = 'all';
+let colisCustomRange = null;
+let colisFiltreTrajet = '';
+let colisFiltreBus    = '';
+let colisSortBy = 'date_desc';
 let currentUser  = null;
 let selectedTrajetForVente = null;
+let venteMode = 'billet'; // 'billet' | 'colis'
 let finPeriode = 'today';
 let finFiltreTrajet = '';
 let finFiltreBus    = '';
@@ -129,6 +138,7 @@ onAuthStateChanged(auth, async (user) => {
     await Promise.all([
       loadTrajets(data.agenceId, data.id),
       loadReservations(data.id),
+      loadColisPDV(data.id),
     ]);
 
     updateAccueilStats();
@@ -766,6 +776,24 @@ function setTrajetType(type) {
 }
 window.setTrajetType = setTrajetType;
 
+function setVenteMode(mode) {
+  venteMode = mode;
+  document.getElementById('btnModeBillet')?.classList.toggle('active', mode === 'billet');
+  document.getElementById('btnModeColis')?.classList.toggle('active', mode === 'colis');
+
+  const titre = document.getElementById('ventePageTitle');
+  if (titre) titre.textContent = mode === 'billet' ? 'Vente de billets' : 'Expédier un colis';
+
+  const secB = document.getElementById('secteurBillet');
+  const secC = document.getElementById('secteurColis');
+  if (secB) secB.style.display = mode === 'billet' ? 'flex' : 'none';
+  if (secC) secC.style.display = mode === 'colis'  ? 'flex' : 'none';
+
+  if (mode === 'billet') updatePrixPreview();
+  else updateColisPrixPreview();
+}
+window.setVenteMode = setVenteMode;
+
 function renderTrajetCardList() {
   const container = document.getElementById('trajetCardList');
   const select = document.getElementById('vente-trajet');
@@ -1340,6 +1368,7 @@ function selectSession(el, date, sessionId) {
 window.selectSession = selectSession;
 
 function updatePrixPreview() {
+  if (venteMode !== 'billet') return;
   if (!selectedTrajetForVente) return;
 
   const t = selectedTrajetForVente;
@@ -1352,6 +1381,9 @@ function updatePrixPreview() {
   blocks.forEach((block, i) => {
     const type    = block.querySelector('.p-type')?.value || 'adulte';
     const bagages = parseFloat(block.querySelector('.p-bagages')?.value || 0);
+    const prixColisSoute = block.querySelector('.p-colis-soute-toggle')?.checked
+      ? Number(block.querySelector('.p-colis-soute-prix')?.value || 0)
+      : 0; // ← AJOUT
 
     const prixBase = isArrets
       ? (t._segmentPrixParType?.[type] || 0)
@@ -1359,7 +1391,7 @@ function updatePrixPreview() {
 
     const excesBag  = bagages > (t.limiteBagages || 0) ? Math.max(0, bagages - (t.limiteBagages || 0)) : 0;
     const prixBag   = excesBag * (t.fraisExcesBagages || 0);
-    const sousTotal = prixBase + prixBag;
+    const sousTotal = prixBase + prixBag + prixColisSoute; // ← MODIFIÉ
     totalGeneral   += sousTotal;
 
     linesHtml += `
@@ -1375,6 +1407,15 @@ function updatePrixPreview() {
   const totalEl = document.getElementById('previewTotal');
   if (totalEl) totalEl.textContent = `${Number(totalGeneral).toLocaleString()} XAF`;
 }
+
+function updateColisPrixPreview() {
+  const prix = Number(document.getElementById('colis-prix')?.value || 0);
+  const linesEl = document.getElementById('prixPreviewLines');
+  if (linesEl) linesEl.innerHTML = '';
+  const totalEl = document.getElementById('previewTotal');
+  if (totalEl) totalEl.textContent = `${prix.toLocaleString()} XAF`;
+}
+window.updateColisPrixPreview = updateColisPrixPreview;
 
 function addPassager() {
   const list  = document.getElementById('passagersList');
@@ -1418,8 +1459,42 @@ function addPassager() {
           <input type="number" class="vente-input p-bagages" placeholder="0" min="0" oninput="updatePrixPreview()">
         </div>
         <div class="vente-field-group">
+          <label>Nombre de bagages</label>
+          <input type="number" class="vente-input p-bagages-nombre" placeholder="0" min="0">
+        </div>
+      </div>
+      <div class="vente-field-row">
+        <div class="vente-field-group">
           <label>Siège (optionnel)</label>
           <input type="text" class="vente-input p-siege" placeholder="Ex : 13A">
+        </div>
+      </div>
+
+      <!-- NOUVEAU -->
+      <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--white);">
+        <input type="checkbox" class="p-colis-soute-toggle" onchange="toggleColisSoute(this)">
+        Colis en soute avec ce passager
+      </label>
+      <div class="p-colis-soute-fields" style="display:none;margin-top:8px;">
+        <div class="vente-field-row">
+          <div class="vente-field-group">
+            <label>Nature du colis</label>
+            <input type="text" class="vente-input p-colis-soute-nature" placeholder="Ex : Bagage personnel">
+          </div>
+          <div class="vente-field-group">
+            <label>Poids (kg)</label>
+            <input type="number" class="vente-input p-colis-soute-poids" min="0">
+          </div>
+        </div>
+        <div class="vente-field-row">
+          <div class="vente-field-group">
+            <label>Valeur déclarée (optionnel)</label>
+            <input type="number" class="vente-input p-colis-soute-valeur" min="0">
+          </div>
+          <div class="vente-field-group">
+            <label>Prix du colis (XAF)</label>
+            <input type="number" class="vente-input p-colis-soute-prix" min="0" oninput="updatePrixPreview()">
+          </div>
         </div>
       </div>
     </div>
@@ -1429,6 +1504,13 @@ function addPassager() {
   renumberPassagers();
   updatePrixPreview();
 }
+
+function toggleColisSoute(checkbox) {
+  const fields = checkbox.closest('.more-options').querySelector('.p-colis-soute-fields');
+  fields.style.display = checkbox.checked ? 'block' : 'none';
+  updatePrixPreview();
+}
+window.toggleColisSoute = toggleColisSoute;
 
 function removePassager(btn) {
   const block = btn.closest('.passager-block');
@@ -1476,7 +1558,8 @@ function venteGoStep(step) {
       step2.classList.add('slide-in');
     }
 
-    updatePrixPreview();
+    if (venteMode === 'billet') updatePrixPreview();
+    else updateColisPrixPreview();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
   } else if (step === 1) {
@@ -1495,6 +1578,7 @@ function venteGoStep(step) {
 }
 
 function showVenteRecap() {
+  if (venteMode === 'colis') { showColisRecapShared(); return; }
   // Valider les champs
   const blocks = document.querySelectorAll('.passager-block');
   for (let i = 0; i < blocks.length; i++) {
@@ -1545,15 +1629,23 @@ function showVenteRecap() {
     const tel     = block.querySelector('.p-tel')?.value.trim()    || '—';
     const type    = block.querySelector('.p-type')?.value || 'adulte';
     const bagages = parseFloat(block.querySelector('.p-bagages')?.value || 0);
+    const nombreBagages = parseInt(block.querySelector('.p-bagages-nombre')?.value || 0, 10);
     const siege   = block.querySelector('.p-siege')?.value.trim() || '—';
 
     let prixBase = isArrets
       ? (t._segmentPrixParType?.[type] || 0)
       : (t.prixParType?.[type] || 0);
 
+    const prixColisSoute = block.querySelector('.p-colis-soute-toggle')?.checked
+      ? Number(block.querySelector('.p-colis-soute-prix')?.value || 0)
+      : 0; 
+    const colisSouteNature = block.querySelector('.p-colis-soute-nature')?.value.trim() || null;
+    const colisSoutePoids = parseFloat(block.querySelector('.p-colis-soute-poids')?.value) || null;
+    const colisSouteValeur = parseFloat(block.querySelector('.p-colis-soute-valeur')?.value) || null;
+
     const excesBag  = bagages > (t.limiteBagages || 0) ? Math.max(0, bagages - (t.limiteBagages || 0)) : 0;
     const prixBag   = excesBag * (t.fraisExcesBagages || 0);
-    const sousTotal = prixBase + prixBag;
+    const sousTotal = prixBase + prixBag + prixColisSoute; // ← MODIFIÉ
     totalGeneral   += sousTotal;
 
     passagersHtml += `
@@ -1563,7 +1655,12 @@ function showVenteRecap() {
         ${i === 0 || tel !== '—' ? `<div class="recap-row"><span>Téléphone</span><strong>${tel}</strong></div>` : ''}
         <div class="recap-row"><span>Type</span><strong>${nomType(type)} <small style="color:var(--muted);">(${ageRangeLabel(type)})</small></strong></div>
         ${siege !== '—' ? `<div class="recap-row"><span>Siège</span><strong>${siege}</strong></div>` : ''}
-        ${bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${bagages} kg${prixBag > 0 ? ` (+${Number(prixBag).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
+        ${bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${bagages} kg${nombreBagages > 0 ? ` · ${nombreBagages} colis` : ''}${prixBag > 0 ? ` (+${Number(prixBag).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
+        ${prixColisSoute > 0 ? `
+          <div class="recap-row"><span>Colis en soute</span><strong>${colisSouteNature || '—'} (${Number(prixColisSoute).toLocaleString()} XAF)</strong></div>
+          ${colisSoutePoids ? `<div class="recap-row"><span>Poids du colis</span><strong>${colisSoutePoids} kg</strong></div>` : ''}
+          ${colisSouteValeur ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(colisSouteValeur).toLocaleString()} XAF</strong></div>` : ''}
+        ` : ''}
         <div class="recap-row"><span>Sous-total</span><strong style="color:var(--accent)">${Number(sousTotal).toLocaleString()} XAF</strong></div>
       </div>`;
   });
@@ -1672,11 +1769,126 @@ function closeVenteRecap() {
   }
 }
 
+function showColisRecapShared() {
+  const expNom  = document.getElementById('colis-exp-nom')?.value.trim();
+  const expTel  = document.getElementById('colis-exp-tel')?.value.trim();
+  const destNom = document.getElementById('colis-dest-nom')?.value.trim();
+  const destTel = document.getElementById('colis-dest-tel')?.value.trim();
+  const nature  = document.getElementById('colis-nature')?.value.trim();
+  const prix    = Number(document.getElementById('colis-prix')?.value || 0);
+
+  if (!expNom || !expTel)   { showToast('Informations expéditeur manquantes.', ICONS.warning); return; }
+  if (!destNom || !destTel) { showToast('Informations destinataire manquantes.', ICONS.warning); return; }
+  if (!nature)              { showToast('Précisez la nature du colis.', ICONS.warning); return; }
+  if (!prix)                { showToast('Indiquez le prix du transport.', ICONS.warning); return; }
+  if (!selectedTrajetForVente) { showToast('Sélectionnez un trajet.', ICONS.warning); return; }
+
+  const t = selectedTrajetForVente;
+  const isArretsColisCheck = (t.typeTrajet || 'direct') === 'arrets';
+
+  if (isArretsColisCheck) {
+    if (!t._arretMontee || !t._arretDescente) {
+      showToast('Sélectionnez la montée et la descente du colis.', ICONS.warning); return;
+    }
+    const debArretsVal = document.getElementById('vente-pdv-debarquement-arrets')?.value;
+    if (!debArretsVal) { showToast('Sélectionnez le PDV de débarquement.', ICONS.warning); return; }
+  } else {
+    const selEmb = document.getElementById('vente-pdv-embarquement');
+    const selDeb = document.getElementById('vente-pdv-debarquement');
+    if (!selEmb?.value) { showToast('Sélectionnez le PDV d\'embarquement.', ICONS.warning); return; }
+    if (!selDeb?.value) { showToast('Sélectionnez le PDV de débarquement.', ICONS.warning); return; }
+  }
+
+  // ── Construire l'affichage embarquement/débarquement ──
+  let embDebHtmlColis = '';
+  if (isArretsColisCheck) {
+    const selEmb = document.getElementById('vente-montee');
+    const selDeb = document.getElementById('vente-pdv-debarquement-arrets');
+    const embOption = selEmb?.selectedOptions[0];
+    const debOption = selDeb?.selectedOptions[0];
+    embDebHtmlColis = `
+      <div class="recap-row"><span>Embarquement</span><strong>${embOption?.dataset.nom || '—'}${embOption?.dataset.ville ? ' — ' + embOption.dataset.ville : (t._arretMontee ? ' — ' + t._arretMontee : '')}</strong></div>
+      <div class="recap-row"><span>Débarquement</span><strong>${debOption?.dataset.nom || '—'}${debOption?.dataset.ville ? ' — ' + debOption.dataset.ville : (t._arretDescente ? ' — ' + t._arretDescente : '')}</strong></div>`;
+  } else {
+    const selEmb = document.getElementById('vente-pdv-embarquement');
+    const selDeb = document.getElementById('vente-pdv-debarquement');
+    const embOption = selEmb?.selectedOptions[0];
+    const debOption = selDeb?.selectedOptions[0];
+    embDebHtmlColis = `
+      <div class="recap-row"><span>Embarquement</span><strong>${embOption?.dataset.nom || '—'}${embOption?.dataset.ville ? ' — ' + embOption.dataset.ville : ''}</strong></div>
+      <div class="recap-row"><span>Débarquement</span><strong>${debOption?.dataset.nom || '—'}${debOption?.dataset.ville ? ' — ' + debOption.dataset.ville : ''}</strong></div>`;
+  }
+  const sessionHeure = document.querySelector('.session-item.selected')?.dataset.heure || t.heureDepart || '—';
+  const date = document.getElementById('vente-date')?.value;
+  const dateFormatee = date ? new Date(date).toLocaleDateString('fr-FR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' }) : '—';
+  const poids = document.getElementById('colis-poids')?.value || '—';
+  const valeur = document.getElementById('colis-valeur')?.value;
+  const remarques = document.getElementById('colis-remarques')?.value.trim();
+
+  let overlay = document.getElementById('recapVenteOverlay');
+  if (overlay) overlay.remove();
+  overlay = document.createElement('div');
+  overlay.id = 'recapVenteOverlay';
+  overlay.className = 'recap-overlay';
+  overlay.innerHTML = `
+    <div class="recap-backdrop" onclick="closeVenteRecap()"></div>
+    <div class="recap-modal">
+      <div class="recap-modal-header">
+        <div><h3>${ICONS.clipboard} Récapitulatif</h3><small>Vérifiez avant de confirmer</small></div>
+        <button class="recap-close-btn" onclick="closeVenteRecap()">${ICONS.close}</button>
+      </div>
+      <div class="recap-body">
+        <div>
+          <div class="recap-section-title">Trajet</div>
+          <div class="recap-card">
+            <div class="recap-row"><span>Ligne</span><strong>${isArretsColisCheck && t._arretMontee ? `${t._arretMontee} → ${t._arretDescente}` : `${t.villeDepart} → ${t.villeArrivee}`}</strong></div>
+            <div class="recap-row"><span>Date</span><strong>${dateFormatee}</strong></div>
+            <div class="recap-row"><span>Départ</span><strong>${sessionHeure}</strong></div>
+            <div class="recap-row"><span>Bus</span><strong>${document.querySelector('.session-item.selected')?.dataset.bus || '—'}</strong></div>
+            ${embDebHtmlColis}
+          </div>
+        </div>
+        <div>
+          <div class="recap-section-title">Expéditeur</div>
+          <div class="recap-card">
+            <div class="recap-row"><span>Nom</span><strong>${expNom}</strong></div>
+            <div class="recap-row"><span>Téléphone</span><strong>${expTel}</strong></div>
+          </div>
+        </div>
+        <div>
+          <div class="recap-section-title">Destinataire</div>
+          <div class="recap-card">
+            <div class="recap-row"><span>Nom</span><strong>${destNom}</strong></div>
+            <div class="recap-row"><span>Téléphone</span><strong>${destTel}</strong></div>
+          </div>
+        </div>
+        <div>
+          <div class="recap-section-title">Colis</div>
+          <div class="recap-card">
+            <div class="recap-row"><span>Nature</span><strong>${nature}</strong></div>
+            <div class="recap-row"><span>Poids</span><strong>${poids} kg</strong></div>
+            ${valeur ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(valeur).toLocaleString()} XAF</strong></div>` : ''}
+          </div>
+        </div>
+        ${remarques ? `<div><div class="recap-section-title">Remarques</div><div class="recap-card"><div class="recap-row" style="display:block;"><span>${remarques}</span></div></div></div>` : ''}
+        <div class="recap-total-row"><span>Total à encaisser</span><strong>${prix.toLocaleString()} XAF</strong></div>
+      </div>
+      <div class="recap-actions">
+        <button class="vente-btn-next vente-btn-confirm" onclick="submitVente()">${ICONS.check} Confirmer et enregistrer</button>
+        <button class="vente-btn-back" onclick="closeVenteRecap()">← Modifier</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+}
+window.showColisRecapShared = showColisRecapShared;
+
 // ════════════════════════════════
 //  VENTE — SOUMETTRE
 // ════════════════════════════════
 async function submitVente() {
   closeVenteRecap();
+  if (venteMode === 'colis') { await submitColisShared(); return; }
 
   const blocks  = document.querySelectorAll('.passager-block');
   const date    = document.getElementById('vente-date')?.value;
@@ -1745,6 +1957,9 @@ async function submitVente() {
   blocks.forEach(block => {
     const type    = block.querySelector('.p-type')?.value || 'adulte';
     const bagages = parseFloat(block.querySelector('.p-bagages')?.value || 0);
+    const nombreBagages = parseInt(block.querySelector('.p-bagages-nombre')?.value || 0, 10);
+    const colisSouteCheck = block.querySelector('.p-colis-soute-toggle')?.checked;
+    const prixColisSoute  = colisSouteCheck ? Number(block.querySelector('.p-colis-soute-prix')?.value || 0) : 0;
 
     const prixBase = isArrets
       ? (t._segmentPrixParType?.[type] || 0)
@@ -1752,7 +1967,7 @@ async function submitVente() {
 
     const excesBag  = bagages > (t.limiteBagages || 0) ? Math.max(0, bagages - (t.limiteBagages || 0)) : 0;
     const prixBag   = excesBag * (t.fraisExcesBagages || 0);
-    const sousTotal = prixBase + prixBag;
+    const sousTotal = prixBase + prixBag + prixColisSoute; // ← MODIFIÉ
     totalGeneral   += sousTotal;
 
     passagers.push({
@@ -1763,9 +1978,17 @@ async function submitVente() {
       typeNom:      nomType(type),
       typeAgeLabel: ageRangeLabel(type),
       bagages,
-      siege:     block.querySelector('.p-siege')?.value.trim() || null,
+      nombreBagages,
+      siege: block.querySelector('.p-siege')?.value.trim() || null,
       prixBillet: prixBase,
       prixBagages: prixBag,
+      // NOUVEAU
+      colisSoute: colisSouteCheck ? {
+        nature: block.querySelector('.p-colis-soute-nature')?.value.trim() || null,
+        poids: parseFloat(block.querySelector('.p-colis-soute-poids')?.value) || null,
+        valeurDeclaree: parseFloat(block.querySelector('.p-colis-soute-valeur')?.value) || null,
+        prix: prixColisSoute,
+      } : null,
       sousTotal,
     });
   });
@@ -1792,6 +2015,7 @@ async function submitVente() {
     typeBillet:        p0.type,
     typeBilletNom:     p0.typeNom,
     bagages:           p0.bagages,
+    nombreBagages:     p0.nombreBagages,
     siege:             p0.siege,
     prixBillet:        p0.prixBillet,
     prixBagages:       p0.prixBagages,
@@ -1861,6 +2085,150 @@ async function submitVente() {
   }
 }
 
+async function submitColisShared() {
+  const t = selectedTrajetForVente;
+  if (!t) { showToast('Sélectionnez un trajet.', ICONS.warning); return; }
+
+  const sessionHeure = document.querySelector('.session-item.selected')?.dataset.heure || t.heureDepart || null;
+  const sessionBusNom = document.querySelector('.session-item.selected')?.dataset.bus || null;
+  const isArretsColis = (t.typeTrajet || 'direct') === 'arrets';
+
+  // ── Calcul embarquement/débarquement (même logique que submitVente) ──
+  let pdvEmbarquementId    = pdvData.id;
+  let pdvEmbarquementNom   = pdvData.nom;
+  let pdvEmbarquementVille = pdvData.ville;
+  let pdvDebarquementId    = null;
+  let pdvDebarquementNom   = null;
+  let pdvDebarquementVille = null;
+  let arretMontee   = null;
+  let arretDescente = null;
+  let routeLabelColis = `${t.villeDepart} → ${t.villeArrivee}`;
+
+  if (isArretsColis) {
+    arretMontee   = t._arretMontee   || null;
+    arretDescente = t._arretDescente || null;
+    routeLabelColis = (arretMontee && arretDescente) ? `${arretMontee} → ${arretDescente}` : routeLabelColis;
+
+    const selEmb = document.getElementById('vente-montee');
+    const selDeb = document.getElementById('vente-pdv-debarquement-arrets');
+    if (selEmb?.value) {
+      const embOpt = selEmb.selectedOptions[0];
+      pdvEmbarquementId    = selEmb.value;
+      pdvEmbarquementNom   = embOpt?.dataset.nom   || '';
+      pdvEmbarquementVille = embOpt?.dataset.ville || '';
+    }
+    if (selDeb?.value) {
+      const debOpt = selDeb.selectedOptions[0];
+      pdvDebarquementId    = selDeb.value;
+      pdvDebarquementNom   = debOpt?.dataset.nom   || '';
+      pdvDebarquementVille = debOpt?.dataset.ville || '';
+    }
+  } else {
+    const selEmb = document.getElementById('vente-pdv-embarquement');
+    const selDeb = document.getElementById('vente-pdv-debarquement');
+    if (!selEmb?.value || !selDeb?.value) {
+      showToast('Sélectionnez les PDV d\'embarquement et de débarquement.', ICONS.warning);
+      return;
+    }
+    const embOption = selEmb.selectedOptions[0];
+    const debOption = selDeb.selectedOptions[0];
+    pdvEmbarquementId    = selEmb.value;
+    pdvEmbarquementNom   = embOption?.dataset.nom   || '';
+    pdvEmbarquementVille = embOption?.dataset.ville || '';
+    pdvDebarquementId    = selDeb.value;
+    pdvDebarquementNom   = debOption?.dataset.nom   || '';
+    pdvDebarquementVille = debOption?.dataset.ville || '';
+  }
+
+  const payload = {
+    agenceId: pdvData.agenceId,
+    pdvId: pdvData.id,
+    trajetId: t.id,
+    typeTrajet: t.typeTrajet || 'direct',
+    routeLabel: routeLabelColis,
+    arretMontee,
+    arretDescente,
+    pdvEmbarquementId,
+    pdvEmbarquementNom,
+    pdvEmbarquementVille,
+    pdvDebarquementId,
+    pdvDebarquementNom,
+    pdvDebarquementVille,
+    sessionId: document.getElementById('vente-session-id')?.value || null,
+    dateDepart: document.getElementById('vente-date')?.value,
+    heureDepart: sessionHeure,
+    busNom: sessionBusNom,
+    expediteurNom: document.getElementById('colis-exp-nom')?.value.trim(),
+    expediteurTel: document.getElementById('colis-exp-tel')?.value.trim(),
+    destinataireNom: document.getElementById('colis-dest-nom')?.value.trim(),
+    destinataireTel: document.getElementById('colis-dest-tel')?.value.trim(),
+    nature: document.getElementById('colis-nature')?.value.trim(),
+    poids: parseFloat(document.getElementById('colis-poids')?.value) || null,
+    valeurDeclaree: parseFloat(document.getElementById('colis-valeur')?.value) || null,
+    remarques: document.getElementById('colis-remarques')?.value.trim() || null,
+    prixTransport: Number(document.getElementById('colis-prix')?.value || 0),
+    statut: 'en_transit',
+    createdAt: new Date().toISOString(),
+  };
+
+  const btn = document.getElementById('venteBtnConfirm');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="btn-spinner"></span> Enregistrement...'; }
+
+  try {
+    const res  = await apiFetch(`${BACKEND}/colis/create`, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.message || "Erreur lors de l'enregistrement.", ICONS.banned); return; }
+
+    if (!data.codeRetrait) {
+      console.error('Le serveur n\'a pas renvoyé de code de retrait.');
+      showToast('Colis enregistré mais code de retrait manquant — contactez le support.', ICONS.warning);
+    }
+
+    window._lastColisId = data.id || data.colisId;
+    showColisTicketShared(payload, data.codeRetrait);
+    resetVenteForm();
+
+  } catch (err) {
+    console.error('Erreur colis :', err);
+    showToast('Impossible de contacter le serveur.', ICONS.banned);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = `${ICONS.check} Vérifier et confirmer`; }
+  }
+}
+window.submitColisShared = submitColisShared;
+
+function showColisTicketShared(colis, code) {
+  const body = document.getElementById('ticketBody');
+  if (!body) return;
+
+  window._lastTicketResaId = null;
+
+  const btnImprimer = document.querySelector('#ticketModal .ticket-btn-primary');
+  if (btnImprimer) btnImprimer.style.display = 'none';
+
+  body.innerHTML = `
+    <div class="ticket-row"><span>Code de retrait</span><strong class="accent" style="font-size:16px;letter-spacing:3px;">${code}</strong></div>
+    <div class="ticket-row"><span>Trajet</span><strong>${colis.routeLabel}</strong></div>
+    <div class="ticket-row"><span>Bus</span><strong>${colis.busNom || '—'}</strong></div>
+    <div class="ticket-row"><span>Expéditeur</span><strong>${colis.expediteurNom}</strong></div>
+    <div class="ticket-row"><span>Destinataire</span><strong>${colis.destinataireNom} · ${colis.destinataireTel}</strong></div>
+    <div class="ticket-row"><span>Embarquement</span><strong>${colis.pdvEmbarquementNom || '—'}${colis.pdvEmbarquementVille ? ' — ' + colis.pdvEmbarquementVille : (colis.arretMontee ? ' — ' + colis.arretMontee : '')}</strong></div>
+    <div class="ticket-row"><span>À retirer à</span><strong>${colis.pdvDebarquementNom || '—'}${colis.pdvDebarquementVille ? ' — ' + colis.pdvDebarquementVille : (colis.arretDescente ? ' — ' + colis.arretDescente : '')}</strong></div>
+    <div class="ticket-row"><span>Nature</span><strong>${colis.nature}</strong></div>
+    ${colis.valeurDeclaree != null ? `<div class="ticket-row"><span>Valeur déclarée</span><strong>${Number(colis.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
+    <div class="ticket-row"><span>Total encaissé</span><strong class="accent">${Number(colis.prixTransport).toLocaleString()} XAF</strong></div>
+  `;
+
+  const headerTitle = document.querySelector('#ticketModal .ticket-header h2');
+  const headerSub   = document.querySelector('#ticketModal .ticket-header p');
+  if (headerTitle) headerTitle.textContent = 'Colis enregistré !';
+  if (headerSub)   headerSub.textContent   = 'Communiquez le code au destinataire.';
+
+  const overlay = document.getElementById('ticketOverlay');
+  if (overlay) { overlay.classList.add('show'); overlay.style.pointerEvents = 'all'; }
+}
+window.showColisTicketShared = showColisTicketShared;
+
 function resetVenteForm() {
   // Supprimer les passagers supplémentaires et vider le passager 1
   const list = document.getElementById('passagersList');
@@ -1868,6 +2236,8 @@ function resetVenteForm() {
     list.querySelectorAll('.passager-block').forEach((b, i) => { if (i > 0) b.remove(); });
     list.querySelectorAll('.vente-input').forEach(el => el.value = '');
     list.querySelectorAll('.p-type').forEach(el => el.value = 'adulte');
+    list.querySelectorAll('.p-colis-soute-toggle').forEach(cb => cb.checked = false);
+    list.querySelectorAll('.p-colis-soute-fields').forEach(f => f.style.display = 'none');
   }
 
   const remarques = document.getElementById('vente-remarques');
@@ -1899,6 +2269,10 @@ function resetVenteForm() {
   const segmentPrixTypesEl = document.getElementById('segmentPrixTypes');
   if (segmentPrixTypesEl) segmentPrixTypesEl.style.display = 'none';
 
+  // ← AJOUTER CE BLOC
+  ['colis-exp-nom','colis-exp-tel','colis-dest-nom','colis-dest-tel','colis-nature','colis-poids','colis-valeur','colis-prix','colis-remarques']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
   setTrajetType('direct');
   selectedTrajetForVente = null;
   updatePrixPreview();
@@ -1922,8 +2296,22 @@ function buildDataPourReservationPDV(r, trajet) {
     ? new Date(r.dateDepart + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
     : '—';
 
+  let totalKg = r.bagages || 0;
+  let totalNombre = r.nombreBagages || 0;
+  if (Array.isArray(r.passagers) && r.passagers.length > 0) {
+    totalKg = r.passagers.reduce((s, p) => s + (p.bagages || 0), 0);
+    totalNombre = r.passagers.reduce((s, p) => s + (p.nombreBagages || 0), 0);
+  }
+  const bagagesLabel = totalKg > 0
+    ? `${totalKg} kg${totalNombre > 0 ? ` (${totalNombre} bagage${totalNombre > 1 ? 's' : ''})` : ''}`
+    : null;
+
   return {
     nomAgence:    agenceData?.nom   || 'Votre agence',
+    codeControle: r.codeControle || null,
+    bagagesLabel,
+    politiqueAnnulation: agenceData?.politiqueAnnulation || null,
+    delaiFormalite: agenceData?.delaiFormalite || null,
     villeAgence:  agenceData?.ville || '',
     logoUrl:      agenceData?.logo || agenceData?.logoUrl || null,
     slogan:       agenceData?.slogan || '',
@@ -2007,6 +2395,10 @@ window.imprimerBilletPDV = imprimerBilletPDV;
 function showTicket(resa, trajet) {
   const body = document.getElementById('ticketBody');
   if (!body) return;
+
+  // ← AJOUTER CES 2 LIGNES
+  const btnImprimer = document.querySelector('#ticketModal .ticket-btn-primary');
+  if (btnImprimer) btnImprimer.style.display = '';
 
   window._lastTicketResaId    = resa.id;
   window._lastTicketTrajetRef = trajet;
@@ -2213,6 +2605,7 @@ function copierInfosBilletManuel(resaId) {
 //  PRÉFILL VENTE DEPUIS TRAJETS
 // ════════════════════════════════
 function prefillVente(trajetId) {
+  setVenteMode('billet');
   showPage('vente', document.querySelector('[data-page=vente]'));
  
   setTimeout(() => {
@@ -2642,7 +3035,12 @@ function openResaDetail(resaId) {
       ${p.telephone ? `<div class="recap-row"><span>Téléphone</span><strong>${p.telephone}</strong></div>` : ''}
       <div class="recap-row"><span>Type</span><strong>${nomTypePassager(p)}</strong></div>
       ${p.siege ? `<div class="recap-row"><span>Siège</span><strong>${p.siege}</strong></div>` : ''}
-      ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.prixBagages > 0 ? ` (+${Number(p.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
+      ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.nombreBagages > 0 ? ` · ${p.nombreBagages} colis` : ''}${p.prixBagages > 0 ? ` (+${Number(p.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
+      ${p.colisSoute ? `
+        <div class="recap-row"><span>Colis en soute</span><strong>${p.colisSoute.nature || '—'} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+        ${p.colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${p.colisSoute.poids} kg</strong></div>` : ''}
+        ${p.colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(p.colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
+      ` : ''}
       <div class="recap-row"><span>Sous-total</span><strong style="color:var(--accent)">${Number(p.sousTotal || 0).toLocaleString()} XAF</strong></div>
     </div>`).join('') : '';
 
@@ -2669,10 +3067,8 @@ function openResaDetail(resaId) {
         <div class="recap-row"><span>Départ</span><strong>${resa.heureDepart || '—'}</strong></div>
         <div class="recap-row"><span>Bus</span><strong>${resa.busNom || '—'}</strong></div>
         <div class="recap-row"><span>Vendu le</span><strong>${resa.createdAt ? new Date(resa.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) + ' à ' + new Date(resa.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' }) : '—'}</strong></div>
-        <div class="recap-row"><span>Embarquement</span><strong>${resa.pdvEmbarquementNom || '—'}${resa.pdvEmbarquementVille ? ' — ' + resa.pdvEmbarquementVille : ''}</strong></div>
-        <div class="recap-row"><span>Débarquement</span><strong>${resa.pdvDebarquementNom || '—'}${resa.pdvDebarquementVille ? ' — ' + resa.pdvDebarquementVille : ''}</strong></div>
-        <div class="recap-row"><span>Ville de montée</span><strong>${resa.arretMontee || trajet?.villeDepart || '—'}</strong></div>
-        <div class="recap-row"><span>Ville de descente</span><strong>${resa.arretDescente || trajet?.villeArrivee || '—'}</strong></div>
+        <div class="recap-row"><span>Embarquement</span><strong>${resa.pdvEmbarquementNom || '—'}${(resa.arretMontee || trajet?.villeDepart) ? ' (' + (resa.arretMontee || trajet?.villeDepart) + ')' : ''}</strong></div>
+        <div class="recap-row"><span>Débarquement</span><strong>${resa.pdvDebarquementNom || '—'}${(resa.arretDescente || trajet?.villeArrivee) ? ' (' + (resa.arretDescente || trajet?.villeArrivee) + ')' : ''}</strong></div>
         ${isMulti ? `<div class="recap-row"><span>Passagers</span><strong>${nbPass} personnes</strong></div>` : ''}
       </div>
 
@@ -2683,8 +3079,13 @@ function openResaDetail(resaId) {
         <div class="recap-row"><span>Téléphone</span><strong>${resa.telephonePassager || '—'}</strong></div>
         <div class="recap-row"><span>Type</span><strong>${nomTypeResa(resa)}</strong></div>
         ${resa.siege ? `<div class="recap-row"><span>Siège</span><strong>${resa.siege}</strong></div>` : ''}
-        ${resa.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${resa.bagages} kg${resa.prixBagages > 0 ? ` (+${Number(resa.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
-      </div>`}
+        ${resa.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${resa.bagages} kg${resa.nombreBagages > 0 ? ` · ${resa.nombreBagages} colis` : ''}${resa.prixBagages > 0 ? ` (+${Number(resa.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
+        ${resa.passagers?.[0]?.colisSoute ? `
+          <div class="recap-row"><span>Colis en soute</span><strong>${resa.passagers[0].colisSoute.nature || '—'} (${Number(resa.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+          ${resa.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${resa.passagers[0].colisSoute.poids} kg</strong></div>` : ''}
+          ${resa.passagers[0].colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(resa.passagers[0].colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
+        ` : ''}
+        </div>`}
 
       ${resa.remarques ? `
       <div class="recap-section-title">Remarques</div>
@@ -3780,6 +4181,87 @@ function getResasPrecedentesPDV(periode) {
   });
 }
 
+// ════════════════════════════════
+//  COLIS — STATS POUR FINANCES PDV
+//  (réutilise colisEnvoyesList déjà chargé — aucun fetch supplémentaire)
+// ════════════════════════════════
+function colisPasseFiltrePDV(c) {
+  if (finFiltreTrajet && c.trajetId !== finFiltreTrajet) return false;
+  if (finFiltreBus    && c.busNom   !== finFiltreBus)    return false;
+  return true;
+}
+
+function calculerColisStatsPDV() {
+  const { debut, fin } = getFinBornesEffectivesPDV();
+
+  const colisPeriode = colisEnvoyesList.filter(c => {
+    const d = toBrazzaDate(c.createdAt);
+    if (debut && d < debut) return false;
+    if (fin   && d > fin)   return false;
+    return colisPasseFiltrePDV(c);
+  });
+
+  const { debut: pDebut, fin: pFin } = getBornesPeriodePrecedentePDV(finPeriode, debut, fin);
+  const colisPrecedent = (pDebut && pFin)
+    ? colisEnvoyesList.filter(c => {
+        const d = toBrazzaDate(c.createdAt);
+        return d >= pDebut && d <= pFin && colisPasseFiltrePDV(c);
+      })
+    : [];
+
+  const revenuColis     = colisPeriode.reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+  const revenuColisPrec = colisPrecedent.reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+
+  return {
+    revenuColis,
+    revenuColisPrec,
+    total:     colisPeriode.length,
+    enTransit: colisPeriode.filter(c => c.statut === 'en_transit').length,
+    arrive:    colisPeriode.filter(c => c.statut === 'arrive').length,
+    retire:    colisPeriode.filter(c => c.statut === 'retire').length,
+  };
+}
+
+function _renderFinanceColisPDV() {
+  const container = document.getElementById('finColisStatsPDV');
+  if (!container) return;
+
+  const fmt = n => n >= 1_000_000
+    ? (n/1_000_000).toFixed(1).replace(/\.0$/,'') + 'M XAF'
+    : n >= 1_000 ? Math.round(n/1_000) + 'k XAF'
+    : n.toLocaleString() + ' XAF';
+
+  const { revenuColis, revenuColisPrec, total, enTransit, retire } = calculerColisStatsPDV();
+
+  // Pas de colis sur la période → on masque le bloc plutôt que d'afficher du vide
+  if (total === 0) {
+    container.style.display = 'none';
+    return;
+  }
+  container.style.display = 'block';
+
+  let deltaHTML = `<span style="color:var(--muted);">— pas de comparaison</span>`;
+  if (revenuColisPrec > 0) {
+    deltaHTML = cmpHtmlPDV(revenuColis, revenuColisPrec);
+  } else if (revenuColis > 0) {
+    deltaHTML = `<span style="color:var(--accent);">Nouveau — rien sur la période précédente</span>`;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+      <div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">${ICONS.bag} Revenu colis</div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--white);">${fmt(revenuColis)}</div>
+        <div style="font-size:11px;margin-top:2px;">${deltaHTML}</div>
+      </div>
+      <div style="display:flex;gap:14px;font-size:11.5px;color:var(--muted);">
+        <span>${total} colis</span>
+        <span style="color:#FFB23F;">${enTransit} en transit</span>
+        <span style="color:var(--accent);">${retire} retirés</span>
+      </div>
+    </div>`;
+}
+
 function cmpHtmlPDV(val, prev) {
   if (prev === 0) return `<span style="color:var(--muted);">— pas de comparaison</span>`;
   const pct     = Math.round((val - prev) / prev * 100);
@@ -4084,6 +4566,7 @@ function renderFinancePage() {
   renderFinanceChartPDV(finPeriode);
   renderFinanceDowPDV(resas);
   renderFinanceTrajetsPDV(resas, fmt);
+  _renderFinanceColisPDV();
 }
 
 // ════════════════════════════════
@@ -4128,6 +4611,698 @@ function renderMeilleurTrajet(resas) {
       </div>
     </div>`;
 }
+
+// ════════════════════════════════
+//  COLIS (PDV)
+// ════════════════════════════════
+async function loadColisPDV(pdvId) {
+  try {
+    const [resRecep, resEnvoi] = await Promise.all([
+      apiFetch(`${BACKEND}/colis/a-receptionner?pdvId=${pdvId}`),
+      apiFetch(`${BACKEND}/colis?pdvId=${pdvId}`),
+    ]);
+    const dataRecep = await resRecep.json();
+    const dataEnvoi = await resEnvoi.json();
+
+    if (resRecep.ok) colisList = dataRecep.colis || [];
+    if (resEnvoi.ok) colisEnvoyesList = dataEnvoi.colis || [];
+
+    filterColisPDV();
+    updateColisBadgePDV();
+  } catch (err) {
+    console.error('Erreur chargement colis PDV :', err);
+    colisList = [];
+    colisEnvoyesList = [];
+    renderColisPDV([]);
+  }
+}
+
+function setColisModePDV(mode, btn) {
+  colisModePDV = mode;
+  document.querySelectorAll('#colisModeFilters .rqf-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  filterColisPDV();
+}
+window.setColisModePDV = setColisModePDV;
+
+function updateColisBadgePDV() {
+  const badge = document.getElementById('drawerBadgeColis');
+  if (!badge) return;
+  const enTransit = colisList.filter(c => c.statut === 'en_transit').length;
+  badge.textContent = enTransit;
+  badge.classList.toggle('show', enTransit > 0);
+}
+
+// ════════════════════════════════
+//  COLIS — ALERTE EN ATTENTE LONGUE (PDV)
+// ════════════════════════════════
+function getColisEnAttenteLonguePDV() {
+  const maintenant = Date.now();
+  return colisList.filter(c => {
+    if (c.statut !== 'arrive') return false;
+    const dateRef = c.updatedAt || c.dateArrivee || c.createdAt;
+    if (!dateRef) return false;
+    const joursEcoules = (maintenant - new Date(dateRef).getTime()) / 86400000;
+    return joursEcoules >= 3;
+  });
+}
+
+function renderColisAlertesPDV() {
+  const wrap = document.getElementById('colisAlertesWrapPDV');
+  if (!wrap) return;
+
+  const enAttenteLongue = getColisEnAttenteLonguePDV();
+
+  if (enAttenteLongue.length === 0) {
+    wrap.innerHTML = `<div class="resa-alerte-empty">Aucune alerte — tout fonctionne normalement.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <div class="resa-alertes-grid">
+      <div class="resa-alerte-card danger" onclick="filtrerParAlerteColisAttentePDV()">
+        <div class="resa-alerte-head">${ICONS.warning} Colis en attente de retrait</div>
+        <div class="resa-alerte-value">${enAttenteLongue.length}</div>
+        <div class="resa-alerte-sub">arrivés depuis 3 jours ou plus, non retirés</div>
+      </div>
+    </div>`;
+
+  window._alerteColisAttentePDVIds = enAttenteLongue.map(c => c.id);
+}
+window.renderColisAlertesPDV = renderColisAlertesPDV;
+
+function filtrerParAlerteColisAttentePDV() {
+  const ids = window._alerteColisAttentePDVIds || [];
+  if (ids.length === 0) { showToast('Aucun colis en attente longue.', ICONS.warning); return; }
+
+  // Force le mode "à réceptionner" + statut "arrivé"
+  setColisModePDV('receptionner', document.querySelector('#colisModeFilters .rqf-btn'));
+  const statutSelect = document.getElementById('colisFiltreStatutPDV');
+  if (statutSelect) statutSelect.value = 'arrive';
+
+  const filtered = colisList.filter(c => ids.includes(c.id));
+  const countEl = document.getElementById('colisCountNumPDV');
+  if (countEl) countEl.textContent = filtered.length;
+  renderColisPDV(filtered);
+
+  showToast(`${ids.length} colis en attente de retrait affiché${ids.length > 1 ? 's' : ''}.`, ICONS.warning);
+}
+window.filtrerParAlerteColisAttentePDV = filtrerParAlerteColisAttentePDV;
+
+function filterColisPDV() {
+  populateColisFiltresPDV();
+  updateColisPeriodeLabelPDV();
+  renderColisAlertesPDV();
+  ['colisFiltreTrajet', 'colisFiltreBus', 'colisFiltreStatutPDV'].forEach(updateColisFiltreHighlightPDV);
+
+  const search = (document.getElementById('colisSearchPDV')?.value || '').toLowerCase().trim();
+  const statut = document.getElementById('colisFiltreStatutPDV')?.value || '';
+  const { debut, fin } = getColisBornesEffectivesPDV();
+
+  const source = colisModePDV === 'envoyes' ? colisEnvoyesList : colisList;
+
+  let filtered = source.filter(c => {
+    const d = toBrazzaDate(c.createdAt);
+    if (debut && d < debut) return false;
+    if (fin   && d > fin)   return false;
+    if (colisFiltreTrajet && c.trajetId !== colisFiltreTrajet) return false;
+    if (colisFiltreBus    && c.busNom   !== colisFiltreBus)    return false;
+    if (statut && c.statut !== statut) return false;
+    if (search) {
+      const champ = `${c.expediteurNom} ${c.expediteurTel} ${c.destinataireNom} ${c.destinataireTel} ${c.codeRetrait}`.toLowerCase();
+      if (!champ.includes(search)) return false;
+    }
+    return true;
+  });
+
+  filtered = sortColisPDV(filtered, colisSortBy);
+
+  const countEl = document.getElementById('colisCountNumPDV');
+  if (countEl) countEl.textContent = filtered.length;
+
+  renderColisPDV(filtered);
+}
+
+function updateColisFiltreHighlightPDV(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('filtre-actif', !!el.value);
+}
+
+// ── Période ──
+function getColisBornesEffectivesPDV() {
+  if (colisCustomRange) return { debut: colisCustomRange.debut, fin: colisCustomRange.fin };
+  const nowBrazza  = Date.now() + OFFSET_MS_FIN;
+  const todayDate  = new Date(nowBrazza);
+  const today      = todayDate.toISOString().split('T')[0];
+
+  if (colisPeriode === 'today') return { debut: today, fin: today };
+  if (colisPeriode === 'week') {
+    const jourSemaine = (todayDate.getUTCDay() + 6) % 7;
+    const lundi = new Date(todayDate.getTime() - jourSemaine * 86400000);
+    return { debut: lundi.toISOString().split('T')[0], fin: today };
+  }
+  if (colisPeriode === 'month') {
+    const premierJour = new Date(Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1));
+    return { debut: premierJour.toISOString().split('T')[0], fin: today };
+  }
+  return { debut: null, fin: null }; // 'all'
+}
+
+function updateColisPeriodeLabelPDV() {
+  const el = document.getElementById('colisPeriodeLabelPDV');
+  if (!el) return;
+  const fmtLong  = (str) => new Date(str + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  const fmtShort = (str) => new Date(str + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+
+  if (colisCustomRange) {
+    const d = fmtLong(colisCustomRange.debut);
+    const f = fmtLong(colisCustomRange.fin);
+    el.innerHTML = colisCustomRange.debut === colisCustomRange.fin ? `${ICONS.calendar} ${d}` : `${ICONS.calendar} Du ${d} au ${f}`;
+    return;
+  }
+  const { debut, fin } = getColisBornesEffectivesPDV();
+  if (colisPeriode === 'today') el.innerHTML = `${ICONS.calendar} Aujourd'hui · ${fmtLong(debut)}`;
+  else if (colisPeriode === 'week')  el.innerHTML = `${ICONS.calendar} Cette semaine · Du ${fmtShort(debut)} au ${fmtLong(fin)}`;
+  else if (colisPeriode === 'month') el.innerHTML = `${ICONS.calendar} Ce mois-ci · Du ${fmtShort(debut)} au ${fmtLong(fin)}`;
+  else el.innerHTML = `${ICONS.calendar} Toutes les périodes`;
+}
+
+function setColisPeriode(periode, btn) {
+  colisPeriode = periode;
+  colisCustomRange = null;
+  const wrap = document.getElementById('colisCustomPickerWrapPDV');
+  if (wrap) wrap.style.display = 'none';
+  document.getElementById('colisCustomBtnPDV')?.classList.remove('active');
+  document.querySelectorAll('#colisQuickFilters .rqf-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  filterColisPDV();
+}
+window.setColisPeriode = setColisPeriode;
+
+function toggleColisCustomPickerPDV() {
+  const wrap = document.getElementById('colisCustomPickerWrapPDV');
+  if (!wrap) return;
+  wrap.style.display = wrap.style.display === 'block' ? 'none' : 'block';
+}
+window.toggleColisCustomPickerPDV = toggleColisCustomPickerPDV;
+
+function applyColisCustomRangePDV() {
+  const debut = document.getElementById('colisCustomDebutPDV')?.value;
+  const fin   = document.getElementById('colisCustomFinPDV')?.value;
+  if (!debut || !fin) { showToast('Sélectionnez les deux dates.', ICONS.warning); return; }
+  if (debut > fin) { showToast('La date de début doit précéder la date de fin.', ICONS.warning); return; }
+  colisCustomRange = { debut, fin };
+  document.querySelectorAll('#colisQuickFilters .rqf-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('colisCustomBtnPDV')?.classList.add('active');
+  document.getElementById('colisCustomPickerWrapPDV').style.display = 'none';
+  filterColisPDV();
+}
+window.applyColisCustomRangePDV = applyColisCustomRangePDV;
+
+function clearColisCustomRangePDV() {
+  colisCustomRange = null;
+  document.getElementById('colisCustomPickerWrapPDV').style.display = 'none';
+  document.getElementById('colisCustomBtnPDV')?.classList.remove('active');
+  colisPeriode = 'all';
+  document.querySelectorAll('#colisQuickFilters .rqf-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('#colisQuickFilters .rqf-btn:nth-child(1)')?.classList.add('active');
+  filterColisPDV();
+}
+window.clearColisCustomRangePDV = clearColisCustomRangePDV;
+
+// ── Trajet / Bus (cascade, même logique que Finances) ──
+function populateColisFiltresPDV() {
+  const selT = document.getElementById('colisFiltreTrajet');
+  const selB = document.getElementById('colisFiltreBus');
+  if (!selT || !selB) return;
+  if (!selT.dataset.bound) {
+    selT.innerHTML = '<option value="">Tous les trajets</option>' +
+      trajetList.map(t => `<option value="${t.id}">${t.villeDepart} → ${t.villeArrivee}</option>`).join('');
+    populateColisBusSelectCascadePDV('');
+    selT.dataset.bound = '1';
+  }
+}
+
+function populateColisBusSelectCascadePDV(trajetId) {
+  const selB = document.getElementById('colisFiltreBus');
+  if (!selB) return;
+  selB.innerHTML = '<option value="">Tous les bus</option>';
+  if (trajetId) {
+    getDepartsForTrajet(trajetId)
+      .then(departs => {
+        const busNoms = [...new Set(departs.map(d => d.busNom).filter(Boolean))].sort();
+        selB.innerHTML = '<option value="">Tous les bus</option>' +
+          busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('');
+      })
+      .catch(err => console.error('Erreur chargement bus filtre colis :', err));
+  } else {
+    getBusNomsPourPDV().then(busNoms => {
+      selB.innerHTML = '<option value="">Tous les bus</option>' +
+        busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('');
+    });
+  }
+}
+
+function onColisTrajetFiltreChangePDV() {
+  const trajetId = document.getElementById('colisFiltreTrajet')?.value || '';
+  colisFiltreTrajet = trajetId;
+  const selB = document.getElementById('colisFiltreBus');
+  if (selB) selB.value = '';
+  colisFiltreBus = '';
+  populateColisBusSelectCascadePDV(trajetId);
+  filterColisPDV();
+}
+window.onColisTrajetFiltreChangePDV = onColisTrajetFiltreChangePDV;
+
+function onColisBusFiltreChangePDV() {
+  colisFiltreBus = document.getElementById('colisFiltreBus')?.value || '';
+  filterColisPDV();
+}
+window.onColisBusFiltreChangePDV = onColisBusFiltreChangePDV;
+
+// ── Tri ──
+function setColisSort(value) {
+  colisSortBy = value;
+  filterColisPDV();
+}
+window.setColisSort = setColisSort;
+
+function sortColisPDV(list, mode) {
+  const arr = [...list];
+  switch (mode) {
+    case 'date_asc':  arr.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || '')); break;
+    case 'prix_desc': arr.sort((a, b) => (b.prixTransport || 0) - (a.prixTransport || 0)); break;
+    case 'prix_asc':  arr.sort((a, b) => (a.prixTransport || 0) - (b.prixTransport || 0)); break;
+    case 'date_desc':
+    default: arr.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')); break;
+  }
+  return arr;
+}
+
+function badgeStatutColisPDV(statut) {
+  if (statut === 'en_transit') return `<span class="resa-meta-badge" style="background:rgba(255,178,63,0.12);color:#FFB23F;">En transit</span>`;
+  if (statut === 'arrive')     return `<span class="resa-meta-badge ok">Arrivé</span>`;
+  if (statut === 'retire')     return `<span class="resa-meta-badge" style="background:rgba(77,159,255,0.12);color:#4D9FFF;">Retiré</span>`;
+  return `<span class="resa-meta-badge">${statut}</span>`;
+}
+
+function renderColisPDV(list = colisList) {
+  const container = document.getElementById('colisPDVContainer');
+  if (!container) return;
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state large">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="16" width="36" height="26" rx="4" stroke="currentColor" stroke-width="2"/><path d="M6 16l18-10 18 10M24 6v36" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p>${colisModePDV === 'envoyes' ? 'Aucun colis envoyé' : 'Aucun colis pour l\'instant'}</p>
+        <small>${colisModePDV === 'envoyes' ? 'Les colis que vous expédiez apparaissent ici' : 'Les colis à réceptionner apparaissent ici'}</small>
+      </div>`;
+    return;
+  }
+
+  const sorted = [...list].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+  container.innerHTML = sorted.map(c => `
+    <div class="resa-card" onclick="openColisDetailPDV('${c.id}')">
+      <div class="resa-card-avatar">${ICONS.bag}</div>
+      <div class="resa-card-info">
+        <div class="resa-card-name">${colisModePDV === 'envoyes' ? `Vers ${c.destinataireNom}` : `${c.expediteurNom} → ${c.destinataireNom}`}</div>
+        <div class="resa-card-route">${c.routeLabel || '—'}</div>
+        <div class="resa-card-meta">
+          <span class="resa-meta-badge" style="font-family:monospace;">${c.codeRetrait}</span>
+          ${badgeStatutColisPDV(c.statut)}
+        </div>
+      </div>
+      <div class="resa-card-right">
+        <div class="resa-card-prix">${Number(c.prixTransport || 0).toLocaleString()} XAF</div>
+        <div class="resa-card-date">${c.dateDepart || ''} ${c.heureDepart || ''}</div>
+      </div>
+    </div>`).join('');
+}
+
+function openColisDetailPDV(id) {
+  const c = colisList.find(x => x.id === id) || colisEnvoyesList.find(x => x.id === id);
+  if (!c) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'colisDetailPDVOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:7000;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .3s ease;pointer-events:none;';
+  overlay.innerHTML = `
+    <div onclick="closeColisDetailPDV()" style="position:absolute;inset:0;background:rgba(10,14,26,0.85);backdrop-filter:blur(6px);"></div>
+    <div style="position:relative;z-index:1;background:#0F1525;border:1px solid rgba(255,255,255,0.12);border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;padding:20px 20px 32px;" id="colisDetailPDVPanel">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--white);">Colis ${c.codeRetrait}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">${badgeStatutColisPDV(c.statut)}</div>
+        </div>
+        <button onclick="closeColisDetailPDV()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;">${ICONS.close}</button>
+      </div>
+
+      <div class="recap-passager-card">
+        <div class="recap-passager-title">Expéditeur</div>
+        <div class="recap-row"><span>Nom</span><strong>${c.expediteurNom}</strong></div>
+        <div class="recap-row"><span>Téléphone</span><strong>${c.expediteurTel}</strong></div>
+      </div>
+
+      <div class="recap-passager-card">
+        <div class="recap-passager-title">Destinataire</div>
+        <div class="recap-row"><span>Nom</span><strong>${c.destinataireNom}</strong></div>
+        <div class="recap-row"><span>Téléphone</span><strong>${c.destinataireTel}</strong></div>
+      </div>
+
+      <div class="recap-card">
+        <div class="recap-row"><span>Trajet</span><strong>${c.routeLabel || '—'}</strong></div>
+        <div class="recap-row"><span>Bus</span><strong>${c.busNom || '—'}</strong></div>
+        <div class="recap-row"><span>Départ</span><strong>${c.dateDepart || '—'} ${c.heureDepart || ''}</strong></div>
+        <div class="recap-row"><span>Embarquement</span><strong>${c.pdvEmbarquementNom || '—'}${c.pdvEmbarquementVille ? ' — ' + c.pdvEmbarquementVille : (c.arretMontee ? ' — ' + c.arretMontee : '')}</strong></div>
+        <div class="recap-row"><span>Débarquement</span><strong>${c.pdvDebarquementNom || '—'}${c.pdvDebarquementVille ? ' — ' + c.pdvDebarquementVille : (c.arretDescente ? ' — ' + c.arretDescente : '')}</strong></div>
+        <div class="recap-row"><span>Nature</span><strong>${c.nature}</strong></div>
+        ${c.poids != null ? `<div class="recap-row"><span>Poids</span><strong>${c.poids} kg</strong></div>` : ''}
+        ${c.valeurDeclaree != null ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(c.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
+        ${c.remarques ? `<div class="recap-row"><span>Remarques</span><strong>${c.remarques}</strong></div>` : ''}
+      </div>
+
+      <div class="recap-total-row">
+        <span>Prix du transport</span>
+        <strong>${Number(c.prixTransport).toLocaleString()} XAF</strong>
+      </div>
+
+      ${(() => {
+        const estPdvDebarquement = pdvData?.id === c.pdvDebarquementId;
+        if (!estPdvDebarquement) {
+          return `
+          <div style="background:rgba(255,178,63,0.06);border:1px solid rgba(255,178,63,0.2);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:12px;color:#FFB23F;">
+            ${ICONS.info} Ce colis est à retirer au PDV de débarquement, pas ici.
+          </div>`;
+        }
+        if (c.statut === 'en_transit') {
+          return `
+          <button onclick="marquerColisArrivePDV('${c.id}')"
+            style="width:100%;background:var(--accent);color:var(--dark);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:14px;">
+            Marquer comme arrivé
+          </button>`;
+        }
+        if (c.statut === 'arrive') {
+          const infoArrivee = c.marqueArrivePar && c.dateArrivee
+            ? `<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">Arrivé le ${new Date(c.dateArrivee).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', timeZone:'Africa/Brazzaville' })} — marqué par ${c.marqueArrivePar}</div>`
+            : '';
+          return `
+          ${infoArrivee}
+          <button onclick="ouvrirConfirmationRetraitColisPDV('${c.id}')"
+            style="width:100%;background:var(--accent);color:var(--dark);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:14px;">
+            ${ICONS.check} Confirmer le retrait
+          </button>`;
+        }
+
+        if (c.statut === 'arrive' || c.statut === 'retire') {
+          // Optionnel : montrer l'info d'arrivée même une fois retiré
+        }
+
+        if (c.statut === 'retire') {
+          const labelPiece = { cni: 'CNI', passeport: 'Passeport', permis: 'Permis de conduire', aucune: 'Aucune pièce' }[c.typePieceIdentite] || c.typePieceIdentite;
+          const lignePiece = c.typePieceIdentite === 'aucune'
+            ? `<div style="font-size:12.5px;color:var(--white);margin-top:2px;">Pièce : ${labelPiece}${c.infoSansPiece ? ' — ' + c.infoSansPiece : ''}</div>`
+            : `<div style="font-size:12.5px;color:var(--white);margin-top:2px;">Pièce : ${labelPiece} n° ${c.numeroPieceIdentite || '—'}</div>`;
+          return `
+          <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-radius:12px;padding:12px 14px;margin-top:14px;">
+            <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;">${ICONS.check} Colis retiré</div>
+            ${c.retirePar ? `<div style="font-size:12.5px;color:var(--white);">Par : ${c.retirePar}</div>` : ''}
+            ${c.typePieceIdentite ? lignePiece : ''}
+            ${c.dateRetrait ? `<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${new Date(c.dateRetrait).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' })} à ${new Date(c.dateRetrait).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' })}</div>` : ''}
+          </div>`;
+        }
+        return '';
+      })()}
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'all';
+    document.getElementById('colisDetailPDVPanel').style.transform = 'translateY(0)';
+  });
+}
+
+function closeColisDetailPDV() {
+  const overlay = document.getElementById('colisDetailPDVOverlay');
+  if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; setTimeout(() => overlay.remove(), 300); }
+}
+
+// ════════════════════════════════
+//  COLIS — MARQUER ARRIVÉ / RETRAIT
+// ════════════════════════════════
+async function marquerColisArrivePDV(id) {
+  const btn = document.querySelector(`#colisDetailPDVOverlay button[onclick="marquerColisArrivePDV('${id}')"]`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Mise à jour...'; }
+
+  try {
+
+    const res = await apiFetch(`${BACKEND}/colis/${id}/statut`, {
+      method: 'PATCH',
+      body: JSON.stringify({ statut: 'arrive', marquePar: pdvData?.responsable || pdvData?.nom || null }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.message || 'Erreur de mise à jour.', ICONS.banned); return; }
+
+    const idx = colisList.findIndex(c => c.id === id);
+    if (idx !== -1) colisList[idx] = data.colis;
+
+    closeColisDetailPDV();
+    filterColisPDV();
+    updateColisBadgePDV();
+    showToast('Colis marqué comme arrivé.', ICONS.check, true);
+    openColisDetailPDV(id);
+
+  } catch (err) {
+    console.error('Erreur marquage arrivé colis :', err);
+    showToast('Impossible de contacter le serveur.', ICONS.banned);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Marquer comme arrivé'; }
+  }
+}
+window.marquerColisArrivePDV = marquerColisArrivePDV;
+
+function ouvrirConfirmationRetraitColisPDV(id) {
+  const c = colisList.find(x => x.id === id);
+  if (!c) return;
+
+  const existing = document.getElementById('colisRetraitConfirmOverlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'colisRetraitConfirmOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:8500;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .3s ease;pointer-events:none;';
+  overlay.innerHTML = `
+    <div onclick="closeColisRetraitConfirm()" style="position:absolute;inset:0;background:rgba(10,14,26,0.9);backdrop-filter:blur(6px);"></div>
+    <div style="position:relative;z-index:1;background:#0F1525;border:1px solid rgba(255,255,255,0.12);border-radius:24px 24px 0 0;width:100%;max-width:420px;padding:20px 20px 32px;box-shadow:0 -24px 80px rgba(0,0,0,0.5);transform:translateY(40px);transition:transform .35s cubic-bezier(0.34,1.1,.64,1);" id="colisRetraitPanel">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--white);">Confirmer le retrait</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Vérifiez l'identité avant de confirmer.</div>
+        </div>
+        <button onclick="closeColisRetraitConfirm()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0;">${ICONS.close}</button>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:600;color:var(--white);">Destinataire attendu</div>
+        <div style="font-size:13px;color:var(--white);margin-top:4px;">${c.destinataireNom} · ${c.destinataireTel}</div>
+      </div>
+      <div class="vente-field-group">
+        <label>Nom de la personne qui retire le colis <span class="req">*</span></label>
+        <input type="text" class="vente-input" id="colisRetraitPar" placeholder="Ex : ${c.destinataireNom}">
+      </div>
+
+      <div class="vente-field-group">
+        <label>Type de pièce d'identité <span class="req">*</span></label>
+        <select class="vente-select" id="colisRetraitTypePiece" onchange="onColisRetraitTypePieceChange()">
+          <option value="">— Sélectionner —</option>
+          <option value="cni">Carte nationale d'identité</option>
+          <option value="passeport">Passeport</option>
+          <option value="permis">Permis de conduire</option>
+          <option value="aucune">Aucune pièce disponible</option>
+        </select>
+      </div>
+      <div class="vente-field-group" id="colisRetraitNumPieceGroup">
+        <label>Numéro de la pièce <span class="req">*</span></label>
+        <input type="text" class="vente-input" id="colisRetraitNumPiece" placeholder="Ex : CG0012345">
+      </div>
+      <div class="vente-field-group" id="colisRetraitSansPieceGroup" style="display:none;">
+        <label>Précision (témoin, motif...) <span class="req">*</span></label>
+        <input type="text" class="vente-input" id="colisRetraitSansPieceInfo" placeholder="Ex : retrait en présence de M. Nzila, agent PDV">
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+        <button id="colisRetraitBtnConfirm"
+          style="width:100%;background:var(--accent);color:var(--dark);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;"
+          onclick="confirmerRetraitColisPDV('${id}')">
+          ${ICONS.check} Confirmer le retrait
+        </button>
+        <button onclick="closeColisRetraitConfirm()"
+          style="width:100%;background:var(--surface);color:var(--muted);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;">
+          Retour
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'all';
+    const panel = document.getElementById('colisRetraitPanel');
+    if (panel) panel.style.transform = 'translateY(0)';
+  });
+}
+window.ouvrirConfirmationRetraitColisPDV = ouvrirConfirmationRetraitColisPDV;
+
+function closeColisRetraitConfirm() {
+  const o = document.getElementById('colisRetraitConfirmOverlay');
+  if (o) { o.style.opacity = '0'; o.style.pointerEvents = 'none'; setTimeout(() => o.remove(), 300); }
+}
+window.closeColisRetraitConfirm = closeColisRetraitConfirm;
+
+function onColisRetraitTypePieceChange() {
+  const type = document.getElementById('colisRetraitTypePiece')?.value;
+  const numGroup  = document.getElementById('colisRetraitNumPieceGroup');
+  const sansGroup = document.getElementById('colisRetraitSansPieceGroup');
+  const estSansPiece = type === 'aucune';
+  if (numGroup)  numGroup.style.display  = estSansPiece ? 'none' : 'block';
+  if (sansGroup) sansGroup.style.display = estSansPiece ? 'block' : 'none';
+}
+window.onColisRetraitTypePieceChange = onColisRetraitTypePieceChange;
+
+async function confirmerRetraitColisPDV(id) {
+  const retirePar           = document.getElementById('colisRetraitPar')?.value.trim();
+  const typePieceIdentite   = document.getElementById('colisRetraitTypePiece')?.value;
+  const estSansPiece        = typePieceIdentite === 'aucune';
+  const numeroPieceIdentite = document.getElementById('colisRetraitNumPiece')?.value.trim();
+  const infoSansPiece       = document.getElementById('colisRetraitSansPieceInfo')?.value.trim();
+
+  if (!retirePar) { showToast('Indiquez le nom de la personne qui retire le colis.', ICONS.warning); return; }
+  if (!typePieceIdentite) { showToast("Sélectionnez le type de pièce d'identité.", ICONS.warning); return; }
+  if (estSansPiece) {
+    if (!infoSansPiece) { showToast("Indiquez une précision en l'absence de pièce d'identité.", ICONS.warning); return; }
+  } else {
+    if (!numeroPieceIdentite) { showToast("Indiquez le numéro de la pièce d'identité.", ICONS.warning); return; }
+  }
+
+  const btn = document.getElementById('colisRetraitBtnConfirm');
+  if (btn) { btn.disabled = true; btn.textContent = 'Retrait en cours...'; }
+
+  try {
+    const res = await apiFetch(`${BACKEND}/colis/${id}/statut`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        statut: 'retire',
+        retirePar,
+        typePieceIdentite,
+        numeroPieceIdentite: estSansPiece ? null : numeroPieceIdentite,
+        infoSansPiece: estSansPiece ? infoSansPiece : null,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.message || 'Erreur lors du retrait.', ICONS.banned); return; }
+
+    const idx = colisList.findIndex(c => c.id === id);
+    if (idx !== -1) colisList[idx] = data.colis;
+
+    closeColisRetraitConfirm();
+    closeColisDetailPDV();
+    filterColisPDV();
+    updateColisBadgePDV();
+    showToast('Colis retiré avec succès.', ICONS.check, true);
+
+  } catch (err) {
+    console.error('Erreur retrait colis :', err);
+    showToast('Impossible de contacter le serveur.', ICONS.banned);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = `${ICONS.check} Confirmer le retrait`; }
+  }
+}
+window.confirmerRetraitColisPDV = confirmerRetraitColisPDV;
+
+// ── Recherche par code (le destinataire donne son code à l'agent) ──
+function ouvrirVerificationCodeColisPDV() {
+  const existing = document.getElementById('colisVerifOverlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'colisVerifOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:8000;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .3s ease;pointer-events:none;';
+  overlay.innerHTML = `
+    <div onclick="closeVerificationCodeColisPDV()" style="position:absolute;inset:0;background:rgba(10,14,26,0.88);backdrop-filter:blur(6px);"></div>
+    <div style="position:relative;z-index:1;background:#0F1525;border:1px solid rgba(255,255,255,0.12);border-radius:24px 24px 0 0;width:100%;max-width:420px;padding:20px 20px 32px;box-shadow:0 -24px 80px rgba(0,0,0,0.5);transform:translateY(40px);transition:transform .35s cubic-bezier(0.34,1.1,.64,1);" id="colisVerifPanel">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--white);">Vérifier un code de retrait</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Demandez le code au destinataire.</div>
+        </div>
+        <button onclick="closeVerificationCodeColisPDV()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0;">${ICONS.close}</button>
+      </div>
+      <div class="vente-field-group">
+        <label>Code de retrait</label>
+        <input type="text" class="vente-input" id="colisVerifCode" placeholder="Ex : TRV-A7K9M2" style="text-transform:uppercase;">
+      </div>
+      <div id="colisVerifResult" style="margin-top:12px;"></div>
+      <button style="width:100%;background:var(--accent);color:var(--dark);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:12px;" onclick="verifierCodeColisPDV()">
+        ${ICONS.eye} Vérifier
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'all';
+    const panel = document.getElementById('colisVerifPanel');
+    if (panel) panel.style.transform = 'translateY(0)';
+    document.getElementById('colisVerifCode')?.focus();
+  });
+}
+window.ouvrirVerificationCodeColisPDV = ouvrirVerificationCodeColisPDV;
+
+function closeVerificationCodeColisPDV() {
+  const o = document.getElementById('colisVerifOverlay');
+  if (o) { o.style.opacity = '0'; o.style.pointerEvents = 'none'; setTimeout(() => o.remove(), 300); }
+}
+window.closeVerificationCodeColisPDV = closeVerificationCodeColisPDV;
+
+async function verifierCodeColisPDV() {
+  const code = document.getElementById('colisVerifCode')?.value.trim();
+  const resultEl = document.getElementById('colisVerifResult');
+  if (!code) { showToast('Saisissez un code.', ICONS.warning); return; }
+  if (resultEl) resultEl.innerHTML = `<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">Vérification...</div>`;
+
+  try {
+    const res = await apiFetch(`${BACKEND}/colis/verifier/${encodeURIComponent(code)}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (resultEl) {
+        resultEl.innerHTML = `
+          <div style="background:rgba(255,77,106,0.08);border:1px solid rgba(255,77,106,0.25);border-radius:12px;padding:12px 14px;font-size:13px;color:#FF4D6A;">
+            ${data.message || 'Colis introuvable.'}
+          </div>`;
+      }
+      return;
+    }
+
+    const c = data.colis;
+    const idx = colisList.findIndex(x => x.id === c.id);
+    if (idx !== -1) colisList[idx] = c; else colisList.push(c);
+
+    if (resultEl) {
+      resultEl.innerHTML = `
+        <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-radius:12px;padding:12px 14px;">
+          <div style="font-size:13px;font-weight:700;color:var(--white);">${c.destinataireNom}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${c.destinataireTel} · ${c.nature}</div>
+          <button style="width:100%;margin-top:10px;background:var(--accent);color:var(--dark);border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;" onclick="closeVerificationCodeColisPDV();openColisDetailPDV('${c.id}')">
+            Voir le détail
+          </button>
+        </div>`;
+    }
+
+  } catch (err) {
+    console.error('Erreur vérification code colis :', err);
+    if (resultEl) resultEl.innerHTML = `<div style="color:#FF4D6A;font-size:12px;text-align:center;">Impossible de contacter le serveur.</div>`;
+  }
+}
+window.verifierCodeColisPDV = verifierCodeColisPDV;
 
 // ════════════════════════════════
 //  MODE D'EMPLOI — PDV
@@ -4285,7 +5460,8 @@ const PAGE_TITLES = {
   trajets:      'Trajets disponibles',
   monpdv:       'Mon point de vente',
   finance:      'Finances',
-  guide:        'Mode d\'emploi',   // ← AJOUTER
+  colis:        'Colis',
+  guide:        'Mode d\'emploi',
 };
 
 function showPage(pageId, navEl) {
@@ -4305,6 +5481,7 @@ function showPage(pageId, navEl) {
   if (pageId === 'reservations') filterReservations();
   if (pageId === 'monpdv') renderMonPDVPage();
   if (pageId === 'finance') renderFinancePage();
+  if (pageId === 'colis') filterColisPDV();
   if (pageId === 'guide') renderGuidePagePDV();
 }
 
@@ -4402,3 +5579,5 @@ window.toggleBilletViewPDV = toggleBilletViewPDV;
 window.showManualTicket        = showManualTicket;
 window.closeManualTicket       = closeManualTicket;
 window.copierInfosBilletManuel = copierInfosBilletManuel;
+window.openColisDetailPDV  = openColisDetailPDV;
+window.closeColisDetailPDV = closeColisDetailPDV;

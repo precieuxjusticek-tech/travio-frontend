@@ -4,6 +4,8 @@
 // en attendant les routes serveur (/controleur/create, /controleurs, etc.)
 
 import { BACKEND, agenceData } from './state.js';
+import { apiFetch } from './api.js';
+import { loadChauffeursListe } from './vehicules.js';
 import { showToast, togglePdvPassword, TOAST_ICONS } from './toast-utils.js';
 
 // ════════════════════════════════
@@ -33,27 +35,38 @@ const ICONS = {
 //  ONGLET — bascule PDV / Contrôleurs
 // ════════════════════════════════
 export function switchEquipeTab(tab) {
-  const panelPdv  = document.getElementById('equipePanel-pdv');
-  const panelCtrl = document.getElementById('equipePanel-controleurs');
-  const btnPdv    = document.getElementById('equipeTab-pdv');
-  const btnCtrl   = document.getElementById('equipeTab-controleurs');
-  const addBtn    = document.getElementById('equipeAddBtn');
+  const panels = {
+    pdv:         document.getElementById('equipePanel-pdv'),
+    controleurs: document.getElementById('equipePanel-controleurs'),
+    chauffeurs:  document.getElementById('equipePanel-chauffeurs'),
+  };
+  const btns = {
+    pdv:         document.getElementById('equipeTab-pdv'),
+    controleurs: document.getElementById('equipeTab-controleurs'),
+    chauffeurs:  document.getElementById('equipeTab-chauffeurs'),
+  };
+  const addBtn = document.getElementById('equipeAddBtn');
+
+  // On cache tout, puis on affiche seulement l'onglet demandé
+  Object.entries(panels).forEach(([key, el]) => {
+    if (!el) return;
+    el.style.display = key === tab ? 'block' : 'none';
+  });
+  Object.entries(btns).forEach(([key, el]) => {
+    if (!el) return;
+    el.classList.toggle('active', key === tab);
+  });
 
   if (tab === 'pdv') {
-    panelPdv.style.display  = 'block';
-    panelCtrl.style.display = 'none';
-    btnPdv.classList.add('active');
-    btnCtrl.classList.remove('active');
     addBtn.style.display = 'flex';
     addBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Ajouter un PDV`;
     addBtn.onclick = () => openCreatePDVSafe();
-  } else {
-    panelPdv.style.display  = 'none';
-    panelCtrl.style.display = 'block';
-    btnPdv.classList.remove('active');
-    btnCtrl.classList.add('active');
-    addBtn.style.display = 'none'; // ← on masque le bouton, rien à créer pour l'instant
+  } else if (tab === 'controleurs') {
+    addBtn.style.display = 'none';
     renderControleursPage();
+  } else if (tab === 'chauffeurs') {
+    addBtn.style.display = 'none';
+    renderChauffeursPage();
   }
 }
 
@@ -342,6 +355,160 @@ export function closeControleurDetail() {
 }
 
 // ════════════════════════════════
+//  CHAUFFEURS — liste + partage du lien d'accès
+// ════════════════════════════════
+
+// ⚠️ Remplace par l'URL réelle où chauffeur.html est hébergée
+const CHAUFFEUR_PAGE_URL = 'https://travio-vtk.netlify.app/chauffeur.html';
+
+export async function renderChauffeursPage() {
+  const container = document.getElementById('chauffeursContainer');
+  if (!container) return;
+
+  container.innerHTML = `<div class="empty-state"><p>Chargement des chauffeurs…</p></div>`;
+
+  const chauffeurs = await loadChauffeursListe();
+
+  const enteteHtml = `
+    <div class="overview-card" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:13.5px;font-weight:800;color:var(--white);">Accès chauffeur</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">
+          Lien unique pour toute l'agence, à envoyer une fois à chaque chauffeur. Il permet de marquer les colis (arrêts sans PDV) comme arrivés ou retirés.
+        </div>
+      </div>
+      <button class="btn-action-primary" onclick="partagerLienChauffeur()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:5px;"><path d="M13 3L6 10M13 3L9 14l-2-5-5-2 11-4z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Partager le lien d'accès
+      </button>
+    </div>`;
+
+  if (!chauffeurs || chauffeurs.length === 0) {
+    container.innerHTML = enteteHtml + `
+      <div class="empty-state large">
+        <svg width="48" height="48" viewBox="0 0 20 20" fill="none">
+          <rect x="3" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M3 10h14" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="6" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="14" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <p>Aucun chauffeur renseigné</p>
+        <small>Ajoutez un nom et un téléphone chauffeur depuis Trajets & Bus → Flotte de bus, en créant ou modifiant un bus.</small>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = enteteHtml + `
+    <div class="bus-flotte-list">
+      ${chauffeurs.map(c => `
+        <div class="bus-flotte-row">
+          <div class="bf-row-icon">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bf-row-main">
+            <div class="bf-row-name">${c.nom || 'Chauffeur sans nom'}</div>
+            <div class="bf-row-meta">
+              <span class="bf-row-capacite">${ICONS.phone} ${c.tel}</span>
+              <span class="bf-row-capacite">${ICONS.bus} ${(c.bus || []).join(', ')}</span>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+export async function partagerLienChauffeur() {
+  try {
+    // 1) On regarde si un token existe déjà
+    let res  = await apiFetch(`${BACKEND}/agence/${agenceData?.id}/chauffeur-token`);
+    let data = await res.json();
+    let token = data.token;
+
+    // 2) Sinon on en génère un
+    if (!token) {
+      res  = await apiFetch(`${BACKEND}/agence/${agenceData?.id}/chauffeur-token/generer`, { method: 'POST' });
+      data = await res.json();
+      if (!res.ok) { showToast(data.message || 'Erreur lors de la génération du lien.', TOAST_ICONS.error); return; }
+      token = data.token;
+    }
+
+    const lien = `${CHAUFFEUR_PAGE_URL}?a=${agenceData?.id}&t=${token}`;
+    const message = `Bonjour, voici votre lien d'accès Travio pour marquer les colis (arrêts sans PDV) comme arrivés ou retirés :\n${lien}`;
+
+    // Si le navigateur supporte le partage natif (mobile surtout), on l'utilise :
+    // ça ouvre le vrai menu système avec toutes les apps installées.
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Accès chauffeur Travio', text: message });
+        return; // partagé avec succès, on s'arrête là
+      } catch (shareErr) {
+        // L'utilisateur a annulé le partage natif → pas grave, pas d'erreur à afficher
+        if (shareErr.name === 'AbortError') return;
+        // Sinon on continue vers le panel de secours ci-dessous
+      }
+    }
+
+    // Fallback (desktop, navigateurs non compatibles) : notre panel custom
+    openPartageLienPanel(lien);
+
+  } catch (err) {
+    console.error('Erreur partage lien chauffeur :', err);
+    showToast('Impossible de contacter le serveur.', TOAST_ICONS.error);
+  }
+}
+
+export function openPartageLienPanel(lien) {
+  const overlay = document.createElement('div');
+  overlay.id = 'partageLienOverlay';
+  overlay.className = 'pdv-overlay';
+  overlay.innerHTML = `
+    <div class="pdv-overlay-backdrop" onclick="closePartageLienPanel()"></div>
+    <div class="pdv-overlay-panel" style="max-width:380px;">
+      <div class="pdv-overlay-header">
+        <div>
+          <h2>Partager l'accès chauffeur</h2>
+          <p>Choisissez comment envoyer le lien</p>
+        </div>
+        <button class="pdv-overlay-close" onclick="closePartageLienPanel()">${ICONS.close}</button>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:12px;color:var(--muted);word-break:break-all;">
+        ${lien}
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="pdv-action-btn" onclick="copierLienChauffeur('${lien}')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:6px;"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 11V3a1 1 0 011-1h8" stroke="currentColor" stroke-width="1.4"/></svg>
+          Copier le lien
+        </button>
+        <button class="pdv-action-btn" onclick="envoyerLienChauffeurWhatsapp('${lien}')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:6px;"><path d="M8 1a7 7 0 00-6 10.6L1 15l3.5-1A7 7 0 108 1z" stroke="currentColor" stroke-width="1.4"/></svg>
+          Envoyer via WhatsApp
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+}
+
+export function closePartageLienPanel() {
+  const o = document.getElementById('partageLienOverlay');
+  if (o) { o.classList.remove('show'); setTimeout(() => o.remove(), 350); }
+}
+
+export function copierLienChauffeur(lien) {
+  navigator.clipboard.writeText(lien)
+    .then(() => showToast('Lien copié dans le presse-papier !', TOAST_ICONS.success))
+    .catch(() => showToast('Impossible de copier le lien.', TOAST_ICONS.error));
+}
+
+export function envoyerLienChauffeurWhatsapp(lien) {
+  const message = `Bonjour, voici votre lien d'accès Travio pour marquer les colis (arrêts sans PDV) comme arrivés ou retirés :\n${lien}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+  closePartageLienPanel();
+}
+
+// ════════════════════════════════
 //  EXPOSER AU HTML
 // ════════════════════════════════
 window.switchEquipeTab           = switchEquipeTab;
@@ -352,3 +519,9 @@ window.createControleurBackStep  = createControleurBackStep;
 window.submitCreateControleur    = submitCreateControleur;
 window.openControleurDetail      = openControleurDetail;
 window.closeControleurDetail     = closeControleurDetail;
+window.renderChauffeursPage  = renderChauffeursPage;
+window.partagerLienChauffeur = partagerLienChauffeur;
+window.openPartageLienPanel        = openPartageLienPanel;
+window.closePartageLienPanel       = closePartageLienPanel;
+window.copierLienChauffeur         = copierLienChauffeur;
+window.envoyerLienChauffeurWhatsapp = envoyerLienChauffeurWhatsapp;

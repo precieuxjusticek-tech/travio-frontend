@@ -446,13 +446,13 @@
           Mon agence
         </a>
 
-        <a class="nav-item" data-page="guide" onclick="showPage('guide', this)">
+        <a class="nav-item" data-page="colis" onclick="showPage('colis', this)">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <rect x="2" y="1.5" width="14" height="15" rx="2" stroke="currentColor" stroke-width="1.6"/>
-            <path d="M5.5 5h7M5.5 8.5h7M5.5 12h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <rect x="2" y="6" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M2 6l7-4 7 4M9 2v14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Mode d'emploi
-          <span class="nav-badge" id="navBadgeGuide" style="background:#FFB23F;">!</span>
+          Colis
+          <span class="nav-badge" id="navBadgeColis">0</span>
         </a>
 
         <a class="nav-item" data-page="abonnement" onclick="showPage('abonnement', this)">
@@ -531,6 +531,10 @@
               </svg>
             </h1>
             <p class="page-subtitle" id="overviewAgence">Voici ce qui se passe aujourd'hui.</p>
+            <button class="page-help-trigger" onclick="openPageHelp('overview')">
+              <span class="page-help-trigger-mark">!</span>
+              <span class="page-help-trigger-label">Comment ça marche ?</span>
+            </button>
           </div>
           <div class="page-header-actions">
             <button class="btn-action-primary" onclick="openCreateTrajet()">
@@ -614,6 +618,21 @@
                 <h3>Actions rapides</h3>
               </div>
               <div class="quick-actions">
+
+                <button class="quick-action" onclick="venteRapidePlaceholder()">
+                  <div class="qa-icon">
+                    <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
+                      <rect x="2" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                      <path d="M6 5V4a3 3 0 016 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      <path d="M9 10v2M7 11h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong>Vendre</strong>
+                    <small>Vendre un billet rapidement</small>
+                  </div>
+                </button>
+                
                 <button class="quick-action" onclick="openCreateTrajet()">
                   <div class="qa-icon">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -668,6 +687,10 @@
           <div>
             <h1 class="page-title">Réservations</h1>
             <p class="page-subtitle">Suivez toutes les réservations de votre réseau en temps réel.</p>
+            <button class="page-help-trigger" onclick="openPageHelp('reservations')">
+              <span class="page-help-trigger-mark">!</span>
+              <span class="page-help-trigger-label">Comment ça marche ?</span>
+            </button>
             <span id="resaPeriodeLabel" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;
               background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);
               color:var(--accent);font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:20px;">
@@ -702,101 +725,7 @@
           </div>
         </div>
 
-        <!-- Alertes -->
-        <div id="resaAlertesWrap"></div>
-
-        <!-- Stats résumé -->
-        <div class="stats-grid" id="resaStatsGrid">
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Réservations</span>
-              <div class="stat-icon blue">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 1v4M12 1v4M1 6h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="resaStatTotal">0</div>
-            <div class="stat-delta" id="resaStatTotalInfo">sur la période</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Taux d'annulation</span>
-              <div class="stat-icon orange">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="resaStatAnnulTaux">0%</div>
-            <div class="stat-delta" id="resaStatAnnulInfo">— annulées</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">PDV vendeurs actifs</span>
-              <div class="stat-icon purple">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="6" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M1 15a6 6 0 0112 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="resaStatPdvActifs">0 / 0</div>
-            <div class="stat-delta">sur la période</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Modifications à la baisse</span>
-              <div class="stat-icon orange">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="resaStatBaisse">0</div>
-            <div class="stat-delta">non vérifiées</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Billets vendus</span>
-              <div class="stat-icon blue">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="resaStatPassagers">0</div>
-            <div class="stat-delta" id="resaStatPassagersInfo">sur la période</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Passagers déjà transportés</span>
-              <div class="stat-icon green">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="resaStatDejaTransportes">0</div>
-            <div class="stat-delta">voyage déjà effectué</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Passagers retirés</span>
-              <div class="stat-icon orange">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11 4l3 3M14 4l-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="resaStatRetraits">0</div>
-            <div class="stat-delta">sur la période</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Réservations réaffectées</span>
-              <div class="stat-icon blue">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8A5 5 0 103 8M13 8V4M13 8H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="resaStatReaffectees">0</div>
-            <div class="stat-delta">suite à un changement de bus</div>
-          </div>
-        </div>
-
-        <!-- Filtres -->
+        <!-- Filtres détaillés + actions (communs aux 2 onglets) -->
         <div class="overview-card" style="padding:14px 16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <span id="resaCompteur" style="font-size:12px;color:var(--muted);font-weight:500;">—</span>
@@ -866,9 +795,122 @@
           </div>
         </div>
 
-        <!-- Liste -->
-        <div class="overview-card" style="padding:0;overflow:hidden;min-height:400px;max-height:calc(100vh - 380px);overflow-y:auto;">
-          <div id="resaListContainer"></div>
+        <!-- Onglets Réservations -->
+        <div style="display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;max-width:420px;">
+          <button id="resaTab-overview" class="equipe-tab-btn active" onclick="switchResaTab('overview')">Vue d'ensemble</button>
+          <button id="resaTab-detail" class="equipe-tab-btn" onclick="switchResaTab('detail')">Détail des réservations</button>
+        </div>
+
+        <!-- ═══ ONGLET : VUE D'ENSEMBLE ═══ -->
+        <div id="resaPanel-overview">
+
+          <!-- Alertes -->
+          <div id="resaAlertesWrap"></div>
+
+          <!-- Stats principales -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Réservations</span>
+                <div class="stat-icon blue">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 1v4M12 1v4M1 6h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="resaStatTotal">0</div>
+              <div class="stat-delta" id="resaStatTotalInfo">sur la période</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Taux d'annulation</span>
+                <div class="stat-icon orange">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="resaStatAnnulTaux">0%</div>
+              <div class="stat-delta" id="resaStatAnnulInfo">— annulées</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">PDV vendeurs actifs</span>
+                <div class="stat-icon purple">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="6" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M1 15a6 6 0 0112 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="resaStatPdvActifs">0 / 0</div>
+              <div class="stat-delta">sur la période</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Modifications à la baisse</span>
+                <div class="stat-icon orange">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="resaStatBaisse">0</div>
+              <div class="stat-delta">non vérifiées</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ═══ ONGLET : DÉTAIL DES RÉSERVATIONS ═══ -->
+        <div id="resaPanel-detail" style="display:none;">
+
+          <!-- Stats secondaires -->
+          <div class="stats-grid" style="margin-bottom:16px;">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Billets vendus</span>
+                <div class="stat-icon blue">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="resaStatPassagers">0</div>
+              <div class="stat-delta" id="resaStatPassagersInfo">sur la période</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Passagers déjà transportés</span>
+                <div class="stat-icon green">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="resaStatDejaTransportes">0</div>
+              <div class="stat-delta">voyage déjà effectué</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Passagers retirés</span>
+                <div class="stat-icon orange">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11 4l3 3M14 4l-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="resaStatRetraits">0</div>
+              <div class="stat-delta">sur la période</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Réservations réaffectées</span>
+                <div class="stat-icon blue">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8A5 5 0 103 8M13 8V4M13 8H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="resaStatReaffectees">0</div>
+              <div class="stat-delta">suite à un changement de bus</div>
+            </div>
+          </div>
+
+          <!-- Liste -->
+          <div class="overview-card" style="padding:0;overflow:hidden;min-height:400px;max-height:calc(100vh - 460px);overflow-y:auto;">
+            <div id="resaListContainer"></div>
+          </div>
+
         </div>
 
       </div>
@@ -879,6 +921,14 @@
           <div>
             <h1 class="page-title">Trajets & Bus</h1>
             <p class="page-subtitle">Gérez vos lignes, horaires et flotte de bus.</p>
+            <button class="page-help-trigger" onclick="openPageHelp('trajets')">
+              <span class="page-help-trigger-mark">!</span>
+              <span class="page-help-trigger-label">Comment ça marche ?</span>
+              <button class="page-help-trigger" onclick="openPageHelp('bus')">
+                <span class="page-help-trigger-mark">!</span>
+                <span class="page-help-trigger-label">Aide sur les bus & sessions</span>
+              </button>
+            </button>
           </div>
           <div class="page-header-actions">
             <button class="btn-action-secondary" onclick="openTypesBilletModal()">
@@ -917,6 +967,10 @@
           <div>
             <h1 class="page-title">Finances</h1>
             <p class="page-subtitle">Suivez vos revenus, vos meilleures ventes et l'activité de vos points de vente.</p>
+            <button class="page-help-trigger" onclick="openPageHelp('finances')">
+              <span class="page-help-trigger-mark">!</span>
+              <span class="page-help-trigger-label">Comment ça marche ?</span>
+            </button>
             <span id="finPeriodeLabel" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);
             color:var(--accent);font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:20px;">
             </span>
@@ -1016,159 +1070,219 @@
           </div>
         </div>
 
-        <!-- KPIs -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Ce que vous avez encaissé</span>
-              <div class="stat-icon green">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><path d="M5 11h2M9 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="finCA">0 XAF</div>
-            <div class="stat-delta" id="finCAInfo">—</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Billets vendus</span>
-              <div class="stat-icon blue">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 4V3M11 4V3M5 12v1M11 12v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="finBillets">0</div>
-            <div class="stat-delta" id="finBilletsInfo">—</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Prix moyen par billet</span>
-              <div class="stat-icon purple">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v6M6 7h3a1 1 0 010 2H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="finMoyBillet">0 XAF</div>
-            <div class="stat-delta" id="finMoyInfo">—</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Taux d'annulation</span>
-              <div class="stat-icon orange">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="finAnnul">0%</div>
-            <div class="stat-delta" id="finAnnulInfo">—</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Réservations</span>
-              <div class="stat-icon purple">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 1v4M12 1v4M1 6h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="finResa">0</div>
-            <div class="stat-delta" id="finResaInfo">—</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Passagers déjà transportés</span>
-              <div class="stat-icon green">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="finBilletsTransportes">0</div>
-            <div class="stat-delta" id="finBilletsTransportesInfo">voyage déjà effectué</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-label">Passagers retirés</span>
-              <div class="stat-icon orange">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11 4l3 3M14 4l-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="finRetraits">0</div>
-            <div class="stat-delta">sur la période</div>
-          </div>
+        <!-- Onglets Finances -->
+        <div style="display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;max-width:460px;">
+          <button id="finTab-overview" class="equipe-tab-btn active" onclick="switchFinanceTab('overview')">Vue d'ensemble</button>
+          <button id="finTab-billets" class="equipe-tab-btn" onclick="switchFinanceTab('billets')">Billets</button>
+          <button id="finTab-colis" class="equipe-tab-btn" onclick="switchFinanceTab('colis')">Colis</button>
         </div>
 
-        <!-- Impact sur les revenus -->
-        <div class="overview-card" id="finImpactCard" style="margin-bottom:16px;">
-          <div class="overview-card-header">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
-                <path d="M8 2v9M4 8l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Impact sur vos revenus
-            </h3>
+        <!-- ═══ ONGLET : VUE D'ENSEMBLE ═══ -->
+        <div id="finPanel-overview">
+
+          <div class="stats-grid" style="margin-bottom:16px;">
+            <div class="stat-card" style="border:1.5px solid var(--accent);background:rgba(0,229,160,0.06);">
+              <div class="stat-card-header">
+                <span class="stat-label" style="color:var(--accent);">CA total combiné</span>
+                <div class="stat-icon green">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><path d="M5 11h2M9 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="finCATotal" style="color:var(--accent);font-size:22px;">0 XAF</div>
+              <div class="stat-delta" style="color:var(--accent);opacity:.85;">Billets + Colis</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Encaissé billets</span>
+                <div class="stat-icon green">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><path d="M5 11h2M9 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="finCA">0 XAF</div>
+              <div class="stat-delta" id="finCAInfo">—</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Revenu colis</span>
+                <div class="stat-icon green">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><path d="M5 11h2M9 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="finRevenuColisOverview">0 XAF</div>
+              <div class="stat-delta">Voir détails dans l'onglet Colis</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Réservations</span>
+                <div class="stat-icon purple">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 1v4M12 1v4M1 6h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="finResa">0</div>
+              <div class="stat-delta" id="finResaInfo">—</div>
+            </div>
           </div>
-          <div id="finImpact"></div>
-        </div>
 
-        <!-- Trophée meilleur PDV -->
-        <div id="finTrophy" style="display:none;align-items:center;gap:12px;background:rgba(239,159,39,0.08);border:1px solid rgba(239,159,39,0.2);border-radius:12px;padding:12px 18px;"></div>
+          <!-- Trophée meilleur PDV -->
+          <div id="finTrophy" style="display:none;align-items:center;gap:12px;background:rgba(239,159,39,0.08);border:1px solid rgba(239,159,39,0.2);border-radius:12px;padding:12px 18px;margin-bottom:16px;"></div>
 
-        <!-- Graphique évolution -->
-        <div class="overview-card">
-          <div class="overview-card-header">
-            <h3 id="finEvolutionTitle">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
-                <path d="M2 12l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M11 5h3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Ventes jour par jour
-            </h3>
-          </div>
-          <div id="finEvolution"></div>
-        </div>
-
-        <!-- Graphique jour de la semaine -->
-        <div class="overview-card">
-          <div class="overview-card-header">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
-                <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-              Quel jour vend-on le plus ?
-            </h3>
-          </div>
-          <div id="finDow"></div>
-        </div>
-
-        <!-- PDV par ville + Trajets côte à côte -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div class="overview-card" style="margin-bottom:0">
+          <!-- Impact sur les revenus -->
+          <div class="overview-card" id="finImpactCard" style="margin-bottom:0;">
             <div class="overview-card-header">
               <h3>
-                <svg width="16" height="16" viewBox="0 0 26 26" fill="none" style="vertical-align:-2px;margin-right:4px;">
-                  <rect x="5" y="9" width="16" height="14" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
-                  <path d="M9 3h8v6H9z" stroke="currentColor" stroke-width="1.8"/>
-                  <path d="M9 13h2M9 17h2M15 13h2M15 17h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                  <path d="M8 2v9M4 8l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                Ventes par point de vente
-                <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:6px;">(du plus au moins rentable)</span>
+                Impact sur vos revenus
               </h3>
             </div>
-            <div id="finPdvList"></div>
+            <div id="finImpact"></div>
           </div>
-          <div class="overview-card" style="margin-bottom:0">
+
+        </div>
+
+        <!-- ═══ ONGLET : BILLETS ═══ -->
+        <div id="finPanel-billets" style="display:none;">
+
+          <div class="stats-grid" style="margin-bottom:16px;">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Billets vendus</span>
+                <div class="stat-icon blue">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 4V3M11 4V3M5 12v1M11 12v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="finBillets">0</div>
+              <div class="stat-delta" id="finBilletsInfo">—</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Prix moyen par billet</span>
+                <div class="stat-icon purple">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v6M6 7h3a1 1 0 010 2H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="finMoyBillet">0 XAF</div>
+              <div class="stat-delta" id="finMoyInfo">—</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-label">Taux d'annulation</span>
+                <div class="stat-icon orange">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="stat-value" id="finAnnul">0%</div>
+              <div class="stat-delta" id="finAnnulInfo">—</div>
+            </div>
+          </div>
+
+          <!-- Graphique évolution -->
+          <div class="overview-card" style="margin-bottom:16px;">
+            <div class="overview-card-header">
+              <h3 id="finEvolutionTitle">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                  <path d="M2 12l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M11 5h3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Ventes jour par jour
+              </h3>
+            </div>
+            <div id="finEvolution"></div>
+          </div>
+
+          <!-- Graphique jour de la semaine -->
+          <div class="overview-card" style="margin-bottom:16px;">
             <div class="overview-card-header">
               <h3>
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="vertical-align:-2px;margin-right:4px;">
-                  <rect x="3" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
-                  <path d="M3 10h14" stroke="currentColor" stroke-width="1.6"/>
-                  <circle cx="6" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
-                  <circle cx="14" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                  <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-                Trajets les plus rentables
+                Quel jour vend-on le plus ?
               </h3>
             </div>
-            <div id="finTrajetList"></div>
+            <div id="finDow"></div>
+          </div>
+
+          <!-- PDV par ville + Trajets côte à côte -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="overview-card" style="margin-bottom:0">
+              <div class="overview-card-header">
+                <h3>
+                  <svg width="16" height="16" viewBox="0 0 26 26" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                    <rect x="5" y="9" width="16" height="14" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M9 3h8v6H9z" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M9 13h2M9 17h2M15 13h2M15 17h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                  Ventes par point de vente
+                  <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:6px;">(du plus au moins rentable)</span>
+                </h3>
+              </div>
+              <div id="finPdvList"></div>
+            </div>
+            <div class="overview-card" style="margin-bottom:0">
+              <div class="overview-card-header">
+                <h3>
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                    <rect x="3" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M3 10h14" stroke="currentColor" stroke-width="1.6"/>
+                    <circle cx="6" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+                    <circle cx="14" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                  Trajets les plus rentables
+                </h3>
+              </div>
+              <div id="finTrajetList"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ═══ ONGLET : COLIS ═══ -->
+        <div id="finPanel-colis" style="display:none;">
+          <div class="overview-card" id="finColisCard" style="margin-bottom:16px;">
+            <div class="overview-card-header">
+              <h3>
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                  <rect x="2" y="6" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+                  <path d="M2 6l7-4 7 4M9 2v14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Revenus colis
+              </h3>
+            </div>
+            <div class="stats-grid" id="finColisStats"></div>
+          </div>
+
+          <div class="overview-card" style="margin-bottom:16px;">
+            <div class="overview-card-header">
+              <h3 id="finColisEvolutionTitle">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                  <path d="M2 12l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M11 5h3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Expéditions jour par jour
+              </h3>
+            </div>
+            <div id="finColisEvolution"></div>
+          </div>
+
+          <div class="overview-card">
+            <div class="overview-card-header">
+              <h3>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                  <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Quel jour expédie-t-on le plus ?
+              </h3>
+            </div>
+            <div id="finColisDow" style="margin-top:8px;"></div>
           </div>
         </div>
       </div>
@@ -1179,6 +1293,14 @@
           <div>
             <h1 class="page-title">Équipe</h1>
             <p class="page-subtitle">Gérez vos points de vente et vos contrôleurs.</p>
+            <button class="page-help-trigger" onclick="openPageHelp('equipe')">
+              <span class="page-help-trigger-mark">!</span>
+              <span class="page-help-trigger-label">Comment ça marche ?</span>
+            </button>
+            <button class="page-help-trigger" onclick="openPageHelp('connexion-partenaires')">
+              <span class="page-help-trigger-mark">!</span>
+              <span class="page-help-trigger-label">Comment un PDV ou un chauffeur se connecte ?</span>
+            </button>
           </div>
           <div class="page-header-actions">
             <button class="btn-action-primary" id="equipeAddBtn" onclick="openCreatePDV()">
@@ -1189,7 +1311,8 @@
         </div>
 
         <!-- Onglets -->
-        <div style="display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;max-width:400px;">
+
+        <div style="display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;max-width:560px;">
           <button id="equipeTab-pdv" class="equipe-tab-btn active" onclick="switchEquipeTab('pdv')">
             <svg width="15" height="15" viewBox="0 0 26 26" fill="none" style="vertical-align:-3px;margin-right:5px;">
               <rect x="5" y="9" width="16" height="14" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
@@ -1206,6 +1329,16 @@
             </svg>
             Contrôleurs
           </button>
+
+          <button id="equipeTab-chauffeurs" class="equipe-tab-btn" onclick="switchEquipeTab('chauffeurs')">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="vertical-align:-3px;margin-right:5px;">
+              <rect x="3" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M3 10h14" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="6" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="14" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            Chauffeurs
+          </button>
         </div>
 
         <!-- Panneau PDV (existant) -->
@@ -1218,6 +1351,11 @@
         <div id="equipePanel-controleurs" style="display:none;">
           <div id="controleursStatsBarWrap"></div>
           <div id="controleursContainer"></div>
+        </div>
+
+        <!-- Panneau Chauffeurs (nouveau) -->
+        <div id="equipePanel-chauffeurs" style="display:none;">
+          <div id="chauffeursContainer"></div>
         </div>
       </div>
 
@@ -1249,6 +1387,10 @@
           <div>
             <h1 class="page-title">Mon agence</h1>
             <p class="page-subtitle">Informations et présentation de votre agence.</p>
+            <button class="page-help-trigger" onclick="openPageHelp('agence')">
+              <span class="page-help-trigger-mark">!</span>
+              <span class="page-help-trigger-label">Comment ça marche ?</span>
+            </button>
           </div>
           <div class="page-header-actions">
             <button class="btn-action-secondary" id="editAgenceBtn" onclick="openEditAgence()">
@@ -1262,6 +1404,52 @@
         </div>
       </div>
 
+      <!-- ── PAGE : COLIS ── -->
+      <div class="page" id="page-colis">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Colis</h1>
+            <p class="page-subtitle">Suivez les colis expédiés par vos points de vente. L'expédition se fait uniquement côté PDV.</p>
+            <button class="page-help-trigger" onclick="openPageHelp('colis')">
+              <span class="page-help-trigger-mark">!</span>
+              <span class="page-help-trigger-label">Comment ça marche ?</span>
+            </button>
+            <span id="colisPeriodeLabel" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;
+              background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);
+              color:var(--accent);font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:20px;">
+            </span>
+          </div>
+          <div class="page-header-actions">
+            <div id="colisPeriodeFilters" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <button class="rqf-btn" onclick="setColisPeriode('today', this)">Aujourd'hui</button>
+              <button class="rqf-btn" onclick="setColisPeriode('week', this)">Semaine</button>
+              <button class="rqf-btn" onclick="setColisPeriode('month', this)">Mois</button>
+              <button class="rqf-btn active" onclick="setColisPeriode('all', this)">Tout</button>
+              <button class="rqf-btn" id="colisCustomBtn" onclick="toggleColisCustomPicker()" style="display:flex;align-items:center;gap:5px;">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Période précise
+              </button>
+            </div>
+            <div id="colisCustomPickerWrap" style="display:none;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                <div class="pdv-field-group" style="margin:0;">
+                  <label>Du</label>
+                  <input type="date" class="pdv-input" id="colisCustomDebut">
+                </div>
+                <div class="pdv-field-group" style="margin:0;">
+                  <label>Au</label>
+                  <input type="date" class="pdv-input" id="colisCustomFin">
+                </div>
+                <button class="btn-action-primary" onclick="applyColisCustomRange()" style="height:fit-content;">Appliquer</button>
+                <button class="btn-action-secondary" onclick="clearColisCustomRange()" style="height:fit-content;">Annuler</button>
+              </div>
+              <p style="font-size:11px;color:var(--muted);margin-top:8px;">Astuce : pour un seul jour, mettez la même date des deux côtés.</p>
+            </div>
+          </div>
+        </div>
+        <div id="colisContainer"></div>
+      </div>
+
       <!-- ── PAGE : MON ESSAI GRATUIT ── -->
       <div class="page" id="page-abonnement">
         <div class="page-header">
@@ -1273,17 +1461,6 @@
         <div id="abonnementContainer"></div>
       </div>
 
-      <!-- ── PAGE : MODE D'EMPLOI ── -->
-      <div class="page" id="page-guide">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">Mode d'emploi</h1>
-            <p class="page-subtitle">Comprenez comment fonctionne chaque partie de Travio.</p>
-          </div>
-        </div>
-        <div id="guideContainer"></div>
-      </div>
-
     </main>
   </div>
 
@@ -1293,34 +1470,17 @@
     <span class="toast-msg" id="dashToastMsg"></span>
   </div>
 
-  <!-- ══ MODALE BIENVENUE MODE D'EMPLOI ══ -->
-  <div class="congrats-overlay" id="guideWelcomeOverlay">
-    <div class="congrats-backdrop" onclick="closeGuideWelcomeModal()"></div>
-    <div class="congrats-card">
-      <div class="congrats-particles">
-        <span class="cp cp1">✦</span><span class="cp cp2">✦</span><span class="cp cp3">✦</span>
-        <span class="cp cp4">✦</span><span class="cp cp5">✦</span><span class="cp cp6">✦</span>
-      </div>
-
-      <div class="congrats-logo-wrap">
-        <div class="congrats-logo-placeholder">📘</div>
-        <div class="congrats-check">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <path d="M2.5 6.5l2.5 2.5 5-5" stroke="#0A0E1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-      </div>
-
-      <div class="congrats-text">
-        <span class="congrats-badge">✨ Bienvenue sur Travio</span>
-        <h2>Faites de votre essai une <em>réussite</em></h2>
-        <p>Toute l'équipe Travio espère que votre période d'essai se passera au mieux. Pour vous aider à démarrer sereinement, nous avons préparé un <strong>Mode d'emploi</strong> complet qui explique chaque partie de la plateforme, étape par étape.</p>
-      </div>
-
-      <div class="congrats-actions">
-        <button class="congrats-btn-primary" onclick="goToGuideFromWelcome()">Découvrir le mode d'emploi</button>
-        <button class="congrats-btn-secondary" onclick="closeGuideWelcomeModal()">Plus tard</button>
-      </div>
+  <!-- ══ MODALE AIDE CONTEXTUELLE ══ -->
+  <div class="page-help-overlay" id="pageHelpOverlay">
+    <div class="page-help-backdrop" onclick="closePageHelp()"></div>
+    <div class="page-help-card">
+      <button class="page-help-close" onclick="closePageHelp()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <h2 id="pageHelpTitle"></h2>
+      <div class="page-help-body" id="pageHelpBody"></div>
     </div>
   </div>
 

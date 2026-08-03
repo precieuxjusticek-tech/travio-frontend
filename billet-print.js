@@ -26,8 +26,23 @@ function buildDataPourReservation(r, pdv, trajet) {
     if (sieges.length > 0) siege = sieges.join(', ');
   }
 
+  // Bagages : agrège tous les passagers si multi, sinon le passager principal
+  let totalKg = r.bagages || 0;
+  let totalNombre = r.nombreBagages || 0;
+  if (Array.isArray(r.passagers) && r.passagers.length > 0) {
+    totalKg = r.passagers.reduce((s, p) => s + (p.bagages || 0), 0);
+    totalNombre = r.passagers.reduce((s, p) => s + (p.nombreBagages || 0), 0);
+  }
+  const bagagesLabel = totalKg > 0
+    ? `${totalKg} kg${totalNombre > 0 ? ` (${totalNombre} bagage${totalNombre > 1 ? 's' : ''})` : ''}`
+    : null;
+
   return {
     nomAgence:    agenceData?.nom   || 'Votre agence',
+    codeControle: r.codeControle || null,
+    bagagesLabel,
+    politiqueAnnulation: agenceData?.politiqueAnnulation || null,
+    delaiFormalite: agenceData?.delaiFormalite || null,
     villeAgence:  agenceData?.ville || '',
     logoUrl:      agenceData?.logo || agenceData?.logoUrl || null,   
     slogan:       agenceData?.slogan || '',

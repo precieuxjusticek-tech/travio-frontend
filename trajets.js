@@ -5,6 +5,7 @@ import { showToast, showToastAction, TOAST_ICONS } from './toast-utils.js';
 import { openResolutionReservationsModal } from './bus-departs.js';
 import { formatDelaiFormalite } from './billet-template.js';
 import { apiFetch } from './api.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
 const ICONS = {
   close:    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -111,8 +112,8 @@ export function updateOverviewStats() {
     } else {
       overviewResaList.innerHTML = confirmees.map(r => {
         const trajet    = trajetList.find(t => t.id === r.trajetId);
-        const route     = r.routeLabel || (trajet ? `${trajet.villeDepart} → ${trajet.villeArrivee}` : '—');
-        const nom       = `${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager';
+        const route     = escapeHtml(r.routeLabel || (trajet ? `${trajet.villeDepart} → ${trajet.villeArrivee}` : '—'));
+        const nom       = escapeHtml(`${r.prenomPassager || ''} ${r.nomPassager || ''}`.trim() || 'Passager');
         const date      = r.dateDepart
           ? new Date(r.dateDepart + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
           : '—';
@@ -128,7 +129,7 @@ export function updateOverviewStats() {
               ${nom}
               ${estAujourdhui ? `<span style="font-size:9px;color:var(--accent);font-weight:700;margin-left:6px;text-transform:uppercase;letter-spacing:.5px;">Aujourd'hui</span>` : ''}
             </div>
-            <div class="resa-time">${route}${typeLabel} · ${date} · ${r.heureDepart || '—'}</div>
+            <div class="resa-time">${route}${typeLabel} · ${date} · ${escapeHtml(r.heureDepart) || '—'}</div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
             <span class="resa-status confirmed" style="display:inline-flex;align-items:center;gap:5px;">
@@ -202,7 +203,7 @@ export function renderTrajetCard(t) {
     <div class="overview-card" style="display:flex;flex-direction:column;gap:10px;cursor:pointer;" onclick="openTrajetDetail('${t.id}')">
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div>
-          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--white);">${t.villeDepart} → ${t.villeArrivee}</div>
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--white);">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</div>
           <div style="font-size:12px;color:var(--muted);margin-top:2px;">${joursLabel} · ${t.heureDepart || '—'}</div>
         </div>
         <span class="pdv-status-badge ${t.actif !== false ? 'active' : 'inactive'}">
@@ -224,7 +225,7 @@ export function renderTrajetCard(t) {
       <div style="display:flex;gap:16px;font-size:12px;flex-wrap:wrap;">
         ${Object.entries(t.prixParType || {}).map(([typeId, prix]) => {
           const type = (agenceData.typesBillet || []).find(x => x.id === typeId);
-          return `<span>${type?.nom || typeId} <small style="color:var(--muted);">(${ageRangeLabel(type)})</small> : <strong style="color:var(--white)">${Number(prix).toLocaleString()} XAF</strong></span>`;
+          return `<span>${escapeHtml(type?.nom || typeId)} <small style="color:var(--muted);">(${ageRangeLabel(type)})</small> : <strong style="color:var(--white)">${Number(prix).toLocaleString()} XAF</strong></span>`;
         }).join('')}
       </div>
       ${t.typeTrajet === 'arrets' && t.arrets?.length ? `
@@ -233,7 +234,7 @@ export function renderTrajetCard(t) {
           <div style="display:flex;flex-direction:column;gap:3px;padding-left:8px;border-left:2px solid var(--border2);">
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);"></span>
-              <span style="color:var(--white);font-weight:600;">${t.villeDepart}</span>
+              <span style="color:var(--white);font-weight:600;">${escapeHtml(t.villeDepart)}</span>
               ${t.heureDepart ? `<span style="color:var(--muted);font-size:11px;">· ${t.heureDepart}</span>` : ''}
             </div>
             ${t.arrets.map(a => {
@@ -243,7 +244,7 @@ export function renderTrajetCard(t) {
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
                   <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                     <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);"></span>
-                    <span>${villeLabel}</span>
+                    <span>${escapeHtml(villeLabel)}</span>
                     ${nbPDV > 0 ? `<span style="font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1px 6px;color:var(--accent);">${nbPDV} PDV</span>` : ''}
                     ${a.heurePassage ? `<span style="color:var(--accent);font-size:11px;font-weight:600;">· ${a.heurePassage}</span>` : ''}
                   </div>
@@ -252,7 +253,7 @@ export function renderTrajetCard(t) {
             }).join('')}
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#FF4D6A;"></span>
-              <span style="color:var(--white);font-weight:600;">${t.villeArrivee}</span>
+              <span style="color:var(--white);font-weight:600;">${escapeHtml(t.villeArrivee)}</span>
             </div>
           </div>
         </div>` : ''}
@@ -280,7 +281,7 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
 
       <div class="pdv-overlay-header">
         <div>
-          <h2>${t.villeDepart} → ${t.villeArrivee}</h2>
+          <h2>${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</h2>
           <p>${t.typeTrajet === 'arrets' ? 'Avec arrêts' : 'Direct'}</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeTrajetDetail()">${ICONS.close}</button>
@@ -299,7 +300,7 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
             const type = (agenceData.typesBillet || []).find(x => x.id === typeId);
             return `
             <div class="pdv-stat-item">
-              <span class="pdv-stat-label">${type?.nom || typeId}</span>
+              <span class="pdv-stat-label">${escapeHtml(type?.nom || typeId)}</span>
               <span class="pdv-stat-value" style="font-size:18px;">${Number(prix).toLocaleString()}</span>
               <span style="font-size:10px;color:var(--muted);">XAF</span>
               <span style="font-size:9px;color:var(--muted);display:block;">${ageRangeLabel(type)}</span>
@@ -327,10 +328,10 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
           <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${ICONS.pin} Points de vente</div>
           <div style="display:flex;flex-direction:column;gap:10px;max-width:440px;margin:0 auto;width:100%;">
             <div>
-              <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:4px;vertical-align:middle;"></span>Départ — ${t.villeDepart}</div>
+              <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:4px;vertical-align:middle;"></span>Départ — ${escapeHtml(t.villeDepart)}</div>
               <div style="display:flex;flex-direction:column;gap:6px;">
                 ${(t.pdvDepart || []).length
-                  ? t.pdvDepart.map(p => `<div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 12px;"><span>${ICONS.building}</span><span style="font-size:12.5px;color:var(--white);font-weight:600;">${p.nom}</span></div>`).join('')
+                  ? t.pdvDepart.map(p => `<div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 12px;"><span>${ICONS.building}</span><span style="font-size:12.5px;color:var(--white);font-weight:600;">${escapeHtml(p.nom)}</span></div>`).join('')
                   : `<div style="font-size:11px;color:var(--muted);">Aucun PDV assigné.</div>`}
               </div>
             </div>
@@ -339,19 +340,19 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
               const pdvsArret  = pdvList.filter(p => (t.pdvArrets || []).some(pa => pa.id === p.id) && (p.ville || '').toLowerCase() === villeArret.toLowerCase());
               return `
                 <div>
-                  <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-right:4px;vertical-align:middle;"></span>Arrêt — ${villeArret}</div>
+                  <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-right:4px;vertical-align:middle;"></span>Arrêt — ${escapeHtml(villeArret)}</div>
                   <div style="display:flex;flex-direction:column;gap:6px;">
                     ${pdvsArret.length
-                      ? pdvsArret.map(p => `<div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 12px;"><span>${ICONS.building}</span><span style="font-size:12.5px;color:var(--white);font-weight:600;">${p.nom}</span></div>`).join('')
+                      ? pdvsArret.map(p => `<div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 12px;"><span>${ICONS.building}</span><span style="font-size:12.5px;color:var(--white);font-weight:600;">${escapeHtml(p.nom)}</span></div>`).join('')
                       : `<div style="font-size:11px;color:var(--muted);">Aucun PDV assigné.</div>`}
                   </div>
                 </div>`;
             }).join('') : ''}
             <div>
-              <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#FF4D6A;margin-right:4px;vertical-align:middle;"></span>Arrivée — ${t.villeArrivee}</div>
+              <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#FF4D6A;margin-right:4px;vertical-align:middle;"></span>Arrivée — ${escapeHtml(t.villeArrivee)}</div>
               <div style="display:flex;flex-direction:column;gap:6px;">
                 ${(t.pdvArrivee || []).length
-                  ? t.pdvArrivee.map(p => `<div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 12px;"><span>${ICONS.building}</span><span style="font-size:12.5px;color:var(--white);font-weight:600;">${p.nom}</span></div>`).join('')
+                  ? t.pdvArrivee.map(p => `<div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 12px;"><span>${ICONS.building}</span><span style="font-size:12.5px;color:var(--white);font-weight:600;">${escapeHtml(p.nom)}</span></div>`).join('')
                   : `<div style="font-size:11px;color:var(--muted);">Aucun PDV assigné.</div>`}
               </div>
             </div>
@@ -365,7 +366,7 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
               <div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
                 <div style="display:flex;align-items:center;gap:8px;">
                   <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;"></div>
-                  <span style="font-size:13px;font-weight:700;color:var(--white);">${t.villeDepart}</span>
+                  <span style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(t.villeDepart)}</span>
                   <span style="font-size:11px;color:var(--muted);">Départ</span>
                 </div>
               </div>
@@ -373,21 +374,21 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
                 <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-left:12px;">
                   <div style="display:flex;align-items:center;gap:8px;">
                     <div style="width:6px;height:6px;border-radius:50%;background:var(--primary);flex-shrink:0;"></div>
-                    <span style="font-size:13px;font-weight:600;color:var(--white);">${a.ville || a.nom}</span>
+                    <span style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(a.ville || a.nom)}</span>
                     <span style="font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 6px;border-radius:4px;">Arrêt</span>
                   </div>
                   <div style="text-align:right;">
                     ${a.heurePassage ? `<div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:2px;">${ICONS.clock} ${a.heurePassage}</div>` : ''}
                     ${Object.entries(a.prixParType || {}).map(([tid, prix]) => {
                       const type = (agenceData.typesBillet || []).find(x => x.id === tid);
-                      return `<div style="font-size:11px;color:var(--white);"><strong>${type?.nom || tid}</strong> <span style="color:var(--muted);">(${ageRangeLabel(type)})</span> : ${Number(prix).toLocaleString()} XAF</div>`;
+                      return `<div style="font-size:11px;color:var(--white);"><strong>${escapeHtml(type?.nom || tid)}</strong> <span style="color:var(--muted);">(${ageRangeLabel(type)})</span> : ${Number(prix).toLocaleString()} XAF</div>`;
                     }).join('')}
                   </div>
                 </div>`).join('')}
               <div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
                 <div style="display:flex;align-items:center;gap:8px;">
                   <div style="width:8px;height:8px;border-radius:50%;background:#FF4D6A;flex-shrink:0;"></div>
-                  <span style="font-size:13px;font-weight:700;color:var(--white);">${t.villeArrivee}</span>
+                  <span style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(t.villeArrivee)}</span>
                   <span style="font-size:11px;color:var(--muted);">Arrivée</span>
                 </div>
               </div>
@@ -402,11 +403,11 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
                 const [from, to] = cle.split('|');
                 return `
                   <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px 14px;">
-                    <span style="font-size:12px;color:var(--white);font-weight:600;">${from} → ${to}</span>
+                    <span style="font-size:12px;color:var(--white);font-weight:600;">${escapeHtml(from)} → ${escapeHtml(to)}</span>
                     <div style="text-align:right;">
                       ${Object.entries(prix).map(([tid, val]) => {
                         const type = (agenceData.typesBillet || []).find(x => x.id === tid);
-                        return `<div style="font-size:11px;color:var(--white);"><strong>${type?.nom || tid}</strong> <span style="color:var(--muted);">(${ageRangeLabel(type)})</span> : ${Number(val).toLocaleString()} XAF</div>`;
+                        return `<div style="font-size:11px;color:var(--white);"><strong>${escapeHtml(type?.nom || tid)}</strong> <span style="color:var(--muted);">(${ageRangeLabel(type)})</span> : ${Number(val).toLocaleString()} XAF</div>`;
                       }).join('')}
                     </div>
                   </div>`;
@@ -433,7 +434,7 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
           <button class="pdv-action-btn danger" onclick="toggleTrajetStatut('${t.id}', ${t.actif !== false})">
             ${t.actif !== false ? ICONS.stop + ' Désactiver le trajet' : ICONS.play + ' Activer le trajet'}
           </button>
-          <button class="pdv-action-btn delete" onclick="confirmDeleteTrajet('${t.id}', '${t.villeDepart} → ${t.villeArrivee}')">${ICONS.trash} Supprimer le trajet</button>
+          <button class="pdv-action-btn delete" onclick="confirmDeleteTrajet('${t.id}', '${escapeJsAttr(t.villeDepart)} → ${escapeJsAttr(t.villeArrivee)}')">${ICONS.trash} Supprimer le trajet</button>
         </div>
       </div>
 
@@ -518,7 +519,7 @@ export function confirmDeleteTrajet(trajetId, trajetLabel) {
     <div class="pdv-overlay-panel pdv-confirm-panel">
       <div class="pdv-confirm-icon">${ICONS.trash}</div>
       <h2>Supprimer ce trajet ?</h2>
-      <p>Tu es sur le point de supprimer <strong>${trajetLabel}</strong> et tous ses bus.</p>
+      <p>Tu es sur le point de supprimer <strong>${escapeHtml(trajetLabel)}</strong> et tous ses bus.</p>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:10px 0;display:flex;flex-direction:column;gap:8px;font-size:12px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
           <span style="background:#3D0F0F;color:#FF6B6B;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">PDV impactés</span>
@@ -583,7 +584,7 @@ export async function toggleTrajetStatut(trajetId, actifActuel) {
     <div class="pdv-overlay-panel pdv-confirm-panel">
       <div class="pdv-confirm-icon">${nouvelEtat ? ICONS.check : ICONS.stop}</div>
       <h2>${nouvelEtat ? 'Activer' : 'Désactiver'} ce trajet ?</h2>
-      <p>Le trajet <strong>${trajetList.find(t=>t.id===trajetId)?.villeDepart} → ${trajetList.find(t=>t.id===trajetId)?.villeArrivee}</strong> ne sera plus disponible à la réservation.</p>
+      <p>Le trajet <strong>${escapeHtml(trajetList.find(t=>t.id===trajetId)?.villeDepart)} → ${escapeHtml(trajetList.find(t=>t.id===trajetId)?.villeArrivee)}</strong> ne sera plus disponible à la réservation.</p>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:10px 0;display:flex;flex-direction:column;gap:8px;font-size:12px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
           <span style="background:#3D0F0F;color:#FF6B6B;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">PDV impactés</span>
@@ -667,37 +668,68 @@ export function openEditTrajet(trajetId) {
   const t = trajetList.find(t => t.id === trajetId);
   if (!t) return;
 
+  // Regrouper les arrêts existants par ville (les PDV d'une même ville partagent prix/heure)
+  const arretsGroupes = [];
+  (t.arrets || []).forEach(a => {
+    let groupe = arretsGroupes.find(g => g.ville === a.ville && g.type === a.type);
+    if (!groupe) {
+      groupe = { ville: a.ville, type: a.type, heurePassage: a.heurePassage, prixParType: a.prixParType, pdvs: [] };
+      arretsGroupes.push(groupe);
+    }
+    if (a.type === 'pdv') groupe.pdvs.push({ id: a.id, nom: a.nom });
+  });
+
   const arretsSection = t.typeTrajet === 'arrets' ? `
     <div style="height:1px;background:var(--border);margin:8px 0;"></div>
     <div class="pdv-field-group">
       <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">Arrêts intermédiaires</label>
       <div id="editArretsList" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-        ${(t.arrets || []).map((a, i) => `
+        ${arretsGroupes.map((g, i) => g.type === 'libre' ? `
           <div class="arret-item" id="editArretItem-${i}" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <div style="width:7px;height:7px;border-radius:50%;background:var(--primary);flex-shrink:0;"></div>
-                <span style="font-size:13px;font-weight:700;color:var(--white);">${a.nom}</span>
-                <span style="font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 7px;border-radius:5px;">${a.type === 'pdv' ? 'PDV' : 'Lieu'}</span>
+                <span style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(g.ville)}</span>
+                <span style="font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 7px;border-radius:5px;">Lieu</span>
               </div>
               <button type="button" onclick="removeEditArret(${i})" style="background:none;border:none;color:#FF4D6A;font-size:18px;cursor:pointer;padding:2px 6px;line-height:1;">×</button>
             </div>
             <div class="edit-arret-grid" style="grid-template-columns:1fr 1fr;">
-              <input type="hidden" class="edit-arret-marker" data-index="${i}" data-nom="${a.nom}" data-type="${a.type || 'libre'}" data-id="${a.id || ''}">
+              <input type="hidden" class="edit-arret-marker" data-index="${i}" data-nom="${escapeHtml(g.ville)}" data-type="libre" data-id="">
               <div>
                 <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Heure passage</label>
-                <input type="time" class="pdv-input edit-arret-heure-passage" value="${a.heurePassage || ''}" data-index="${i}">
+                <input type="time" class="pdv-input edit-arret-heure-passage" value="${g.heurePassage || ''}" data-index="${i}">
               </div>
-              ${agenceData.typesBillet.map(t => `
+              ${agenceData.typesBillet.map(type => `
               <div>
-                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Prix ${t.nom} (XAF)</label>
-                <p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p>
-                <input type="number" class="pdv-input edit-arret-prix-type" value="${a.prixParType?.[t.id] ?? ''}" data-index="${i}" data-type-id="${t.id}" placeholder="0" min="0">
+                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Prix ${escapeHtml(type.nom)} (XAF)</label>
+                <p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(type)}</p>
+                <input type="number" class="pdv-input edit-arret-prix-type" value="${g.prixParType?.[type.id] ?? ''}" data-index="${i}" data-type-id="${type.id}" placeholder="0" min="0">
+              </div>`).join('')}
+            </div>
+          </div>` : `
+          <div class="arret-city-group" id="editArretCity-${i}" data-ville="${escapeHtml(g.ville)}" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <div style="width:7px;height:7px;border-radius:50%;background:var(--primary);flex-shrink:0;"></div>
+              <span style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(g.ville)}</span>
+              <span style="font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 7px;border-radius:5px;">PDV</span>
+            </div>
+            <div class="pdv-multi-select" id="editArretCityPdv-${i}" style="margin-bottom:10px;"></div>
+            <div class="edit-arret-grid" style="grid-template-columns:1fr 1fr;">
+              <div>
+                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Heure passage</label>
+                <input type="time" class="pdv-input edit-arret-city-heure" data-index="${i}" value="${g.heurePassage || ''}">
+              </div>
+              ${agenceData.typesBillet.map(type => `
+              <div>
+                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Prix ${escapeHtml(type.nom)} (XAF)</label>
+                <p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(type)}</p>
+                <input type="number" class="pdv-input edit-arret-city-prix" data-index="${i}" data-type-id="${type.id}" value="${g.prixParType?.[type.id] ?? ''}" placeholder="0" min="0">
               </div>`).join('')}
             </div>
           </div>`).join('')}
       </div>
-      <button type="button" class="pdv-action-btn" style="margin-top:8px;font-size:12px;" onclick="addEditArretItem('${t.id}')">+ Ajouter un arrêt</button>
+      <button type="button" class="pdv-action-btn" style="margin-top:8px;font-size:12px;" onclick="addEditArretItem('${t.id}')">+ Ajouter un arrêt (nouvelle ville)</button>
     </div>` : '';
 
   const overlay = document.createElement('div');
@@ -709,7 +741,7 @@ export function openEditTrajet(trajetId) {
       <div class="pdv-overlay-header">
         <div>
           <h2>Modifier le trajet</h2>
-          <p>${t.villeDepart} → ${t.villeArrivee} · ${t.typeTrajet === 'arrets' ? 'Avec arrêts' : 'Direct'}</p>
+          <p>${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)} · ${t.typeTrajet === 'arrets' ? 'Avec arrêts' : 'Direct'}</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeEditTrajet()">${ICONS.close}</button>
       </div>
@@ -717,7 +749,7 @@ export function openEditTrajet(trajetId) {
         <div class="edit-trajet-grid">
           ${agenceData.typesBillet.map(type => `
             <div class="pdv-field-group">
-              <label>Prix ${type.nom} (XAF) <span class="req">*</span></label>
+              <label>Prix ${escapeHtml(type.nom)} (XAF) <span class="req">*</span></label>
               <p class="pdv-field-hint" style="margin:-2px 0 4px;">${type.ageMax == null ? `${type.ageMin} ans et +` : `de ${type.ageMin} à ${type.ageMax} ans`}</p>
               <input type="number" class="pdv-input et-prix-type" data-type-id="${type.id}" value="${t.prixParType?.[type.id] ?? ''}">
             </div>`).join('')
@@ -726,6 +758,16 @@ export function openEditTrajet(trajetId) {
         <div class="edit-trajet-grid">
           <div class="pdv-field-group"><label>Limite bagages (kg)</label><input type="number" class="pdv-input" id="et-limite-bagages" value="${t.limiteBagages || ''}"></div>
           <div class="pdv-field-group"><label>Frais excédent (XAF/kg)</label><input type="number" class="pdv-input" id="et-frais-exces" value="${t.fraisExcesBagages || ''}"></div>
+        </div>
+        <div class="pdv-field-group">
+          <label>PDV de départ <span class="req">*</span></label>
+          <p class="pdv-field-hint" style="margin:-2px 0 4px;">Ville : ${escapeHtml(t.villeDepart)}</p>
+          <div class="pdv-multi-select" id="edit-pdvDepartList"></div>
+        </div>
+        <div class="pdv-field-group">
+          <label>PDV d'arrivée</label>
+          <p class="pdv-field-hint" style="margin:-2px 0 4px;">Ville : ${escapeHtml(t.villeArrivee)}</p>
+          <div class="pdv-multi-select" id="edit-pdvArriveeList"></div>
         </div>
         ${arretsSection}
       </div>
@@ -736,7 +778,7 @@ export function openEditTrajet(trajetId) {
         let html = `<div class="pdv-field-group">
           <label>${ICONS.money} Prix par tronçon</label>
           <div style="font-size:11px;color:var(--muted);margin:6px 0 10px;padding:8px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
-            ${ICONS.info} Les prix depuis <strong style="color:var(--white);">${t.villeDepart}</strong> sont dans les champs d'arrêts ci-dessus.
+            ${ICONS.info} Les prix depuis <strong style="color:var(--white);">${escapeHtml(t.villeDepart)}</strong> sont dans les champs d'arrêts ci-dessus.
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">`;
         for (let i = 0; i < pointsApresDepart.length - 1; i++) {
@@ -746,10 +788,10 @@ export function openEditTrajet(trajetId) {
             const prixExistant = t.prixTroncons?.[cle];
             html += `
               <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
-                <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">${from} → ${to}</div>
+                <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">${escapeHtml(from)} → ${escapeHtml(to)}</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
                   ${agenceData.typesBillet.map(type => `
-                  <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${type.nom} (XAF)</label>
+                  <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${escapeHtml(type.nom)} (XAF)</label>
                     <p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(type)}</p>
                     <input type="number" class="pdv-input troncon-prix-type" data-cle="${cle}" data-type-id="${type.id}" value="${prixExistant?.[type.id] ?? ''}" placeholder="Ex : 5000" min="0"></div>`).join('')}
                 </div>
@@ -766,6 +808,12 @@ export function openEditTrajet(trajetId) {
 
   document.body.appendChild(overlay);
   requestAnimationFrame(() => overlay.classList.add('show'));
+  renderPDVMultiSelectEdit('edit-pdvDepartList',  t.villeDepart,  t.pdvDepart  || []);
+  renderPDVMultiSelectEdit('edit-pdvArriveeList', t.villeArrivee, t.pdvArrivee || []);
+
+  arretsGroupes.forEach((g, i) => {
+    if (g.type === 'pdv') renderArretPDVMultiSelectEdit(`editArretCityPdv-${i}`, g.ville, g.pdvs);
+  });
 }
 
 export function addEditArretItem(trajetId) {
@@ -778,11 +826,12 @@ export function addEditArretItem(trajetId) {
   div.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:0;';
 
   const trajet = trajetList.find(t => t.id === trajetId);
+  const villesArretsExistantes = [...new Set((trajet?.arrets || []).map(a => a.ville))];
   const villesOptions = [...new Set(pdvList.filter(p => p.actif).map(p => p.ville))]
-    .filter(v => v && v !== trajet?.villeDepart && v !== trajet?.villeArrivee)
+    .filter(v => v && v !== trajet?.villeDepart && v !== trajet?.villeArrivee && !villesArretsExistantes.includes(v))
     .sort()
-    .map(v => `<option value="${v}">${v}</option>`)
-    .join('');
+    .map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`)
+    .join('') + `<option value="__libre__">Autre lieu...</option>`;
 
   div.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -792,22 +841,40 @@ export function addEditArretItem(trajetId) {
       </select>
       <button type="button" onclick="removeArretItem(this)" style="background:none;border:none;color:#FF4D6A;font-size:20px;cursor:pointer;padding:2px 6px;line-height:1;">×</button>
     </div>
+    <div id="editArretLibreWrap-${index}" style="display:none;margin-bottom:10px;">
+      <input type="text" class="pdv-input" id="editArretLibreNom-${index}" placeholder="Ex : Carrefour Total, Poste de Gare...">
+    </div>
     <div class="pdv-multi-select arret-pdv-container" id="arret-pdv-${index}" style="margin-bottom:10px;display:none;"></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));gap:10px;">
       <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;font-weight:600;">Heure passage</label><input type="time" class="pdv-input edit-arret-heure-passage-new"></div>
       ${agenceData.typesBillet.map(t => `
-      <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;font-weight:600;">Prix ${t.nom} (XAF)</label><p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p><input type="number" class="pdv-input edit-arret-prix-type-new" data-type-id="${t.id}" placeholder="Ex : 5000" min="0"></div>`).join('')}
+      <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;font-weight:600;">Prix ${escapeHtml(t.nom)} (XAF)</label><p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p><input type="number" class="pdv-input edit-arret-prix-type-new" data-type-id="${t.id}" placeholder="Ex : 5000" min="0"></div>`).join('')}
     </div>
   `;
  list.appendChild(div);
  genererTableauTronconsEdit();
+ div.querySelector(`#editArretLibreNom-${index}`)?.addEventListener('input', genererTableauTronconsEdit);
 }
 
 export function onEditArretVilleChange(index) {
   const ville     = document.getElementById(`arret-ville-${index}`)?.value;
   const container = document.getElementById(`arret-pdv-${index}`);
+  const libreWrap = document.getElementById(`editArretLibreWrap-${index}`);
   if (!container) return;
-  if (!ville) { container.style.display = 'none'; container.innerHTML = ''; return; }
+
+  if (!ville) {
+    container.style.display = 'none'; container.innerHTML = '';
+    if (libreWrap) libreWrap.style.display = 'none';
+    return;
+  }
+
+  if (ville === '__libre__') {
+    if (libreWrap) libreWrap.style.display = 'block';
+    container.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+  if (libreWrap) libreWrap.style.display = 'none';
 
   const pdvsVille = pdvList.filter(p => p.actif && p.ville === ville);
   if (pdvsVille.length === 0) {
@@ -818,8 +885,8 @@ export function onEditArretVilleChange(index) {
   container.style.display = 'flex';
   container.innerHTML = pdvsVille.map(p => `
     <label class="pdv-multi-item">
-      <input type="checkbox" value="${p.id}" data-nom="${p.nom}" data-ville="${p.ville}" class="arret-pdv-check" checked>
-      <span class="pdv-multi-label"><strong>${p.nom}</strong><small>${p.adresse || p.ville || ''}</small></span>
+      <input type="checkbox" value="${p.id}" data-nom="${escapeHtml(p.nom)}" data-ville="${escapeHtml(p.ville)}" class="arret-pdv-check" checked>
+      <span class="pdv-multi-label"><strong>${escapeHtml(p.nom)}</strong><small>${escapeHtml(p.adresse || p.ville || '')}</small></span>
     </label>`).join('');
 }
 
@@ -843,16 +910,30 @@ export function genererTableauTronconsEdit() {
 
   // Récupérer toutes les villes des arrêts encore présents dans le formulaire
   const villesArrets = [];
+  const elementsOrdonnes = [...document.querySelectorAll('#editArretsList > .arret-item, #editArretsList > .arret-city-group')];
 
-  // Arrêts existants (ceux avec data-nom)
-  document.querySelectorAll('#editArretsList .edit-arret-marker').forEach(marker => {
-    const nom = marker.dataset.nom;
-    if (nom) villesArrets.push(nom);
-  });
-
-  // Nouveaux arrêts ajoutés
-  document.querySelectorAll('#editArretsList .arret-ville-select').forEach(sel => {
-    if (sel.value) villesArrets.push(sel.value);
+  elementsOrdonnes.forEach(el => {
+    if (el.classList.contains('arret-city-group')) {
+      const ville = el.dataset.ville;
+      const aUnPdvCoche = el.querySelector('.edit-arret-pdv-check:checked');
+      if (ville && aUnPdvCoche) villesArrets.push(ville);
+      return;
+    }
+    const marker = el.querySelector('.edit-arret-marker');
+    if (marker) {
+      const nom = marker.dataset.nom;
+      if (nom) villesArrets.push(nom);
+      return;
+    }
+    const sel = el.querySelector('.arret-ville-select');
+    if (!sel || !sel.value) return;
+    if (sel.value === '__libre__') {
+      const index    = sel.id.replace('arret-ville-', '');
+      const nomLibre = document.getElementById(`editArretLibreNom-${index}`)?.value.trim();
+      if (nomLibre) villesArrets.push(nomLibre);
+    } else {
+      villesArrets.push(sel.value);
+    }
   });
 
   if (villesArrets.length === 0) {
@@ -874,7 +955,7 @@ export function genererTableauTronconsEdit() {
     <div class="pdv-field-group" id="editTronconsPrixWrap">
       <label>${ICONS.money} Prix par tronçon</label>
       <div style="font-size:11px;color:var(--muted);margin:6px 0 10px;padding:8px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
-        ${ICONS.info} Les prix depuis <strong style="color:var(--white);">${trajet.villeDepart}</strong> sont dans les champs d'arrêts ci-dessus.
+        ${ICONS.info} Les prix depuis <strong style="color:var(--white);">${escapeHtml(trajet.villeDepart)}</strong> sont dans les champs d'arrêts ci-dessus.
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">`;
 
@@ -885,10 +966,10 @@ export function genererTableauTronconsEdit() {
       const prixExistant = trajet.prixTroncons?.[cle];
       html += `
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
-          <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">${from} → ${to}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">${escapeHtml(from)} → ${escapeHtml(to)}</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
             ${agenceData.typesBillet.map(t => `
-            <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${t.nom} (XAF)</label>
+            <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${escapeHtml(t.nom)} (XAF)</label>
               <p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p>
               <input type="number" class="pdv-input troncon-prix-type" data-cle="${cle}" data-type-id="${t.id}" value="${prixExistant?.[t.id] ?? ''}" placeholder="Ex : 5000" min="0"></div>`).join('')}
           </div>
@@ -908,6 +989,14 @@ export function genererTableauTronconsEdit() {
   }
 }
 
+function pdvARealiseVentesSurTrajet(pdvId, trajetId) {
+  return resaList.some(r =>
+    r.trajetId === trajetId &&
+    r.pdvId === pdvId &&
+    r.statut !== 'annulée'
+  );
+}
+
 export async function submitEditTrajet(trajetId) {
   const t = trajetList.find(t => t.id === trajetId);
 
@@ -925,37 +1014,92 @@ export async function submitEditTrajet(trajetId) {
     fraisExcesBagages: document.getElementById('et-frais-exces')?.value    ? parseInt(document.getElementById('et-frais-exces').value)    : null,
   };
 
+  const pdvDepartChecks = [...document.querySelectorAll('#edit-pdvDepartList .edit-pdv-multi-check:checked')];
+  if (pdvDepartChecks.length === 0) {
+    showToast('Sélectionnez au moins un PDV de départ.', TOAST_ICONS.warning);
+    return;
+  }
+  payload.pdvDepart = pdvDepartChecks.map(c => ({ id: c.value, nom: c.dataset.nom }));
+
+  const pdvArriveeChecks = [...document.querySelectorAll('#edit-pdvArriveeList .edit-pdv-multi-check:checked')];
+  payload.pdvArrivee = pdvArriveeChecks.map(c => ({ id: c.value, nom: c.dataset.nom }));
+
+  const pdvDepartRetires  = (t?.pdvDepart  || []).filter(p => !payload.pdvDepart.some(np => np.id === p.id));
+  const pdvArriveeRetires = (t?.pdvArrivee || []).filter(p => !payload.pdvArrivee.some(np => np.id === p.id));
+  const pdvDepartArriveeRetiresAvecVentes = [...pdvDepartRetires, ...pdvArriveeRetires]
+    .filter(p => pdvARealiseVentesSurTrajet(p.id, trajetId));
+
   if (t?.typeTrajet === 'arrets') {
     const arrets = [];
     let erreurArret = false;
 
-    document.querySelectorAll('#editArretsList .edit-arret-marker').forEach(marker => {
-      const i = marker.dataset.index;
-      const prixParType = {};
-      document.querySelectorAll(`.edit-arret-prix-type[data-index="${i}"]`).forEach(inp => {
-        prixParType[inp.dataset.typeId] = parseInt(inp.value) || 0;
-      });
-      const heurePassage = document.querySelector(`.edit-arret-heure-passage[data-index="${i}"]`)?.value || null;
-      const nom  = marker.dataset.nom;
-      const type = marker.dataset.type;
-      const id   = marker.dataset.id;
-      if (nom) arrets.push({ nom, type, id: id || undefined, prixParType, heurePassage, ville: pdvList.find(p => p.id === (id || undefined))?.ville || '' });
-    });
+    const elementsOrdonnes = [...document.querySelectorAll('#editArretsList > .arret-item, #editArretsList > .arret-city-group')];
 
-    document.querySelectorAll('#editArretsList .arret-item').forEach(item => {
+    elementsOrdonnes.forEach(el => {
       if (erreurArret) return;
-      if (item.querySelector('.edit-arret-marker')) return;
-      const ville = item.querySelector('.arret-ville-select')?.value;
+
+      // Arrêt PDV existant (groupé par ville)
+      if (el.classList.contains('arret-city-group')) {
+        const ville = el.dataset.ville;
+        const i = el.id.replace('editArretCity-', '');
+        const prixParType = {};
+        let manque = false;
+        document.querySelectorAll(`.edit-arret-city-prix[data-index="${i}"]`).forEach(inp => {
+          if (inp.value === '') { manque = true; return; }
+          prixParType[inp.dataset.typeId] = parseInt(inp.value);
+        });
+        const heurePassage = document.querySelector(`.edit-arret-city-heure[data-index="${i}"]`)?.value || null;
+        const pdvsCochés = [...el.querySelectorAll('.edit-arret-pdv-check:checked')];
+        if (pdvsCochés.length === 0) return;
+        if (manque) { showToast(`Entrez les prix pour l'arrêt à ${ville}.`, TOAST_ICONS.warning); erreurArret = true; return; }
+        pdvsCochés.forEach(c => {
+          arrets.push({ type: 'pdv', id: c.value, nom: c.dataset.nom, ville, prixParType, heurePassage });
+        });
+        return;
+      }
+
+      // Arrêt "lieu libre" existant
+      const marker = el.querySelector('.edit-arret-marker');
+      if (marker) {
+        const i = marker.dataset.index;
+        const prixParType = {};
+        document.querySelectorAll(`.edit-arret-prix-type[data-index="${i}"]`).forEach(inp => {
+          prixParType[inp.dataset.typeId] = parseInt(inp.value) || 0;
+        });
+        const heurePassage = document.querySelector(`.edit-arret-heure-passage[data-index="${i}"]`)?.value || null;
+        const nom = marker.dataset.nom;
+        if (nom) arrets.push({ nom, type: 'libre', prixParType, heurePassage, ville: nom });
+        return;
+      }
+
+      // Nouvel arrêt ajouté via "+ Ajouter un arrêt"
+      let ville = el.querySelector('.arret-ville-select')?.value;
       if (!ville) { showToast('Sélectionnez une ville pour chaque arrêt ajouté.', TOAST_ICONS.warning); erreurArret = true; return; }
+
+      let estLibre = false;
+      if (ville === '__libre__') {
+        const index    = el.querySelector('.arret-ville-select')?.id.replace('arret-ville-', '');
+        const nomLibre = document.getElementById(`editArretLibreNom-${index}`)?.value.trim();
+        if (!nomLibre) { showToast('Entrez le nom du lieu libre.', TOAST_ICONS.warning); erreurArret = true; return; }
+        ville = nomLibre;
+        estLibre = true;
+      }
+
       const prixParType = {};
       let manque = false;
-      item.querySelectorAll('.edit-arret-prix-type-new').forEach(inp => {
+      el.querySelectorAll('.edit-arret-prix-type-new').forEach(inp => {
         if (inp.value === '') { manque = true; return; }
         prixParType[inp.dataset.typeId] = parseInt(inp.value);
       });
-      const heurePassage = item.querySelector('.edit-arret-heure-passage-new')?.value || null;
+      const heurePassage = el.querySelector('.edit-arret-heure-passage-new')?.value || null;
       if (manque || Object.keys(prixParType).length === 0) { showToast(`Entrez les prix pour l'arrêt à ${ville}.`, TOAST_ICONS.warning); erreurArret = true; return; }
-      const pdvsCochés = [...item.querySelectorAll('.arret-pdv-check:checked')];
+
+      if (estLibre) {
+        arrets.push({ type: 'libre', nom: ville, ville, prixParType, heurePassage });
+        return;
+      }
+
+      const pdvsCochés = [...el.querySelectorAll('.arret-pdv-check:checked')];
       if (pdvsCochés.length > 0) {
         pdvsCochés.forEach(c => {
           const pdvObj = pdvList.find(p => p.id === c.value);
@@ -988,8 +1132,12 @@ export async function submitEditTrajet(trajetId) {
   const nomsApres     = (payload.arrets || []).map(a => a.nom);
   const arretsRetires = arretsAvant.filter(a => !nomsApres.includes(a.nom));
   const pdvsRetires   = arretsRetires.filter(a => a.type === 'pdv');
+  const villesRestantes = new Set((payload.arrets || []).map(a => a.ville));
+  const arretsDisparus  = pdvsRetires.filter(a => !villesRestantes.has(a.ville));
+  const arretsPartiels  = pdvsRetires.filter(a => villesRestantes.has(a.ville));
+  const lieuxLibresRetires = arretsRetires.filter(a => a.type === 'libre');
 
-  if (pdvsRetires.length > 0) {
+  if (pdvsRetires.length > 0 || pdvDepartArriveeRetiresAvecVentes.length > 0 || lieuxLibresRetires.length > 0) {
     window._pendingTrajetPayload = { trajetId, payload };
     const overlay = document.createElement('div');
     overlay.id = 'confirmArretOverlay';
@@ -998,18 +1146,29 @@ export async function submitEditTrajet(trajetId) {
       <div class="pdv-overlay-backdrop" onclick="closeConfirmArret()"></div>
       <div class="pdv-overlay-panel pdv-confirm-panel">
         <div class="pdv-confirm-icon">${ICONS.pin}</div>
-        <h2>Modifier les arrêts ?</h2>
-        <p>Tu as retiré <strong>${arretsRetires.length} arrêt(s)</strong> de ce trajet.</p>
+        <h2>Confirmer les modifications ?</h2>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:10px 0;display:flex;flex-direction:column;gap:8px;font-size:12px;">
+          ${arretsPartiels.length > 0 ? `
           <div style="display:flex;align-items:flex-start;gap:8px;">
-            <span style="background:#3D0F0F;color:#FF6B6B;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">PDV retirés</span>
-            <span style="color:var(--muted);line-height:1.6;">${pdvsRetires.map(a => `<strong style="color:var(--white);">${a.nom}</strong>`).join(', ')} ne pourra plus vendre de billets sur ce trajet.</span>
-          </div>
+            <span style="background:#3D2A00;color:#FFA940;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">PDV retiré(s)</span>
+            <span style="color:var(--muted);line-height:1.6;">${arretsPartiels.map(a => `<strong style="color:var(--white);">${escapeHtml(a.nom)}</strong>`).join(', ')} ne pourra plus vendre sur cet arrêt. L'arrêt reste actif, d'autres PDV continuent d'y vendre.</span>
+          </div>` : ''}
+          ${arretsDisparus.length > 0 ? `
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <span style="background:#3D0F0F;color:#FF6B6B;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">Arrêt(s) supprimé(s)</span>
+            <span style="color:var(--muted);line-height:1.6;">L'arrêt à <strong style="color:var(--white);">${[...new Set(arretsDisparus.map(a => a.ville))].map(v => escapeHtml(v)).join(', ')}</strong> ne sera plus disponible sur ce trajet — ${arretsDisparus.map(a => escapeHtml(a.nom)).join(', ')} était le dernier PDV à y vendre.</span>
+          </div>` : ''}
+          ${lieuxLibresRetires.length > 0 ? `
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <span style="background:#0D2340;color:#4DA6FF;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">Lieu(x) retiré(s)</span>
+            <span style="color:var(--muted);line-height:1.6;">Le bus ne s'arrêtera plus à <strong style="color:var(--white);">${lieuxLibresRetires.map(a => escapeHtml(a.nom)).join(', ')}</strong>.</span>
+          </div>` : ''}
+          ${pdvDepartArriveeRetiresAvecVentes.length > 0 ? `
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <span style="background:#3D0F0F;color:#FF6B6B;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">PDV avec ventes</span>
+            <span style="color:var(--muted);line-height:1.6;">${pdvDepartArriveeRetiresAvecVentes.map(p => `<strong style="color:var(--white);">${escapeHtml(p.nom)}</strong>`).join(', ')} a déjà vendu des billets sur ce trajet et perdra immédiatement l'accès à la vente.</span>
+          </div>` : ''}
           <div style="height:1px;background:var(--border);"></div>
-          <div style="display:flex;align-items:flex-start;gap:8px;">
-            <span style="background:#3D2A00;color:#FFA940;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">Sessions futures</span>
-            <span style="color:var(--muted);">Les arrêts actifs seront mis à jour automatiquement.</span>
-          </div>
           <div style="display:flex;align-items:flex-start;gap:8px;">
             <span style="background:#0D2340;color:#4DA6FF;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">Réservations existantes</span>
             <span style="color:var(--muted);">Non affectées.</span>
@@ -1023,7 +1182,7 @@ export async function submitEditTrajet(trajetId) {
     `;
     document.body.appendChild(overlay);
     requestAnimationFrame(() => overlay.classList.add('show'));
-    return; // on stoppe ici, doSubmitEditTrajet() sera appelé après confirmation
+    return;
   }
 
   // Pas de PDV retiré → soumettre directement
@@ -1294,7 +1453,7 @@ export function openCreateTrajet() {
         <div class="pdv-create-fields">
           ${agenceData.typesBillet.map(t => `
             <div class="pdv-field-group">
-              <label>Prix ${t.nom} (XAF) <span class="req">*</span></label>
+              <label>Prix ${escapeHtml(t.nom)} (XAF) <span class="req">*</span></label>
               <p class="pdv-field-hint" style="margin:-2px 0 4px;">${t.ageMax == null ? `${t.ageMin} ans et +` : `de ${t.ageMin} à ${t.ageMax} ans`}</p>
               <input type="number" class="pdv-input t-prix-type" data-type-id="${t.id}" placeholder="Ex : 15000" min="0">
             </div>`).join('')
@@ -1367,6 +1526,42 @@ export function toggleArrets() {
   if (outer) outer.style.display = isArrets ? 'flex' : 'none';
 }
 
+export function renderPDVMultiSelectEdit(containerId, ville, dejaCoches = []) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const idsCoches = new Set(dejaCoches.map(p => p.id));
+  const filtered  = pdvList.filter(p => (p.ville || '').toLowerCase() === (ville || '').toLowerCase() && p.actif);
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<span style="font-size:12px;color:var(--muted);">Aucun PDV actif dans cette ville.</span>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(pdv => `
+    <label class="pdv-multi-item">
+      <input type="checkbox" value="${pdv.id}" data-nom="${escapeHtml(pdv.nom)}" class="edit-pdv-multi-check" ${idsCoches.has(pdv.id) ? 'checked' : ''}>
+      <span class="pdv-multi-label"><strong>${escapeHtml(pdv.nom)}</strong><small>${escapeHtml(pdv.adresse || pdv.ville || '')}</small></span>
+    </label>`).join('');
+}
+
+export function renderArretPDVMultiSelectEdit(containerId, ville, dejaCoches = []) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const idsCoches = new Set(dejaCoches.map(p => p.id));
+  const filtered  = pdvList.filter(p => (p.ville || '').toLowerCase() === (ville || '').toLowerCase() && p.actif);
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<span style="font-size:12px;color:var(--muted);">Aucun PDV actif dans cette ville.</span>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(pdv => `
+    <label class="pdv-multi-item">
+      <input type="checkbox" value="${pdv.id}" data-nom="${escapeHtml(pdv.nom)}" class="edit-arret-pdv-check" onchange="genererTableauTronconsEdit()" ${idsCoches.has(pdv.id) ? 'checked' : ''}>
+      <span class="pdv-multi-label"><strong>${escapeHtml(pdv.nom)}</strong><small>${escapeHtml(pdv.adresse || pdv.ville || '')}</small></span>
+    </label>`).join('');
+}
+
 export function renderPDVMultiSelect(containerId, sens) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -1378,8 +1573,8 @@ export function renderPDVMultiSelect(containerId, sens) {
   if (filtered.length === 0) { container.innerHTML = `<span style="font-size:12px;color:var(--muted);">Aucun PDV trouvé pour cette ville.</span>`; return; }
   container.innerHTML = filtered.map(pdv => `
     <label class="pdv-multi-item">
-      <input type="checkbox" value="${pdv.id}" data-nom="${pdv.nom}" class="pdv-multi-check">
-      <span class="pdv-multi-label"><strong>${pdv.nom}</strong><small>${pdv.adresse || pdv.ville || ''}</small></span>
+      <input type="checkbox" value="${pdv.id}" data-nom="${escapeHtml(pdv.nom)}" class="pdv-multi-check">
+      <span class="pdv-multi-label"><strong>${escapeHtml(pdv.nom)}</strong><small>${escapeHtml(pdv.adresse || pdv.ville || '')}</small></span>
     </label>`).join('');
 }
 
@@ -1405,8 +1600,8 @@ export function onArretVilleChange(index) {
   container.style.display = 'flex';
   container.innerHTML = pdvsVille.map(p => `
     <label class="pdv-multi-item">
-      <input type="checkbox" value="${p.id}" data-nom="${p.nom}" data-ville="${p.ville}" class="arret-pdv-check" checked>
-      <span class="pdv-multi-label"><strong>${p.nom}</strong><small>${p.adresse || p.ville || ''}</small></span>
+      <input type="checkbox" value="${p.id}" data-nom="${escapeHtml(p.nom)}" data-ville="${escapeHtml(p.ville)}" class="arret-pdv-check" checked>
+      <span class="pdv-multi-label"><strong>${escapeHtml(p.nom)}</strong><small>${escapeHtml(p.adresse || p.ville || '')}</small></span>
     </label>`).join('');
   genererTableauTroncons();
 }
@@ -1420,7 +1615,7 @@ export function addArretItem() {
   div.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:0;';
 
   const villesOptions = getVillesDisponiblesPourArret()
-    .map(v => `<option value="${v}">${v}</option>`)
+    .map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`)
     .join('') + `<option value="__libre__">Autre lieu...</option>`;
 
   div.innerHTML = `
@@ -1438,7 +1633,7 @@ export function addArretItem() {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
       <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Heure passage</label><input type="time" class="pdv-input arret-heure-passage" placeholder="—"></div>
       ${agenceData.typesBillet.map(t => `
-      <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${t.nom} (XAF)</label><p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p><input type="number" class="pdv-input arret-prix-type" data-type-id="${t.id}" placeholder="Ex : 5000" min="0"></div>`).join('')}
+      <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${escapeHtml(t.nom)} (XAF)</label><p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p><input type="number" class="pdv-input arret-prix-type" data-type-id="${t.id}" placeholder="Ex : 5000" min="0"></div>`).join('')}
     </div>
   `;
   list.appendChild(div);
@@ -1451,7 +1646,7 @@ export function refreshArretsVilleOptions() {
     const current    = sel.value;
     const stillValid = villes.includes(current);
     sel.innerHTML = `<option value="">Sélectionner une ville</option>` +
-      villes.map(v => `<option value="${v}" ${v === current ? 'selected' : ''}>${v}</option>`).join('');
+      villes.map(v => `<option value="${escapeHtml(v)}" ${v === current ? 'selected' : ''}>${escapeHtml(v)}</option>`).join('');
     const index = sel.id.replace('arret-ville-', '');
     if (!stillValid) sel.value = '';
     onArretVilleChange(index);
@@ -1496,7 +1691,7 @@ export function genererTableauTroncons() {
   let html = `
     <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">${ICONS.money} Prix par tronçon</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:10px;padding:8px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
-      ${ICONS.info} Les prix depuis <strong style="color:var(--white);">${depart}</strong> sont gérés dans les champs d'arrêts et à l'étape suivante.
+      ${ICONS.info} Les prix depuis <strong style="color:var(--white);">${escapeHtml(depart)}</strong> sont gérés dans les champs d'arrêts et à l'étape suivante.
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;">`;
 
@@ -1507,10 +1702,10 @@ export function genererTableauTroncons() {
       const cle = `${from}|${to}`;
       html += `
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
-          <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">${from} → ${to}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">${escapeHtml(from)} → ${escapeHtml(to)}</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             ${agenceData.typesBillet.map(t => `
-            <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${t.nom} (XAF) *</label><p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p><input type="number" class="pdv-input troncon-prix-type" data-cle="${cle}" data-type-id="${t.id}" placeholder="Ex : 5000" min="0"></div>`).join('')}
+            <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${escapeHtml(t.nom)} (XAF) *</label><p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p><input type="number" class="pdv-input troncon-prix-type" data-cle="${cle}" data-type-id="${t.id}" placeholder="Ex : 5000" min="0"></div>`).join('')}
           </div>
         </div>`;
     }
@@ -1683,8 +1878,8 @@ export function renderDepartItem(d, trajetId) {
   return `
     <div class="depart-item" id="departItem-${d.id}" onclick="openBusDetail('${d.id}', '${trajetId}')" style="cursor:pointer;">
       <div class="depart-item-left">
-        <div class="depart-item-bus">${d.busNom}</div>
-        <div class="depart-item-info">${d.busType} · ${d.busCapacite} places · ${d.heureDepart}${d.heureArrivee ? ' → ' + d.heureArrivee : ''}</div>
+        <div class="depart-item-bus">${escapeHtml(d.busNom)}</div>
+        <div class="depart-item-info">${escapeHtml(d.busType)} · ${escapeHtml(d.busCapacite)} places · ${escapeHtml(d.heureDepart)}${d.heureArrivee ? ' → ' + escapeHtml(d.heureArrivee) : ''}</div>
         <div class="depart-item-jours">${joursLabel}</div>
       </div>
       <div class="depart-item-right">
@@ -1782,6 +1977,8 @@ window.onArretVilleChange        = onArretVilleChange;
 window.refreshArretsVilleOptions = refreshArretsVilleOptions;
 window.genererTableauTroncons    = genererTableauTroncons;
 window.renderPDVMultiSelect      = renderPDVMultiSelect;
+window.renderPDVMultiSelectEdit  = renderPDVMultiSelectEdit;
+window.renderArretPDVMultiSelectEdit = renderArretPDVMultiSelectEdit;
 window.loadDeparts               = loadDeparts;
 window.renderDepartItem          = renderDepartItem;
 window.doSubmitEditTrajet = doSubmitEditTrajet;

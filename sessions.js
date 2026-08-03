@@ -3,6 +3,7 @@
 import { BACKEND, trajetList } from './state.js';
 import { showToast, TOAST_ICONS } from './toast-utils.js';
 import { apiFetch } from './api.js';
+import { escapeHtml } from './sanitize.js';
 
 const ICONS = {
   close:    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -91,7 +92,7 @@ export async function loadBusSessions(departId, hasArrets, trajet) {
     container.innerHTML = sessions.map(s => {
       const dateObj   = new Date(s.date + 'T00:00:00');
       const jourLabel = jours[dateObj.getDay()];
-      const arretsLabel = (s.arretsActifs || []).map(a => a.ville || a.nom).join(' → ') || '—';
+      const arretsLabel = escapeHtml((s.arretsActifs || []).map(a => a.ville || a.nom).join(' → ')) || '—';
 
       let horaire = s.heureDepart || '—';
       if (s.heureArrivee)  horaire += ` → ${s.heureArrivee}`;
@@ -124,7 +125,7 @@ export async function loadBusSessions(departId, hasArrets, trajet) {
           ${s.statut === 'annulée' && s.causeAnnulation ? `
           <div style="font-size:11px;color:#FF4D6A;margin-bottom:8px;background:#FF4D6A11;padding:6px 10px;border-radius:6px;">
             ${causeLabels[s.causeAnnulation] || s.causeAnnulation}
-            ${s.detailsIncident ? `<br><span style="color:var(--muted);font-size:10px;">${s.detailsIncident}</span>` : ''}
+            ${s.detailsIncident ? `<br><span style="color:var(--muted);font-size:10px;">${escapeHtml(s.detailsIncident)}</span>` : ''}
           </div>` : ''}
 
           ${hasArrets && s.statut !== 'annulée' ? `
@@ -217,10 +218,10 @@ export function openEditSession(sessionId, arretsDisponibles, heureActuelle, arr
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
             ${arretsDisponibles.map(a => `
               <label class="pdv-multi-item">
-                <input type="checkbox" value="${a.nom}" class="session-arret-check"
+                <input type="checkbox" value="${escapeHtml(a.nom)}" class="session-arret-check"
                   ${arretsActifsNoms.includes(a.nom) ? 'checked' : ''}>
                 <span class="pdv-multi-label">
-                  <strong>${a.nom}</strong>
+                  <strong>${escapeHtml(a.nom)}</strong>
                   <small>${a.type === 'pdv' ? 'PDV' : 'Lieu'}</small>
                 </span>
               </label>`).join('')}

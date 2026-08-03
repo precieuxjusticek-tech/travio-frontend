@@ -125,6 +125,7 @@ export function buildTicketHTML(format, design, data = {}) {
     codeControle = null,
     passagerNom  = 'Jean Dupont',
     nbVoyageurs  = 1,
+    bagagesLabel = null,
     pdvEmbarquementNom   = null,
     pdvEmbarquementVille = null,
     pdvDebarquementNom   = null,
@@ -162,6 +163,7 @@ export function buildTicketHTML(format, design, data = {}) {
             <div><div class="tp-k">Départ</div><div class="tp-v">${heureDepart}</div></div>
             <div><div class="tp-k">Bus / Siège</div><div class="tp-v">${busNom}${siege ? ' — ' + siege : ''}</div></div>
             <div><div class="tp-k">Voyageurs</div><div class="tp-v">${nbVoyageurs}</div></div>
+            ${bagagesLabel ? `<div><div class="tp-k">Bagages</div><div class="tp-v">${bagagesLabel}</div></div>` : ''}
             <div><div class="tp-k">Embarquement</div><div class="tp-v">${pdvEmbarquementNom || '—'}</div></div>
             <div><div class="tp-k">Débarquement</div><div class="tp-v">${pdvDebarquementNom || '—'}</div></div>
             ${delaiFormalite ? `<div style="grid-column:1/-1;"><div class="tp-k">Présentation</div><div class="tp-v">${formatDelaiFormalite(delaiFormalite)}</div></div>` : ''}
@@ -197,6 +199,7 @@ export function buildTicketHTML(format, design, data = {}) {
       <div class="tp-t-row"><span>Départ</span><span>${heureDepart}</span></div>
       <div class="tp-t-row"><span>Bus/Siège</span><span>${busNom}${siege ? ' / ' + siege : ''}</span></div>
       <div class="tp-t-row"><span>Voyageurs</span><span>${nbVoyageurs}</span></div>
+      ${bagagesLabel ? `<div class="tp-t-row"><span>Bagages</span><span>${bagagesLabel}</span></div>` : ''}
       <div class="tp-t-row"><span>Embarq.</span><span>${pdvEmbarquementNom || '—'}</span></div>
       <div class="tp-t-row"><span>Débarq.</span><span>${pdvDebarquementNom || '—'}</span></div>
       ${delaiFormalite ? `<div class="tp-t-row"><span>Présentation</span><span>${formatDelaiFormalite(delaiFormalite)}</span></div>` : ''}

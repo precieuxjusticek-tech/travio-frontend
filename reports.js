@@ -3,7 +3,7 @@
 import { agenceData, resaListFiltree, pdvList, trajetList } from './state.js';
 import { showToast } from './toast-utils.js';
 import { getResaPeriodeActuelle, calculerStatsResa } from './reservations.js';
-import { getFinFiltresActifs, getFinDonneesRapport } from './finances.js';
+import { getFinFiltresActifs, getFinDonneesRapport, getFinColisDonneesRapport } from './finances.js';
 
 // Couleurs officielles Travio (RGB pour jsPDF)
 const NAVY       = [10, 14, 39];     // fond bandeau / footer
@@ -367,6 +367,7 @@ async function buildRapportFinancesDoc() {
   const logoBase64 = agenceData?.logoUrl ? await urlToBase64(agenceData.logoUrl) : null;
   const filtres    = getFinFiltresActifs();
   const data       = getFinDonneesRapport();
+  const colisData  = await getFinColisDonneesRapport();
   const dateGen    = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Africa/Brazzaville' });
   const heureGen   = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' });
   const refRapport = `TRV-FIN-${
@@ -432,7 +433,9 @@ async function buildRapportFinancesDoc() {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
   doc.setTextColor(60, 66, 90);
-  const synthese = `Ce rapport présente ${data.total} vente${data.total > 1 ? 's' : ''} sur ${filtres.periode}, pour un chiffre d'affaires de ${fmtMontant(data.CA)}.`;
+  const synthese = colisData.total > 0
+    ? `Ce rapport présente ${data.total} vente${data.total > 1 ? 's' : ''} sur ${filtres.periode}, pour un chiffre d'affaires de ${fmtMontant(data.CA)} (billets) et ${fmtMontant(colisData.revenuColis)} (colis).`
+    : `Ce rapport présente ${data.total} vente${data.total > 1 ? 's' : ''} sur ${filtres.periode}, pour un chiffre d'affaires de ${fmtMontant(data.CA)}.`;
   doc.text(synthese, 40, y, { maxWidth: pageWidth - 80 });
 
   // ── Filtres appliqués ──
@@ -507,6 +510,40 @@ async function buildRapportFinancesDoc() {
     doc.text(`Meilleur jour de vente : ${data.meilleurJour}`, pageWidth - 52, y + 21, { align: 'right' });
   }
   y += 46;
+
+  // ── Bandeau Revenu colis ──
+  if (colisData.total > 0) {
+    doc.setFillColor(240, 248, 244);
+    doc.setDrawColor(...TEAL);
+    doc.roundedRect(40, y, pageWidth - 80, 34, 4, 4, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...NAVY);
+    doc.text('Revenu colis', 52, y + 15);
+    doc.setFontSize(13);
+    doc.setTextColor(...TEAL_DARK);
+    doc.text(fmtMontant(colisData.revenuColis), 52, y + 28);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...GRAY);
+    doc.text(
+      `${colisData.total} colis · ${colisData.enTransit} en transit · ${colisData.arrive} arrivés · ${colisData.retire} retirés`,
+      pageWidth - 52, y + 21, { align: 'right' }
+    );
+    y += 46;
+
+    // ── Bandeau CA total combiné (billets + colis) ──
+    doc.setFillColor(...NAVY);
+    doc.roundedRect(40, y, pageWidth - 80, 34, 4, 4, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...TEAL);
+    doc.text('CA total combiné (billets + colis)', 52, y + 15);
+    doc.setFontSize(13);
+    doc.setTextColor(...WHITE);
+    doc.text(fmtMontant(data.CA + colisData.revenuColis), 52, y + 28);
+    y += 46;
+  }
 
   // ── Impact sur les revenus ──
   if (data.impact.totalPerdu > 0 || data.impact.totalGarde > 0) {
