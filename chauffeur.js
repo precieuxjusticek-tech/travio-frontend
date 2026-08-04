@@ -222,7 +222,9 @@ async function marquerArrive(id) {
       return;
     }
 
-    afficherConfirmation('Colis marqué arrivé', "Le destinataire peut maintenant venir le récupérer.");
+    colisActuel = data.colis;
+    afficherColis(colisActuel, null);
+    showScreen('result');
   } catch (err) {
     console.error('Erreur marquerArrive :', err);
     alert("Impossible de contacter le serveur.");
