@@ -2,7 +2,7 @@
 
 import { BACKEND, agenceData, vehiculeList, setVehiculeList, trajetList } from './state.js';
 import { showToast, showToastAction } from './toast-utils.js';
-import { closeTrajetDetail, openTrajetDetail, invalidateAllDepartsCache } from './trajets.js';
+import { closeTrajetDetail, openTrajetDetail, invalidateAllDepartsCache, loadAllDeparts } from './trajets.js';
 import { apiFetch } from './api.js';
 import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
@@ -359,7 +359,7 @@ function busTypeBadge(type) {
   return `<span style="display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:${c.bg};color:${c.color};white-space:nowrap;">${type}</span>`;
 }
 
-export function renderBusFlottePage() {
+export async function renderBusFlottePage() {
   const container = document.getElementById('busFlotteContainer');
   if (!container) return;
 
@@ -386,6 +386,13 @@ export function renderBusFlottePage() {
     return;
   }
 
+  // Véhicules actifs sans aucun départ actif (non assignés à un trajet)
+  let vehiculesAvecDepartActif = new Set();
+  if (agenceData?.id) {
+    const departs = await loadAllDeparts(agenceData.id);
+    vehiculesAvecDepartActif = new Set(departs.filter(d => d.actif !== false).map(d => d.vehiculeId));
+  }
+
   // Tri : actifs d'abord, puis alphabétique
   const sorted = [...vehiculeList].sort((a, b) => {
     if ((a.actif !== false) !== (b.actif !== false)) return a.actif !== false ? -1 : 1;
@@ -393,27 +400,8 @@ export function renderBusFlottePage() {
   });
 
   container.innerHTML = `
-    <div class="bus-flotte-stats">
-      <div class="bf-stat">
-        <span class="bf-stat-value">${total}</span>
-        <span class="bf-stat-label">Bus au total</span>
-      </div>
-      <div class="bf-stat-divider"></div>
-      <div class="bf-stat">
-        <span class="bf-stat-value accent">${actifs}</span>
-        <span class="bf-stat-label">Actifs</span>
-      </div>
-      <div class="bf-stat-divider"></div>
-      <div class="bf-stat">
-        <span class="bf-stat-value" style="color:${inactifs > 0 ? '#FF4D6A' : 'var(--white)'}">${inactifs}</span>
-        <span class="bf-stat-label">Inactifs</span>
-      </div>
-      <div class="bf-stat-divider"></div>
-      <div class="bf-stat">
-        <span class="bf-stat-value">${capaciteTotale.toLocaleString()}</span>
-        <span class="bf-stat-label">Places cumulées</span>
-      </div>
-      <button class="btn-action-primary" style="margin-left:auto;" onclick="openCreateVehicule()">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button class="btn-action-primary" onclick="openCreateVehicule()">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         Créer un bus
       </button>
@@ -442,10 +430,16 @@ export function renderBusFlottePage() {
             </div>
           </div>
 
-          <span class="pdv-status-badge ${v.actif !== false ? 'active' : 'inactive'}">
-            <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${v.actif !== false ? 'var(--accent)' : '#FF4D6A'};margin-right:5px;vertical-align:middle;"></span>
-            ${v.actif !== false ? 'Actif' : 'Inactif'}
-          </span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+            <span class="pdv-status-badge ${v.actif !== false ? 'active' : 'inactive'}">
+              <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${v.actif !== false ? 'var(--accent)' : '#FF4D6A'};margin-right:5px;vertical-align:middle;"></span>
+              ${v.actif !== false ? 'Actif' : 'Inactif'}
+            </span>
+            ${v.actif !== false && !vehiculesAvecDepartActif.has(v.id) ? `
+            <span class="pdv-status-badge inactive" style="background:rgba(255,178,63,0.12);color:#FFB23F;border-color:rgba(255,178,63,0.3);font-size:10px;" title="Ce bus n'est assigné à aucun trajet actif">
+              ⚠️ Non assigné
+            </span>` : ''}
+          </div>
 
           <div class="bf-row-actions">
             <button class="bf-icon-btn" title="Modifier" onclick="openEditVehicule('${v.id}')">

@@ -93,7 +93,7 @@
               <path d="M6 5V4a3 3 0 016 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
               <path d="M9 10v2M7 11h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
-            Vente de billets
+            Guichet de vente
           </a>
           <a class="drawer-nav-item" data-page="reservations" onclick="showPage('reservations', this)">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -412,8 +412,8 @@
               <div class="vente-step-head">
                 <div class="vente-step-num">2</div>
                 <div class="vente-step-head-info">
-                  <strong>Informations passager(s)</strong>
-                  <small>Ajoutez autant de passagers que nécessaire</small>
+                  <strong id="venteStep2Title">Informations passager(s)</strong>
+                  <small id="venteStep2Subtitle">Ajoutez autant de passagers que nécessaire</small>
                 </div>
               </div>
               <div class="vente-step-body">
@@ -536,14 +536,14 @@
                   </div>
                 </div>
 
-                <div class="vente-field-row" id="embarquementDebarquementBlock">
-                  <div class="vente-field-group">
+                <div class="vente-field-row" id="embarquementDebarquementBlock" style="align-items:flex-start; justify-content:space-between;">
+                  <div class="vente-field-group" style="flex:1;">
                     <label>Ville de départ</label>
                     <input type="text" class="vente-input" id="vente-ville-depart" readonly>
                     <label style="margin-top:8px;">PDV d'embarquement <span class="req">*</span></label>
                     <select class="vente-select" id="vente-pdv-embarquement"></select>
                   </div>
-                  <div class="vente-field-group">
+                  <div class="vente-field-group" style="flex:1;">
                     <label>Ville d'arrivée</label>
                     <input type="text" class="vente-input" id="vente-ville-arrivee" readonly>
                     <label style="margin-top:8px;">PDV de débarquement <span class="req">*</span></label>

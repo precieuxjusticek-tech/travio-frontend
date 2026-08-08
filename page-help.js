@@ -8,10 +8,10 @@ const PAGE_HELP = {
 
       <p><strong>Les 4 cartes en haut :</strong></p>
       <ul>
-        <li><strong>Réservations</strong> — nombre de réservations créées aujourd'hui (les annulées ne sont pas comptées).</li>
-        <li><strong>Revenus</strong> — total encaissé sur ces réservations du jour.</li>
-        <li><strong>Trajets actifs</strong> — nombre total de trajets activés dans votre agence, toutes dates confondues.</li>
-        <li><strong>Billets vendus</strong> — nombre de passagers inclus dans les réservations créées aujourd'hui.</li>
+        <li><strong>Réservations aujourd'hui</strong> — nombre de réservations créées aujourd'hui (les annulées ne sont pas comptées).</li>
+        <li><strong>Revenus du jour</strong> — total encaissé sur ces réservations du jour.</li>
+        <li><strong>Revenus colis du jour</strong> — total encaissé sur les colis expédiés aujourd'hui, avec le nombre de colis correspondant.</li>
+        <li><strong>Billets vendus aujourd'hui</strong> — nombre de passagers inclus dans les réservations créées aujourd'hui.</li>
       </ul>
 
       <div class="guide-warning-box">⚠️ Ces 4 chiffres se basent sur la date de <strong>création</strong> de la réservation, pas la date du voyage.</div>
@@ -38,6 +38,7 @@ const PAGE_HELP = {
         <li><strong>Vendre</strong> — vente depuis le siège. Contrairement à un PDV, qui ne peut vendre que sur les trajets qui lui sont assignés, aucun trajet n'est limité ici.</li>
         <li><strong>Ajouter un trajet</strong> — programmer un nouveau départ.</li>
         <li><strong>Ajouter un PDV</strong> — créer un nouveau point de vente.</li>
+        <li><strong>Modifier l'agence</strong> — accès direct à la fiche agence pour changer les infos, photos ou description.</li>
       </ul>
 
       <div class="guide-img-wrap">
@@ -115,6 +116,22 @@ const PAGE_HELP = {
         <img src="image-helps/onglets-trajets-bus.png" alt="Exemple des onglets Trajets et Flotte de bus" class="guide-img">
         <span class="guide-img-caption">Exemple des deux onglets de la page</span>
       </div>
+
+      <h3>Les 4 indicateurs en haut de la page</h3>
+      <p>Ces 4 cartes donnent un état des lieux instantané de votre réseau de trajets et de bus, sans avoir à ouvrir chaque fiche individuellement :</p>
+      <ul>
+        <li><strong>Trajets actifs</strong> — nombre de trajets activés sur le nombre total de trajets créés dans l'agence (actifs et inactifs confondus).</li>
+        <li><strong>Bus actifs (flotte)</strong> — nombre de véhicules activés sur le nombre total de véhicules de votre flotte, qu'ils soient assignés à un trajet ou non. C'est un statut du véhicule lui-même.</li>
+        <li><strong>Trajets sans bus</strong> — nombre de trajets actifs qui n'ont <strong>aucun bus assigné et actif</strong> dessus. Un trajet compte ici même si un bus lui est assigné mais désactivé. C'est une alerte : ces trajets sont ouverts mais invendables, faute de bus programmé.</li>
+        <li><strong>Bus non assignés</strong> — nombre de véhicules actifs de la flotte qui ne circulent sur aucun trajet actif en ce moment. C'est le miroir du précédent : des bus disponibles mais inexploités.</li>
+      </ul>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/kpis-trajets-bus.png" alt="Exemple des 4 cartes statistiques de la page Trajets" class="guide-img">
+        <span class="guide-img-caption">Exemple des 4 indicateurs en haut de la page Trajets & Bus</span>
+      </div>
+
+      <div class="guide-warning-box">⚠️ "Trajets sans bus" et "Bus non assignés" sont complémentaires : si les deux affichent un chiffre supérieur à 0 en même temps, il suffit souvent d'assigner un bus non utilisé à un trajet qui en manque pour régler les deux problèmes d'un coup.</div>
 
       <h3>Avant de créer un trajet : les types de billets</h3>
       <p>Un trajet a besoin d'au moins un type de billet pour définir ses prix (ex : Adulte, Enfant). Vous les configurez une seule fois pour toute l'agence via le bouton <strong>"Types de billets"</strong>, avec une tranche d'âge par type (3 types maximum). Si vous n'avez pas encore configuré de types, l'application vous y redirige automatiquement à la création d'un trajet.</p>

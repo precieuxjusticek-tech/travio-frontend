@@ -572,13 +572,13 @@
 
           <div class="stat-card">
             <div class="stat-card-header">
-              <span class="stat-label">Trajets actifs</span>
+              <span class="stat-label">Revenus colis du jour</span>
               <div class="stat-icon purple">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 12V6a2 2 0 012-2h5l4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><rect x="2" y="6" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M2 6l7-4 7 4M9 2v14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
             </div>
-            <div class="stat-value" id="statTrajets">0</div>
-            <div class="stat-delta" id="statTrajetsInfo">trajets programmés</div>
+            <div class="stat-value" id="statColisJour">0 XAF</div>
+            <div class="stat-delta" id="statColisJourInfo">— aujourd'hui</div>
           </div>
 
           <div class="stat-card">
@@ -947,6 +947,53 @@
             </button>
           </div>
         </div>
+
+        <div class="stats-grid" style="margin-bottom:16px;">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Trajets actifs</span>
+              <div class="stat-icon purple">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 12V6a2 2 0 012-2h5l4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statTrajetsActifsPage">0/0</div>
+            <div class="stat-delta" id="statTrajetsActifsPageInfo">trajets actifs</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Bus actifs (flotte)</span>
+              <div class="stat-icon blue">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h14" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statBusActifsPage">0/0</div>
+            <div class="stat-delta" id="statBusActifsPageInfo">bus actifs dans la flotte</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Trajets sans bus</span>
+              <div class="stat-icon orange">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2L1 14h14L8 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6.5v3.5M8 12v.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statBusCirculationPage">0</div>
+            <div class="stat-delta" id="statBusCirculationPageInfo">trajets actifs sans bus</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Bus non assignés</span>
+              <div class="stat-icon green">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h14" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="16" r="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statPlacesCumuleesPage">0</div>
+            <div class="stat-delta" id="statPlacesCumuleesPageInfo">bus actifs non assignés</div>
+          </div>
+        </div>
+
         <div style="display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;max-width:340px;">
           <button id="trajetsTab-trajets" class="equipe-tab-btn active" onclick="switchTrajetsTab('trajets')">Trajets</button>
           <button id="trajetsTab-bus" class="equipe-tab-btn" onclick="switchTrajetsTab('bus')">Flotte de bus</button>

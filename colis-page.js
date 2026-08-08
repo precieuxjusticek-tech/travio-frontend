@@ -109,6 +109,10 @@ let colisListe   = [];
 let colisFiltres = [];
 let colisActuel  = null;
 
+export function getColisListe() {
+  return colisListe;
+}
+
 // ════════════════════════════════
 //  CHARGEMENT + STRUCTURE (une seule fois par entrée sur la page)
 // ════════════════════════════════

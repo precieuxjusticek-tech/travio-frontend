@@ -1,6 +1,7 @@
 // ─── TRAVIO — Trajets ───
 
-import { BACKEND, agenceData, trajetList, setTrajetList, pdvList, resaList, busSteps, setBusSteps, departsCache, setDepartsCache, allDepartsCache, setAllDepartsCache } from './state.js';
+import { BACKEND, agenceData, trajetList, setTrajetList, pdvList, resaList, vehiculeList, busSteps, setBusSteps, departsCache, setDepartsCache, allDepartsCache, setAllDepartsCache } from './state.js';
+import { getColisListe } from './colis-page.js';
 import { showToast, showToastAction, TOAST_ICONS } from './toast-utils.js';
 import { openResolutionReservationsModal } from './bus-departs.js';
 import { formatDelaiFormalite } from './billet-template.js';
@@ -64,13 +65,16 @@ export async function loadTrajets(agenceId) {
 //  OVERVIEW — STATS
 // ════════════════════════════════
 export function updateOverviewStats() {
-  const trajetsActifs = trajetList.filter(t => t.actif !== false).length;
-  const el = document.getElementById('statTrajets');
-  if (el) el.textContent = trajetsActifs;
-  const info = document.getElementById('statTrajetsInfo');
-  if (info) info.textContent = `trajet${trajetsActifs > 1 ? 's' : ''} programmé${trajetsActifs > 1 ? 's' : ''}`;
-
   const todayStr = getTodayBrazzaville();
+
+  const colisJour = getColisListe().filter(c => toBrazzaDate(c.createdAt) === todayStr);
+  const revenuColisJour = colisJour.reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+
+  const elColis = document.getElementById('statColisJour');
+  if (elColis) elColis.textContent = revenuColisJour.toLocaleString() + ' XAF';
+  const elColisInfo = document.getElementById('statColisJourInfo');
+  if (elColisInfo) elColisInfo.textContent = `${colisJour.length} colis expédié${colisJour.length > 1 ? 's' : ''} aujourd'hui`;
+
   const resaAujourdhui = resaList.filter(r =>
     r.statut !== 'annulée' && toBrazzaDate(r.createdAt) === todayStr
   );
@@ -149,9 +153,63 @@ export function updateOverviewStats() {
 // ════════════════════════════════
 //  TRAJETS — RENDU PAGE
 // ════════════════════════════════
+
+// ════════════════════════════════
+//  TRAJETS & BUS — STATS EN-TÊTE
+// ════════════════════════════════
+function setStatText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+async function updateTrajetsBusStats() {
+  // Trajets actifs
+  const trajetsActifs = trajetList.filter(t => t.actif !== false).length;
+  const trajetsTotal  = trajetList.length;
+  setStatText('statTrajetsActifsPage', `${trajetsActifs}/${trajetsTotal}`);
+  setStatText('statTrajetsActifsPageInfo', `trajet${trajetsTotal > 1 ? 's' : ''} actif${trajetsActifs > 1 ? 's' : ''}`);
+
+  // Bus actifs (flotte)
+  const busActifs = vehiculeList.filter(v => v.actif !== false).length;
+  const busTotal   = vehiculeList.length;
+  setStatText('statBusActifsPage', `${busActifs}/${busTotal}`);
+
+  // Trajets actifs sans aucun bus assigné (départ actif)
+  if (!agenceData?.id) return;
+  try {
+    const departs = await loadAllDeparts(agenceData.id);
+    const trajetsAvecBusActif = new Set(
+      departs.filter(d => d.actif !== false).map(d => d.trajetId)
+    );
+    const trajetsActifsList = trajetList.filter(t => t.actif !== false);
+    const trajetsSansBus = trajetsActifsList.filter(t => !trajetsAvecBusActif.has(t.id));
+
+    setStatText('statBusCirculationPage', trajetsSansBus.length.toLocaleString());
+    setStatText('statBusCirculationPageInfo', trajetsSansBus.length > 0
+      ? `trajet${trajetsSansBus.length > 1 ? 's' : ''} actif${trajetsSansBus.length > 1 ? 's' : ''} sans bus`
+      : 'tous les trajets actifs ont un bus');
+
+    // Bus actifs de la flotte sans aucun départ actif
+    const vehiculesAvecDepartActif = new Set(
+      departs.filter(d => d.actif !== false).map(d => d.vehiculeId)
+    );
+    const vehiculesActifsList = vehiculeList.filter(v => v.actif !== false);
+    const vehiculesNonAssignes = vehiculesActifsList.filter(v => !vehiculesAvecDepartActif.has(v.id));
+
+    setStatText('statPlacesCumuleesPage', vehiculesNonAssignes.length.toLocaleString());
+    setStatText('statPlacesCumuleesPageInfo', vehiculesNonAssignes.length > 0
+      ? `bus actif${vehiculesNonAssignes.length > 1 ? 's' : ''} non assigné${vehiculesNonAssignes.length > 1 ? 's' : ''}`
+      : 'tous les bus actifs sont assignés');
+  } catch (err) {
+    console.error('Erreur stats trajets/bus non assignés :', err);
+  }
+}
+
 export function renderTrajetsPage() {
   const container = document.getElementById('trajetsContainer');
   if (!container) return;
+
+  updateTrajetsBusStats();
 
   if (trajetList.length === 0) {
     container.innerHTML = `

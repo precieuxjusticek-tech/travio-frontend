@@ -59,7 +59,6 @@ import { renderGeoPage } from './geo.js';
 import { openPageHelp, closePageHelp } from './page-help.js';
 
 // ── Colis ──
-// ── Colis ──
 import { renderColisPage, openColisDetail, closeColisDetail, marquerColisArrive, marquerColisRetire, applyColisFiltres, updateColisBadge } from './colis-page.js';
 
 // retour
@@ -90,6 +89,7 @@ onAuthStateChanged(auth, async (user) => {
     if (data.agenceId) {
       await loadAgenceData(data.agenceId);
       await loadVehicules(data.agenceId);
+      renderTrajetsPage();
       hideOnboarding();
 
       renderColisPage();
