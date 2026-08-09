@@ -5,6 +5,7 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { initInstallPrompt } from './install-prompt.js';
 import { apiFetch } from './api.js';
 import { initBackGuard } from './back-guard.js';
+import { escapeHtml } from './sanitize.js';
 
 import * as StatePdv from './pdv-modules/state-pdv.js';
 import {
@@ -159,8 +160,8 @@ function renderAccueilVentes() {
   container.innerHTML = confirmees.map(r => {
     const trajet = trajetList.find(t => t.id === r.trajetId);
     const routeLabel = (r.arretMontee && r.arretDescente)
-      ? `${r.arretMontee} → ${r.arretDescente}`
-      : (trajet ? `${trajet.villeDepart} → ${trajet.villeArrivee}` : (r.routeLabel || '—'));
+      ? `${escapeHtml(r.arretMontee)} → ${escapeHtml(r.arretDescente)}`
+      : (trajet ? `${escapeHtml(trajet.villeDepart)} → ${escapeHtml(trajet.villeArrivee)}` : escapeHtml(r.routeLabel || '—'));
 
     const typeInfo = trajet ? getTypeTrajetInfoAccueil(trajet) : null;
     const dateObj = r.dateDepart ? new Date(r.dateDepart + 'T00:00:00') : null;
@@ -172,14 +173,14 @@ function renderAccueilVentes() {
         <div class="vente-row-info">
           <div class="vente-row-name">
             ${estAujourdhui ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle;"></span>` : ''}
-            ${r.prenomPassager || '—'} ${r.nomPassager || ''}
+            ${escapeHtml(r.prenomPassager || '—')} ${escapeHtml(r.nomPassager || '')}
             ${estAujourdhui ? `<span style="font-size:9px;color:var(--accent);font-weight:700;margin-left:6px;text-transform:uppercase;letter-spacing:.5px;">Aujourd'hui</span>` : ''}
           </div>
           <div class="vente-row-route">
             ${routeLabel}
             ${typeInfo ? `<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;margin-left:6px;vertical-align:middle;background:${typeInfo.dot === '#00E5A0' ? 'rgba(0,229,160,0.12)' : 'rgba(255,178,63,0.12)'};color:${typeInfo.dot};">${typeInfo.label}</span>` : ''}
           </div>
-          <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${dateLabel} · ${r.heureDepart || '—'}</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${dateLabel} · ${escapeHtml(r.heureDepart || '—')}</div>
         </div>
         <div class="vente-row-right">
           <div class="vente-row-prix">${Number(r.prixTotal || 0).toLocaleString()} XAF</div>

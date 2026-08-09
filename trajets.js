@@ -126,7 +126,7 @@ export function updateOverviewStats() {
           ? `<span style="font-size:10px;background:rgba(255,178,63,0.12);color:#FFB23F;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle;">Arrêts</span>`
           : `<span style="font-size:10px;background:rgba(0,229,160,0.1);color:var(--accent);padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle;">Direct</span>`;
         return `
-        <div class="resa-item" onclick="openResaDetail('${r.id}')" style="cursor:pointer;${estAujourdhui ? 'border-left:3px solid var(--accent);padding-left:9px;' : ''}">
+        <div class="resa-item" onclick="openResaDetail('${escapeJsAttr(r.id)}')" style="cursor:pointer;${estAujourdhui ? 'border-left:3px solid var(--accent);padding-left:9px;' : ''}">
           <div class="resa-info">
             <div class="resa-route">
               ${estAujourdhui ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle;"></span>` : ''}
@@ -256,13 +256,13 @@ export function switchTrajetsTab(tab) {
 }
 
 export function renderTrajetCard(t) {
-  const joursLabel = t.tousLesJours ? 'Tous les jours' : (t.jours || []).join(', ');
+  const joursLabel = t.tousLesJours ? 'Tous les jours' : escapeHtml((t.jours || []).join(', '));
   return `
-    <div class="overview-card" style="display:flex;flex-direction:column;gap:10px;cursor:pointer;" onclick="openTrajetDetail('${t.id}')">
+    <div class="overview-card" style="display:flex;flex-direction:column;gap:10px;cursor:pointer;" onclick="openTrajetDetail('${escapeJsAttr(t.id)}')">
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div>
           <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--white);">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${joursLabel} · ${t.heureDepart || '—'}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${joursLabel} · ${escapeHtml(t.heureDepart) || '—'}</div>
         </div>
         <span class="pdv-status-badge ${t.actif !== false ? 'active' : 'inactive'}">
           ${t.actif !== false
@@ -271,11 +271,11 @@ export function renderTrajetCard(t) {
         </span>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <span onclick="event.stopPropagation();openTrajetDetail('${t.id}','pdv')"
+        <span onclick="event.stopPropagation();openTrajetDetail('${escapeJsAttr(t.id)}','pdv')"
           style="display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 9px;font-size:11px;color:var(--muted);cursor:pointer;">
           ${ICONS.pin} ${(t.pdvDepart || []).length} PDV départ
         </span>
-        <span onclick="event.stopPropagation();openTrajetDetail('${t.id}','pdv')"
+        <span onclick="event.stopPropagation();openTrajetDetail('${escapeJsAttr(t.id)}','pdv')"
           style="display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 9px;font-size:11px;color:var(--muted);cursor:pointer;">
           ${ICONS.pin} ${(t.pdvArrivee || []).length} PDV arrivée
         </span>
@@ -304,7 +304,7 @@ export function renderTrajetCard(t) {
                     <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);"></span>
                     <span>${escapeHtml(villeLabel)}</span>
                     ${nbPDV > 0 ? `<span style="font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1px 6px;color:var(--accent);">${nbPDV} PDV</span>` : ''}
-                    ${a.heurePassage ? `<span style="color:var(--accent);font-size:11px;font-weight:600;">· ${a.heurePassage}</span>` : ''}
+                    ${a.heurePassage ? `<span style="color:var(--accent);font-size:11px;font-weight:600;">· ${escapeHtml(a.heurePassage)}</span>` : ''}
                   </div>
                   <span style="color:var(--muted);font-size:11px;">${Object.values(a.prixParType || {}).map(p => Number(p).toLocaleString()).join(' / ')} XAF</span>
                 </div>`;
@@ -316,7 +316,7 @@ export function renderTrajetCard(t) {
           </div>
         </div>` : ''}
       <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="pdv-action-btn" style="flex:1;font-size:12px;padding:9px 12px;" onclick="event.stopPropagation();openTrajetDetail('${t.id}')">
+        <button class="pdv-action-btn" style="flex:1;font-size:12px;padding:9px 12px;" onclick="event.stopPropagation();openTrajetDetail('${escapeJsAttr(t.id)}')">
           ${ICONS.bus} Voir les bus
         </button>
       </div>
@@ -436,7 +436,7 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
                     <span style="font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 6px;border-radius:4px;">Arrêt</span>
                   </div>
                   <div style="text-align:right;">
-                    ${a.heurePassage ? `<div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:2px;">${ICONS.clock} ${a.heurePassage}</div>` : ''}
+                    ${a.heurePassage ? `<div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:2px;">${ICONS.clock} ${escapeHtml(a.heurePassage)}</div>` : ''}
                     ${Object.entries(a.prixParType || {}).map(([tid, prix]) => {
                       const type = (agenceData.typesBillet || []).find(x => x.id === tid);
                       return `<div style="font-size:11px;color:var(--white);"><strong>${escapeHtml(type?.nom || tid)}</strong> <span style="color:var(--muted);">(${ageRangeLabel(type)})</span> : ${Number(prix).toLocaleString()} XAF</div>`;
@@ -478,7 +478,7 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
       <div id="trajetPanel-bus" style="display:none;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <h3 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--white);">${ICONS.bus} Bus sur ce trajet</h3>
-          <button class="btn-action-primary" style="padding:7px 12px;font-size:12px;" onclick="openCreateDepart('${t.id}')">+ Ajouter un bus</button>
+          <button class="btn-action-primary" style="padding:7px 12px;font-size:12px;" onclick="openCreateDepart('${escapeJsAttr(t.id)}')">+ Ajouter un bus</button>
         </div>
         <div id="departsList" style="display:flex;flex-direction:column;gap:8px;">
           <div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">Chargement...</div>
@@ -488,11 +488,11 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
       <!-- Panel Actions -->
       <div id="trajetPanel-actions" style="display:none;">
         <div class="pdv-detail-actions">
-          <button class="pdv-action-btn" onclick="closeTrajetDetail();openEditTrajet('${t.id}')">${ICONS.edit} Modifier le trajet</button>
-          <button class="pdv-action-btn danger" onclick="toggleTrajetStatut('${t.id}', ${t.actif !== false})">
+          <button class="pdv-action-btn" onclick="closeTrajetDetail();openEditTrajet('${escapeJsAttr(t.id)}')">${ICONS.edit} Modifier le trajet</button>
+          <button class="pdv-action-btn danger" onclick="toggleTrajetStatut('${escapeJsAttr(t.id)}', ${t.actif !== false})">
             ${t.actif !== false ? ICONS.stop + ' Désactiver le trajet' : ICONS.play + ' Activer le trajet'}
           </button>
-          <button class="pdv-action-btn delete" onclick="confirmDeleteTrajet('${t.id}', '${escapeJsAttr(t.villeDepart)} → ${escapeJsAttr(t.villeArrivee)}')">${ICONS.trash} Supprimer le trajet</button>
+          <button class="pdv-action-btn delete" onclick="confirmDeleteTrajet('${escapeJsAttr(t.id)}', '${escapeJsAttr(t.villeDepart)} → ${escapeJsAttr(t.villeArrivee)}')">${ICONS.trash} Supprimer le trajet</button>
         </div>
       </div>
 
@@ -528,7 +528,7 @@ export async function openTrajetDetail(trajetId, focusSection = null) {
     const list = document.getElementById('departsList');
     if (list) {
       list.innerHTML = departs.length === 0
-        ? `<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Aucun bus ajouté — <button onclick="openCreateDepart('${t.id}')" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:12px;">Ajouter un bus</button></div>`
+        ? `<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Aucun bus ajouté — <button onclick="openCreateDepart('${escapeJsAttr(t.id)}')" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:12px;">Ajouter un bus</button></div>`
         : departs.map(d => renderDepartItem(d, t.id)).join('');
     }
   });
@@ -552,7 +552,7 @@ export function switchTrajetTab(tab, trajetId = null) {
       const list = document.getElementById('departsList');
       if (list) {
         list.innerHTML = departs.length === 0
-          ? `<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Aucun bus — <button onclick="openCreateDepart('${trajetId}')" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:12px;">Ajouter un bus</button></div>`
+          ? `<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Aucun bus — <button onclick="openCreateDepart('${escapeJsAttr(trajetId)}')" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:12px;">Ajouter un bus</button></div>`
           : departs.map(d => renderDepartItem(d, trajetId)).join('');
       }
     });
@@ -594,7 +594,7 @@ export function confirmDeleteTrajet(trajetId, trajetLabel) {
         </div>
       </div>
       <div class="pdv-confirm-actions">
-        <button class="pdv-btn-next delete-confirm" onclick="deleteTrajet('${trajetId}')">Oui, supprimer</button>
+        <button class="pdv-btn-next delete-confirm" onclick="deleteTrajet('${escapeJsAttr(trajetId)}')">Oui, supprimer</button>
         <button class="pdv-btn-back" onclick="closeDeleteTrajet()">Annuler</button>
       </div>
     </div>
@@ -661,7 +661,7 @@ export async function toggleTrajetStatut(trajetId, actifActuel) {
       <div class="pdv-confirm-actions">
         <button class="pdv-btn-next ${nouvelEtat ? '' : 'delete-confirm'}"
           style="${nouvelEtat ? 'background:var(--accent);color:var(--dark);' : ''}"
-          onclick="confirmToggleTrajetStatut('${trajetId}', ${nouvelEtat})">
+          onclick="confirmToggleTrajetStatut('${escapeJsAttr(trajetId)}', ${nouvelEtat})">
           ${nouvelEtat ? 'Oui, activer' : 'Oui, désactiver'}
         </button>
         <button class="pdv-btn-back" onclick="closeStatutTrajet()">Annuler</button>
@@ -756,7 +756,7 @@ export function openEditTrajet(trajetId) {
               <input type="hidden" class="edit-arret-marker" data-index="${i}" data-nom="${escapeHtml(g.ville)}" data-type="libre" data-id="">
               <div>
                 <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Heure passage</label>
-                <input type="time" class="pdv-input edit-arret-heure-passage" value="${g.heurePassage || ''}" data-index="${i}">
+                <input type="time" class="pdv-input edit-arret-heure-passage" value="${escapeHtml(g.heurePassage) || ''}" data-index="${i}">
               </div>
               ${agenceData.typesBillet.map(type => `
               <div>
@@ -776,7 +776,7 @@ export function openEditTrajet(trajetId) {
             <div class="edit-arret-grid" style="grid-template-columns:1fr 1fr;">
               <div>
                 <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Heure passage</label>
-                <input type="time" class="pdv-input edit-arret-city-heure" data-index="${i}" value="${g.heurePassage || ''}">
+                <input type="time" class="pdv-input edit-arret-city-heure" data-index="${i}" value="${escapeHtml(g.heurePassage) || ''}">
               </div>
               ${agenceData.typesBillet.map(type => `
               <div>
@@ -787,7 +787,7 @@ export function openEditTrajet(trajetId) {
             </div>
           </div>`).join('')}
       </div>
-      <button type="button" class="pdv-action-btn" style="margin-top:8px;font-size:12px;" onclick="addEditArretItem('${t.id}')">+ Ajouter un arrêt (nouvelle ville)</button>
+      <button type="button" class="pdv-action-btn" style="margin-top:8px;font-size:12px;" onclick="addEditArretItem('${escapeJsAttr(t.id)}')">+ Ajouter un arrêt (nouvelle ville)</button>
     </div>` : '';
 
   const overlay = document.createElement('div');
@@ -860,7 +860,7 @@ export function openEditTrajet(trajetId) {
         return html;
       })() : ''}
 
-      <button class="pdv-btn-next" id="editTrajetSubmitBtn" onclick="submitEditTrajet('${t.id}')">${ICONS.save} Sauvegarder les modifications</button>
+      <button class="pdv-btn-next" id="editTrajetSubmitBtn" onclick="submitEditTrajet('${escapeJsAttr(t.id)}')">${ICONS.save} Sauvegarder les modifications</button>
     </div>
   `;
 
@@ -1932,9 +1932,9 @@ export async function submitCreateTrajet() {
 //  DÉPARTS — RENDU ITEM (partagé avec bus-departs.js)
 // ════════════════════════════════
 export function renderDepartItem(d, trajetId) {
-  const joursLabel = d.tousLesJours ? 'Tous les jours' : (d.jours || []).join(', ');
+  const joursLabel = d.tousLesJours ? 'Tous les jours' : escapeHtml((d.jours || []).join(', '));
   return `
-    <div class="depart-item" id="departItem-${d.id}" onclick="openBusDetail('${d.id}', '${trajetId}')" style="cursor:pointer;">
+    <div class="depart-item" id="departItem-${d.id}" onclick="openBusDetail('${escapeJsAttr(d.id)}', '${escapeJsAttr(trajetId)}')" style="cursor:pointer;">
       <div class="depart-item-left">
         <div class="depart-item-bus">${escapeHtml(d.busNom)}</div>
         <div class="depart-item-info">${escapeHtml(d.busType)} · ${escapeHtml(d.busCapacite)} places · ${escapeHtml(d.heureDepart)}${d.heureArrivee ? ' → ' + escapeHtml(d.heureArrivee) : ''}</div>

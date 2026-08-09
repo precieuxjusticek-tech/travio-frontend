@@ -1,6 +1,7 @@
 // ─── TRAVIO — PDV — Mon point de vente (profil, stats, sessions récentes) ───
 
 import { apiFetch } from '../api.js';
+import { escapeHtml } from '../sanitize.js';
 import {
   ICONS, BACKEND, nomType, toBrazzaDate,
   pdvData, agenceData, trajetList, resaList,
@@ -61,8 +62,8 @@ export async function renderMonPDVPage() {
             <div class="monpdv-session-row">
               <div class="monpdv-session-left">
                 <div class="monpdv-session-date">${new Date(s.date).toLocaleDateString('fr-FR', {weekday:'short',day:'2-digit',month:'short'})}</div>
-                <div class="monpdv-session-route">${s.villeDepart} → ${s.villeArrivee} · ${s.heureDepart}</div>
-                <div class="monpdv-session-bus">${ICONS.bus} ${s.busNom}</div>
+                <div class="monpdv-session-route">${escapeHtml(s.villeDepart)} → ${escapeHtml(s.villeArrivee)} · ${escapeHtml(s.heureDepart)}</div>
+                <div class="monpdv-session-bus">${ICONS.bus} ${escapeHtml(s.busNom)}</div>
               </div>
               <div class="monpdv-session-right">
                 <div class="monpdv-session-count">${s.placesVendues}/${s.placesTotal}</div>
@@ -88,14 +89,14 @@ export async function renderMonPDVPage() {
       trajEl.innerHTML = trajetList.map(t => `
         <div class="monpdv-trajet-row">
           <div>
-            <div style="font-size:13px;font-weight:600;color:var(--white);">${t.villeDepart} → ${t.villeArrivee}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</div>
             <div style="font-size:11px;color:var(--muted);margin-top:2px;">
-              ${t.typeTrajet === 'arrets' ? '⊙ Avec arrêts' : '→ Direct'} · ${t.heureDepart || '—'}
-              ${t.heureArrivee ? ' → ' + t.heureArrivee : ''}
+              ${t.typeTrajet === 'arrets' ? '⊙ Avec arrêts' : '→ Direct'} · ${escapeHtml(t.heureDepart || '—')}
+              ${t.heureArrivee ? ' → ' + escapeHtml(t.heureArrivee) : ''}
             </div>
           </div>
           <div style="text-align:right;">
-            ${Object.entries(t.prixParType || {}).map(([id, p]) => `<div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--white);">${Number(p).toLocaleString()} <span style="font-size:9px;color:var(--muted);font-weight:400;">${nomType(id)}</span></div>`).join('')}
+            ${Object.entries(t.prixParType || {}).map(([id, p]) => `<div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--white);">${Number(p).toLocaleString()} <span style="font-size:9px;color:var(--muted);font-weight:400;">${escapeHtml(nomType(id))}</span></div>`).join('')}
           </div>
         </div>`).join('');
     }

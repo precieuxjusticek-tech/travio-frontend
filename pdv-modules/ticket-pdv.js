@@ -1,6 +1,7 @@
 // ─── TRAVIO — PDV — Ticket (billet imprimé, ticket manuel, ticket colis) ───
 
 import { TICKET_CSS, buildTicketHTML, formatFromMode, formatDelaiFormalite } from '../billet-template.js';
+import { escapeHtml } from '../sanitize.js';
 import {
   ICONS, agenceData, pdvData, resaList, trajetList, nomTypeResa,
 } from './state-pdv.js';
@@ -130,13 +131,13 @@ export function showTicket(resa, trajet) {
     : '—';
 
   const routeAffichee = (resa.arretMontee && resa.arretDescente)
-    ? `${resa.arretMontee} → ${resa.arretDescente}`
-    : `${trajet.villeDepart} → ${trajet.villeArrivee}`;
+    ? `${escapeHtml(resa.arretMontee)} → ${escapeHtml(resa.arretDescente)}`
+    : `${escapeHtml(trajet.villeDepart)} → ${escapeHtml(trajet.villeArrivee)}`;
 
   const nbPass = resa.passagers?.length || 1;
   const passagersLabel = nbPass > 1
-    ? resa.passagers.map(p => `${p.prenom} ${p.nom}`).join(', ')
-    : `${resa.prenomPassager} ${resa.nomPassager}`;
+    ? resa.passagers.map(p => `${escapeHtml(p.prenom)} ${escapeHtml(p.nom)}`).join(', ')
+    : `${escapeHtml(resa.prenomPassager)} ${escapeHtml(resa.nomPassager)}`;
 
   body.innerHTML = `
     <div class="ticket-row">
@@ -145,7 +146,7 @@ export function showTicket(resa, trajet) {
     </div>
     <div class="ticket-row">
       <span>Téléphone</span>
-      <strong>${resa.telephonePassager || '—'}</strong>
+      <strong>${escapeHtml(resa.telephonePassager || '—')}</strong>
     </div>
     <div class="ticket-row">
       <span>Trajet</span>
@@ -158,7 +159,7 @@ export function showTicket(resa, trajet) {
     </div>` : `
     <div class="ticket-row">
       <span>Type</span>
-      <strong>${nomTypeResa(resa)}</strong>
+      <strong>${escapeHtml(nomTypeResa(resa))}</strong>
     </div>`}
     <div class="ticket-row">
       <span>Date</span>
@@ -166,9 +167,9 @@ export function showTicket(resa, trajet) {
     </div>
     <div class="ticket-row">
       <span>Départ</span>
-      <strong>${resa.heureDepart || '—'}</strong>
+      <strong>${escapeHtml(resa.heureDepart || '—')}</strong>
     </div>
-    ${resa.siege ? `<div class="ticket-row"><span>Siège</span><strong>${resa.siege}</strong></div>` : ''}
+    ${resa.siege ? `<div class="ticket-row"><span>Siège</span><strong>${escapeHtml(resa.siege)}</strong></div>` : ''}
     <div class="ticket-row">
       <span>Total encaissé</span>
       <strong class="accent">${Number(resa.prixTotal).toLocaleString()} XAF</strong>
@@ -176,12 +177,12 @@ export function showTicket(resa, trajet) {
 
     <div class="ticket-row">
       <span>Embarquement</span>
-      <strong>${resa.pdvEmbarquementNom || pdvData?.nom || '—'} · ${resa.pdvEmbarquementVille || pdvData?.ville || '—'}</strong>
+      <strong>${escapeHtml(resa.pdvEmbarquementNom || pdvData?.nom || '—')} · ${escapeHtml(resa.pdvEmbarquementVille || pdvData?.ville || '—')}</strong>
     </div>
 
     <div class="ticket-row">
       <span>Débarquement</span>
-      <strong>${resa.pdvDebarquementNom || '—'}${resa.pdvDebarquementVille ? ' · ' + resa.pdvDebarquementVille : ''}</strong>
+      <strong>${escapeHtml(resa.pdvDebarquementNom || '—')}${resa.pdvDebarquementVille ? ' · ' + escapeHtml(resa.pdvDebarquementVille) : ''}</strong>
     </div>
 
     ${agenceData?.delaiFormalite ? `
@@ -193,7 +194,7 @@ export function showTicket(resa, trajet) {
     ${resa.remarques ? `
     <div class="ticket-row">
       <span>Remarques</span>
-      <strong style="text-align:right;max-width:60%;">${resa.remarques}</strong>
+      <strong style="text-align:right;max-width:60%;">${escapeHtml(resa.remarques)}</strong>
     </div>` : ''}
   `;
 
@@ -221,8 +222,8 @@ export function showManualTicket(resa, trajet) {
     : '—';
 
   const routeAffichee = (resa.arretMontee && resa.arretDescente)
-    ? `${resa.arretMontee} → ${resa.arretDescente}`
-    : `${trajet?.villeDepart || '—'} → ${trajet?.villeArrivee || '—'}`;
+    ? `${escapeHtml(resa.arretMontee)} → ${escapeHtml(resa.arretDescente)}`
+    : `${escapeHtml(trajet?.villeDepart || '—')} → ${escapeHtml(trajet?.villeArrivee || '—')}`;
 
   const nbPass = resa.passagers?.length || resa.nbPassagers || 1;
 
@@ -231,7 +232,7 @@ export function showManualTicket(resa, trajet) {
     const sieges = resa.passagers.map(p => p.siege).filter(Boolean);
     if (sieges.length > 0) siege = sieges.join(', ');
   }
-  const busSiege = `${resa.busNom || '—'}${siege !== '—' ? ' — ' + siege : ''}`;
+  const busSiege = `${escapeHtml(resa.busNom || '—')}${siege !== '—' ? ' — ' + escapeHtml(siege) : ''}`;
 
   let overlay = document.getElementById('manualTicketOverlay');
   const isNew = !overlay;
@@ -257,9 +258,9 @@ export function showManualTicket(resa, trajet) {
         </div>
       </div>
       <div class="ticket-body">
-        <div class="ticket-row"><span>Agence</span><strong>${agenceData?.nom || '—'}</strong></div>
+        <div class="ticket-row"><span>Agence</span><strong>${escapeHtml(agenceData?.nom || '—')}</strong></div>
         <div class="ticket-row"><span>Date</span><strong>${dateStr}</strong></div>
-        <div class="ticket-row"><span>Départ</span><strong>${resa.heureDepart || '—'}</strong></div>
+        <div class="ticket-row"><span>Départ</span><strong>${escapeHtml(resa.heureDepart || '—')}</strong></div>
         <div class="ticket-row"><span>Bus / Siège</span><strong>${busSiege}</strong></div>
         ${agenceData?.delaiFormalite ? `<div class="ticket-row"><span>Présentation</span><strong>${formatDelaiFormalite(agenceData.delaiFormalite)}</strong></div>` : ''}
         <div class="ticket-row"><span>Passagers</span><strong>${nbPass}</strong></div>
@@ -344,14 +345,14 @@ export function showColisTicketShared(colis, code) {
   if (btnImprimer) btnImprimer.style.display = 'none';
 
   body.innerHTML = `
-    <div class="ticket-row"><span>Code de retrait</span><strong class="accent" style="font-size:16px;letter-spacing:3px;">${code}</strong></div>
-    <div class="ticket-row"><span>Trajet</span><strong>${colis.routeLabel}</strong></div>
-    <div class="ticket-row"><span>Bus</span><strong>${colis.busNom || '—'}</strong></div>
-    <div class="ticket-row"><span>Expéditeur</span><strong>${colis.expediteurNom}</strong></div>
-    <div class="ticket-row"><span>Destinataire</span><strong>${colis.destinataireNom} · ${colis.destinataireTel}</strong></div>
-    <div class="ticket-row"><span>Embarquement</span><strong>${colis.pdvEmbarquementNom || '—'}${colis.pdvEmbarquementVille ? ' — ' + colis.pdvEmbarquementVille : (colis.arretMontee ? ' — ' + colis.arretMontee : '')}</strong></div>
-    <div class="ticket-row"><span>À retirer à</span><strong>${colis.pdvDebarquementNom || '—'}${colis.pdvDebarquementVille ? ' — ' + colis.pdvDebarquementVille : (colis.arretDescente ? ' — ' + colis.arretDescente : '')}</strong></div>
-    <div class="ticket-row"><span>Nature</span><strong>${colis.nature}</strong></div>
+    <div class="ticket-row"><span>Code de retrait</span><strong class="accent" style="font-size:16px;letter-spacing:3px;">${escapeHtml(code)}</strong></div>
+    <div class="ticket-row"><span>Trajet</span><strong>${escapeHtml(colis.routeLabel)}</strong></div>
+    <div class="ticket-row"><span>Bus</span><strong>${escapeHtml(colis.busNom || '—')}</strong></div>
+    <div class="ticket-row"><span>Expéditeur</span><strong>${escapeHtml(colis.expediteurNom)}</strong></div>
+    <div class="ticket-row"><span>Destinataire</span><strong>${escapeHtml(colis.destinataireNom)} · ${escapeHtml(colis.destinataireTel)}</strong></div>
+    <div class="ticket-row"><span>Embarquement</span><strong>${escapeHtml(colis.pdvEmbarquementNom || '—')}${colis.pdvEmbarquementVille ? ' — ' + escapeHtml(colis.pdvEmbarquementVille) : (colis.arretMontee ? ' — ' + escapeHtml(colis.arretMontee) : '')}</strong></div>
+    <div class="ticket-row"><span>À retirer à</span><strong>${escapeHtml(colis.pdvDebarquementNom || '—')}${colis.pdvDebarquementVille ? ' — ' + escapeHtml(colis.pdvDebarquementVille) : (colis.arretDescente ? ' — ' + escapeHtml(colis.arretDescente) : '')}</strong></div>
+    <div class="ticket-row"><span>Nature</span><strong>${escapeHtml(colis.nature)}</strong></div>
     ${colis.valeurDeclaree != null ? `<div class="ticket-row"><span>Valeur déclarée</span><strong>${Number(colis.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
     <div class="ticket-row"><span>Total encaissé</span><strong class="accent">${Number(colis.prixTransport).toLocaleString()} XAF</strong></div>
   `;

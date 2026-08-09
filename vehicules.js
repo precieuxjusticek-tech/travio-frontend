@@ -158,7 +158,7 @@ export function openEditVehicule(vehiculeId) {
       <div style="font-size:11px;color:var(--muted);margin-bottom:14px;padding:8px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
         ℹ️ Ce changement s'appliquera automatiquement sur tous les trajets où ce véhicule est utilisé.
       </div>
-      <button class="pdv-btn-next" id="editVehiculeBtn" onclick="submitEditVehicule('${v.id}')">💾 Sauvegarder</button>
+      <button class="pdv-btn-next" id="editVehiculeBtn" onclick="submitEditVehicule('${escapeJsAttr(v.id)}')">💾 Sauvegarder</button>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -220,10 +220,10 @@ export function openScopeChoice({ action, departId, trajetId, vehiculeId, busNom
       <h2>${titre}</h2>
       <p><strong>${escapeHtml(busNom)}</strong> est peut-être utilisé sur d'autres trajets. Que veux-tu faire ?</p>
       <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0;">
-        <button class="pdv-action-btn" onclick="confirmScopeChoice('one', '${action}', '${departId}', '${trajetId}', '${vehiculeId}', ${nouvelEtat})">
+        <button class="pdv-action-btn" onclick="confirmScopeChoice('one', '${escapeJsAttr(action)}', '${escapeJsAttr(departId)}', '${escapeJsAttr(trajetId)}', '${escapeJsAttr(vehiculeId)}', ${nouvelEtat})">
           📍 Seulement sur ce trajet
         </button>
-        <button class="pdv-action-btn danger" onclick="confirmScopeChoice('all', '${action}', '${departId}', '${trajetId}', '${vehiculeId}', ${nouvelEtat})">
+        <button class="pdv-action-btn danger" onclick="confirmScopeChoice('all', '${escapeJsAttr(action)}', '${escapeJsAttr(departId)}', '${escapeJsAttr(trajetId)}', '${escapeJsAttr(vehiculeId)}', ${nouvelEtat})">
           🌍 Sur tous les trajets où ce bus circule
         </button>
       </div>
@@ -306,7 +306,7 @@ export function confirmDeleteVehicule(vehiculeId, nom) {
       <h2>Supprimer ce véhicule ?</h2>
       <p>Tu es sur le point de supprimer <strong>${escapeHtml(nom)}</strong> de la flotte. S'il est utilisé sur des trajets, ces bus seront aussi supprimés.</p>
       <div class="pdv-confirm-actions">
-        <button class="pdv-btn-next delete-confirm" onclick="deleteVehicule('${vehiculeId}')">Oui, supprimer</button>
+        <button class="pdv-btn-next delete-confirm" onclick="deleteVehicule('${escapeJsAttr(vehiculeId)}')">Oui, supprimer</button>
         <button class="pdv-btn-back" onclick="closeDeleteVehicule()">Annuler</button>
       </div>
     </div>
@@ -356,7 +356,7 @@ const BUS_TYPE_COLOR = {
 
 function busTypeBadge(type) {
   const c = BUS_TYPE_COLOR[type] || BUS_TYPE_COLOR['Standard'];
-  return `<span style="display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:${c.bg};color:${c.color};white-space:nowrap;">${type}</span>`;
+  return `<span style="display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:${c.bg};color:${c.color};white-space:nowrap;">${escapeHtml(type)}</span>`;
 }
 
 export async function renderBusFlottePage() {
@@ -425,7 +425,7 @@ export async function renderBusFlottePage() {
               ${busTypeBadge(v.type)}
               <span class="bf-row-capacite">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px;"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 10.5a4 4 0 013 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                ${v.capacite} places
+                ${escapeHtml(String(v.capacite))} places
               </span>
             </div>
           </div>
@@ -442,10 +442,10 @@ export async function renderBusFlottePage() {
           </div>
 
           <div class="bf-row-actions">
-            <button class="bf-icon-btn" title="Modifier" onclick="openEditVehicule('${v.id}')">
+            <button class="bf-icon-btn" title="Modifier" onclick="openEditVehicule('${escapeJsAttr(v.id)}')">
               <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3L4 13H1v-3L9 2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <button class="bf-icon-btn danger" title="Supprimer" onclick="confirmDeleteVehicule('${v.id}', '${escapeJsAttr(v.nom)}')">
+            <button class="bf-icon-btn danger" title="Supprimer" onclick="confirmDeleteVehicule('${escapeJsAttr(v.id)}', '${escapeJsAttr(v.nom)}')">
               <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2h4v2M4 4l1 10h6l1-10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </div>

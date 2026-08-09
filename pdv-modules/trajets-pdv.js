@@ -1,6 +1,7 @@
 // ─── TRAVIO — PDV — Trajets (données, cache départs/bus, page & détail) ───
 
 import { apiFetch } from '../api.js';
+import { escapeHtml } from '../sanitize.js';
 import { formatDelaiFormalite } from '../billet-template.js';
 import {
   ICONS, BACKEND,
@@ -71,7 +72,7 @@ function renderTrajetCardPDV(t) {
         <div style="display:flex;flex-direction:column;gap:3px;padding-left:8px;border-left:2px solid var(--border2);">
           <div style="display:flex;align-items:center;gap:6px;">
             <span style="font-size:10px;color:var(--accent);">${ICONS.dotGreen}</span>
-            <span style="color:var(--white);font-weight:600;">${t.villeDepart}</span>
+            <span style="color:var(--white);font-weight:600;">${escapeHtml(t.villeDepart)}</span>
             ${t.heureDepart ? `<span style="color:var(--muted);font-size:11px;">· ${t.heureDepart}</span>` : ''}
           </div>
           ${(t.arrets || []).map(a => {
@@ -80,7 +81,7 @@ function renderTrajetCardPDV(t) {
               <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                   <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);"></span>
-                  <span>${villeLabel}</span>
+                  <span>${escapeHtml(villeLabel)}</span>
                   ${a.heurePassage ? `<span style="color:var(--accent);font-size:11px;font-weight:600;">· ${a.heurePassage}</span>` : ''}
                 </div>
                 <span style="color:var(--muted);font-size:11px;">${Object.values(a.prixParType || {}).map(p => Number(p).toLocaleString()).join(' / ')} XAF</span>
@@ -88,7 +89,7 @@ function renderTrajetCardPDV(t) {
           }).join('')}
           <div style="display:flex;align-items:center;gap:6px;">
             <span style="font-size:10px;color:#FF4D6A;">${ICONS.dotRed}</span>
-            <span style="color:var(--white);font-weight:600;">${t.villeArrivee}</span>
+            <span style="color:var(--white);font-weight:600;">${escapeHtml(t.villeArrivee)}</span>
           </div>
         </div>
       </div>`
@@ -98,7 +99,7 @@ function renderTrajetCardPDV(t) {
     <div class="trajet-card">
       <div class="trajet-card-top">
         <div>
-          <div class="trajet-card-route">${t.villeDepart} → ${t.villeArrivee}</div>
+          <div class="trajet-card-route">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</div>
           <div class="trajet-card-meta">
             ${joursLabel}
             ${t.heureDepart ? ` · ${t.heureDepart}` : ''}
@@ -119,7 +120,7 @@ function renderTrajetCardPDV(t) {
       <div class="trajet-card-body">
         ${Object.entries(t.prixParType || {}).map(([typeId, prix]) => {
           const type = (agenceData.typesBillet || []).find(x => x.id === typeId);
-          return `<span>${type?.nom || typeId} <small style="color:var(--muted);">(${ageRangeLabelLocal(typeId)})</small> : <strong>${Number(prix).toLocaleString()} XAF</strong></span>`;
+          return `<span>${escapeHtml(type?.nom || typeId)} <small style="color:var(--muted);">(${ageRangeLabelLocal(typeId)})</small> : <strong>${Number(prix).toLocaleString()} XAF</strong></span>`;
         }).join('')}
       </div>
 
@@ -157,7 +158,7 @@ export async function openTrajetDetailPDV(trajetId) {
 
       <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#0F1525;z-index:2;">
         <div>
-          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--white);">${t.villeDepart} → ${t.villeArrivee}</div>
+          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--white);">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</div>
           <div style="font-size:12px;color:var(--muted);margin-top:3px;">${t.typeTrajet === 'arrets' ? 'Avec arrêts' : 'Direct'}</div>
         </div>
         <button onclick="closeTrajetDetailPDV()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;">
@@ -174,7 +175,7 @@ export async function openTrajetDetailPDV(trajetId) {
               const type = (agenceData.typesBillet || []).find(x => x.id === typeId);
               return `
             <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
-              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">${type?.nom || typeId}</div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">${escapeHtml(type?.nom || typeId)}</div>
               <div style="font-size:9px;color:var(--muted);margin-bottom:4px;">${ageRangeLabelLocal(typeId)}</div>
               <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--white);">${Number(prix).toLocaleString()}</div>
               <div style="font-size:10px;color:var(--muted);">XAF</div>
@@ -203,21 +204,21 @@ export async function openTrajetDetailPDV(trajetId) {
           <div style="display:flex;flex-direction:column;gap:0;">
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;">
               <div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;"></div>
-              <span style="font-size:13px;font-weight:700;color:var(--white);">${t.villeDepart}</span>
+              <span style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(t.villeDepart)}</span>
               ${t.heureDepart ? `<span style="font-size:11px;color:var(--muted);margin-left:auto;">${ICONS.clock} ${t.heureDepart}</span>` : ''}
             </div>
             ${(t.arrets || []).map(a => `
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);margin-left:4px;">
               <div style="width:6px;height:6px;border-radius:50%;background:var(--primary);flex-shrink:0;"></div>
               <div style="flex:1;">
-                <span style="font-size:13px;font-weight:600;color:var(--white);">${a.ville || a.nom}</span>
+                <span style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(a.ville || a.nom)}</span>
                 <span style="font-size:11px;color:var(--muted);margin-left:8px;">${Object.values(a.prixParType || {}).map(p => Number(p).toLocaleString()).join(' / ')} XAF</span>
               </div>
               ${a.heurePassage ? `<span style="font-size:11px;color:var(--accent);font-weight:600;">${ICONS.clock} ${a.heurePassage}</span>` : ''}
             </div>`).join('')}
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);">
               <div style="width:10px;height:10px;border-radius:50%;background:#FF4D6A;flex-shrink:0;"></div>
-              <span style="font-size:13px;font-weight:700;color:var(--white);">${t.villeArrivee}</span>
+              <span style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(t.villeArrivee)}</span>
             </div>
           </div>
         </div>` : ''}
@@ -230,11 +231,11 @@ export async function openTrajetDetailPDV(trajetId) {
               const [from, to] = cle.split('|');
               return `
                 <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
-                  <span style="font-size:12px;font-weight:600;color:var(--white);">${from} → ${to}</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--white);">${escapeHtml(from)} → ${escapeHtml(to)}</span>
                   <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
                     ${Object.entries(prix).map(([typeId, val]) => {
                       const type = (agenceData.typesBillet || []).find(x => x.id === typeId);
-                      return `<span style="font-size:12px;font-weight:700;color:var(--white);">${type?.nom || typeId} : ${Number(val).toLocaleString()} XAF</span>`;
+                      return `<span style="font-size:12px;font-weight:700;color:var(--white);">${escapeHtml(type?.nom || typeId)} : ${Number(val).toLocaleString()} XAF</span>`;
                     }).join('')}
                   </div>
                 </div>`;
@@ -283,10 +284,10 @@ export async function openTrajetDetailPDV(trajetId) {
       return `
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-            <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--white);">${d.busNom}</div>
+            <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--white);">${escapeHtml(d.busNom)}</div>
             <span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:rgba(0,229,160,0.1);color:var(--accent);"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:4px;vertical-align:middle;"></span>Actif</span>
           </div>
-          <div style="font-size:11.5px;color:var(--muted);">${d.busType} · ${d.busCapacite} places</div>
+          <div style="font-size:11.5px;color:var(--muted);">${escapeHtml(d.busType)} · ${d.busCapacite} places</div>
           <div style="font-size:11.5px;color:var(--white);margin-top:4px;font-weight:600;">
             ${ICONS.clock} ${d.heureDepart}${d.heureArrivee ? ' → ' + d.heureArrivee : ''}
             ${d.dureeEstimee ? `<span style="color:var(--muted);font-weight:400;"> · ${d.dureeEstimee}</span>` : ''}
@@ -323,7 +324,7 @@ export function renderAccueilTrajets() {
     return `
       <div class="trajet-quick-item" onclick="prefillVente('${t.id}')">
         <div style="flex:1;min-width:0;">
-          <div class="trajet-quick-route">${t.villeDepart} → ${t.villeArrivee}</div>
+          <div class="trajet-quick-route">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</div>
           <div class="trajet-quick-meta" style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
             <span style="font-size:10px;padding:2px 6px;border-radius:5px;font-weight:600;
               background:${isArrets ? 'rgba(0,87,255,0.12)' : 'rgba(0,229,160,0.1)'};
@@ -399,13 +400,13 @@ export function populateFilterBus(trajetId = '') {
       .then(departs => {
         const busNoms = [...new Set(departs.map(d => d.busNom).filter(Boolean))].sort();
         select.innerHTML = '<option value="">Tous les bus</option>' +
-          busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('');
+          busNoms.map(nom => `<option value="${escapeHtml(nom)}">${escapeHtml(nom)}</option>`).join('');
       })
       .catch(err => console.error('Erreur chargement bus filtre réservations :', err));
   } else {
     getBusNomsPourPDV().then(busNoms => {
       select.innerHTML = '<option value="">Tous les bus</option>' +
-        busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('');
+        busNoms.map(nom => `<option value="${escapeHtml(nom)}">${escapeHtml(nom)}</option>`).join('');
     });
   }
 }
@@ -417,7 +418,7 @@ export function populateFilterTrajet() {
   select.innerHTML = '<option value="">Tous les trajets</option>' +
     trajetList.map(t => {
       const typeLabel = t.typeTrajet === 'arrets' ? '⊙ Arrêts' : '→ Direct';
-      return `<option value="${t.id}">${typeLabel} · ${t.villeDepart} → ${t.villeArrivee}</option>`;
+      return `<option value="${escapeHtml(t.id)}">${typeLabel} · ${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</option>`;
     }).join('');
 }
 

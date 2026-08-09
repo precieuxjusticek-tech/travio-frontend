@@ -227,7 +227,7 @@ function populatePdvSelectCascade(ville) {
   if (!pdvSelect) return;
   const pdvsFiltres = ville ? pdvList.filter(p => p.ville === ville) : pdvList;
   pdvSelect.innerHTML = `<option value="">Tous les PDV</option>` +
-    pdvsFiltres.map(p => `<option value="${p.id}">${escapeHtml(p.nom)}</option>`).join('');
+    pdvsFiltres.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.nom)}</option>`).join('');
 }
 
 function populateTrajetSelectCascade(pdvId, ville) {
@@ -256,7 +256,7 @@ function populateTrajetSelectCascade(pdvId, ville) {
   trajetSelect.innerHTML = `<option value="">Tous les trajets</option>` +
     trajetsFiltres.map(t => {
       const info = getTypeTrajetInfo(t);
-      return `<option value="${t.id}">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)} · ${info.label}</option>`;
+      return `<option value="${escapeHtml(t.id)}">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)} · ${info.label}</option>`;
     }).join('');
 }
 
@@ -896,7 +896,7 @@ export function openResaDetail(resaId) {
               ${p.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(p.siege)}</strong></div>` : ''}
               ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.nombreBagages > 0 ? ' · ' + p.nombreBagages + ' colis' : ''}${p.prixBagages > 0 ? ' (+' + Number(p.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
               ${p.colisSoute ? `
-                <div class="recap-row"><span>Colis en soute</span><strong>${p.colisSoute.nature || '—'} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+                <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(p.colisSoute.nature) || '—'} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
                 ${p.colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${p.colisSoute.poids} kg</strong></div>` : ''}
                 ${p.colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(p.colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
               ` : ''}
@@ -1122,7 +1122,7 @@ export function handleModifierResa(resaId) {
           <div class="pdv-field-group">
             <label>Type de billet</label>
             <select class="pdv-select modif-passager-type" id="modifType_${i}" onchange="recalculerTotalModif()">
-              ${(agenceData?.typesBillet || []).map(t => `<option value="${escapeHtml(t.id)}" ${t.id === p.type ? 'selected' : ''}>${escapeHtml(t.nom)} (${ageRangeLabel(t)})</option>`).join('')}
+              ${(agenceData?.typesBillet || []).map(t => `<option value="${escapeHtml(t.id)}" ${t.id === p.type ? 'selected' : ''}>${escapeHtml(t.nom)} (${escapeHtml(ageRangeLabel(t))})</option>`).join('')}
             </select>
           </div>
         </div>`).join('')
@@ -1142,7 +1142,7 @@ export function handleModifierResa(resaId) {
         <div class="pdv-field-group">
           <label>Type de billet</label>
           <select class="pdv-select modif-passager-type" id="modifType_0" onchange="recalculerTotalModif()">
-            ${(agenceData?.typesBillet || []).map(t => `<option value="${escapeHtml(t.id)}" ${t.id === r.typeBillet ? 'selected' : ''}>${escapeHtml(t.nom)} (${ageRangeLabel(t)})</option>`).join('')}
+            ${(agenceData?.typesBillet || []).map(t => `<option value="${escapeHtml(t.id)}" ${t.id === r.typeBillet ? 'selected' : ''}>${escapeHtml(t.nom)} (${escapeHtml(ageRangeLabel(t))})</option>`).join('')}
           </select>
         </div>`;
 

@@ -8,5 +8,9 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  e.respondWith(fetch(e.request));
+  e.respondWith(
+    fetch(e.request).catch(() => {
+      return new Response('', { status: 503, statusText: 'Offline' });
+    })
+  );
 });

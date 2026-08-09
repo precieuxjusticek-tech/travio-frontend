@@ -1,6 +1,7 @@
 // ─── TRAVIO — PDV — Colis (liste, filtres, détail, arrivée/retrait, vérif code) ───
 
 import { apiFetch } from '../api.js';
+import { escapeHtml } from '../sanitize.js';
 import {
   ICONS, BACKEND, OFFSET_MS_FIN, toBrazzaDate,
   pdvData, trajetList, colisList, colisEnvoyesList,
@@ -246,7 +247,7 @@ function populateColisFiltresPDV() {
   if (!selT || !selB) return;
   if (!selT.dataset.bound) {
     selT.innerHTML = '<option value="">Tous les trajets</option>' +
-      trajetList.map(t => `<option value="${t.id}">${t.villeDepart} → ${t.villeArrivee}</option>`).join('');
+      trajetList.map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</option>`).join('');
     populateColisBusSelectCascadePDV('');
     selT.dataset.bound = '1';
   }
@@ -261,13 +262,13 @@ function populateColisBusSelectCascadePDV(trajetId) {
       .then(departs => {
         const busNoms = [...new Set(departs.map(d => d.busNom).filter(Boolean))].sort();
         selB.innerHTML = '<option value="">Tous les bus</option>' +
-          busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('');
+        busNoms.map(nom => `<option value="${escapeHtml(nom)}">${escapeHtml(nom)}</option>`).join('');
       })
       .catch(err => console.error('Erreur chargement bus filtre colis :', err));
   } else {
     getBusNomsPourPDV().then(busNoms => {
       selB.innerHTML = '<option value="">Tous les bus</option>' +
-        busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('');
+        busNoms.map(nom => `<option value="${escapeHtml(nom)}">${escapeHtml(nom)}</option>`).join('');
     });
   }
 }
@@ -337,16 +338,16 @@ export function renderColisPDV(list = colisList) {
     <div class="resa-card" onclick="openColisDetailPDV('${c.id}')">
       <div class="resa-card-avatar">${ICONS.bag}</div>
       <div class="resa-card-info">
-        <div class="resa-card-name">${colisModePDV === 'envoyes' ? `Vers ${c.destinataireNom}` : `${c.expediteurNom} → ${c.destinataireNom}`}</div>
-        <div class="resa-card-route">${c.routeLabel || '—'}</div>
+        <div class="resa-card-name">${colisModePDV === 'envoyes' ? `Vers ${escapeHtml(c.destinataireNom)}` : `${escapeHtml(c.expediteurNom)} → ${escapeHtml(c.destinataireNom)}`}</div>
+        <div class="resa-card-route">${escapeHtml(c.routeLabel || '—')}</div>
         <div class="resa-card-meta">
-          <span class="resa-meta-badge" style="font-family:monospace;">${c.codeRetrait}</span>
+          <span class="resa-meta-badge" style="font-family:monospace;">${escapeHtml(c.codeRetrait)}</span>
           ${badgeStatutColisPDV(c.statut)}
         </div>
       </div>
       <div class="resa-card-right">
         <div class="resa-card-prix">${Number(c.prixTransport || 0).toLocaleString()} XAF</div>
-        <div class="resa-card-date">${c.dateDepart || ''} ${c.heureDepart || ''}</div>
+        <div class="resa-card-date">${escapeHtml(c.dateDepart || '')} ${escapeHtml(c.heureDepart || '')}</div>
       </div>
     </div>`).join('');
 }
@@ -366,7 +367,7 @@ export function openColisDetailPDV(id) {
     <div style="position:relative;z-index:1;background:#0F1525;border:1px solid rgba(255,255,255,0.12);border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;padding:20px 20px 32px;" id="colisDetailPDVPanel">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
         <div>
-          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--white);">Colis ${c.codeRetrait}</div>
+          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--white);">Colis ${escapeHtml(c.codeRetrait)}</div>
           <div style="font-size:12px;color:var(--muted);margin-top:3px;">${badgeStatutColisPDV(c.statut)}</div>
         </div>
         <button onclick="closeColisDetailPDV()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;">${ICONS.close}</button>
@@ -374,26 +375,26 @@ export function openColisDetailPDV(id) {
 
       <div class="recap-passager-card">
         <div class="recap-passager-title">Expéditeur</div>
-        <div class="recap-row"><span>Nom</span><strong>${c.expediteurNom}</strong></div>
-        <div class="recap-row"><span>Téléphone</span><strong>${c.expediteurTel}</strong></div>
+        <div class="recap-row"><span>Nom</span><strong>${escapeHtml(c.expediteurNom)}</strong></div>
+        <div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(c.expediteurTel)}</strong></div>
       </div>
 
       <div class="recap-passager-card">
         <div class="recap-passager-title">Destinataire</div>
-        <div class="recap-row"><span>Nom</span><strong>${c.destinataireNom}</strong></div>
-        <div class="recap-row"><span>Téléphone</span><strong>${c.destinataireTel}</strong></div>
+        <div class="recap-row"><span>Nom</span><strong>${escapeHtml(c.destinataireNom)}</strong></div>
+        <div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(c.destinataireTel)}</strong></div>
       </div>
 
       <div class="recap-card">
-        <div class="recap-row"><span>Trajet</span><strong>${c.routeLabel || '—'}</strong></div>
-        <div class="recap-row"><span>Bus</span><strong>${c.busNom || '—'}</strong></div>
-        <div class="recap-row"><span>Départ</span><strong>${c.dateDepart || '—'} ${c.heureDepart || ''}</strong></div>
-        <div class="recap-row"><span>Embarquement</span><strong>${c.pdvEmbarquementNom || '—'}${c.pdvEmbarquementVille ? ' — ' + c.pdvEmbarquementVille : (c.arretMontee ? ' — ' + c.arretMontee : '')}</strong></div>
-        <div class="recap-row"><span>Débarquement</span><strong>${c.pdvDebarquementNom || '—'}${c.pdvDebarquementVille ? ' — ' + c.pdvDebarquementVille : (c.arretDescente ? ' — ' + c.arretDescente : '')}</strong></div>
-        <div class="recap-row"><span>Nature</span><strong>${c.nature}</strong></div>
+        <div class="recap-row"><span>Trajet</span><strong>${escapeHtml(c.routeLabel || '—')}</strong></div>
+        <div class="recap-row"><span>Bus</span><strong>${escapeHtml(c.busNom || '—')}</strong></div>
+        <div class="recap-row"><span>Départ</span><strong>${escapeHtml(c.dateDepart || '—')} ${escapeHtml(c.heureDepart || '')}</strong></div>
+        <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(c.pdvEmbarquementNom || '—')}${c.pdvEmbarquementVille ? ' — ' + escapeHtml(c.pdvEmbarquementVille) : (c.arretMontee ? ' — ' + escapeHtml(c.arretMontee) : '')}</strong></div>
+        <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(c.pdvDebarquementNom || '—')}${c.pdvDebarquementVille ? ' — ' + escapeHtml(c.pdvDebarquementVille) : (c.arretDescente ? ' — ' + escapeHtml(c.arretDescente) : '')}</strong></div>
+        <div class="recap-row"><span>Nature</span><strong>${escapeHtml(c.nature)}</strong></div>
         ${c.poids != null ? `<div class="recap-row"><span>Poids</span><strong>${c.poids} kg</strong></div>` : ''}
         ${c.valeurDeclaree != null ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(c.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
-        ${c.remarques ? `<div class="recap-row"><span>Remarques</span><strong>${c.remarques}</strong></div>` : ''}
+        ${c.remarques ? `<div class="recap-row"><span>Remarques</span><strong>${escapeHtml(c.remarques)}</strong></div>` : ''}
       </div>
 
       <div class="recap-total-row">
@@ -418,7 +419,7 @@ export function openColisDetailPDV(id) {
         }
         if (c.statut === 'arrive') {
           const infoArrivee = c.marqueArrivePar && c.dateArrivee
-            ? `<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">Arrivé le ${new Date(c.dateArrivee).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', timeZone:'Africa/Brazzaville' })} — marqué par ${c.marqueArrivePar}</div>`
+            ? `<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">Arrivé le ${new Date(c.dateArrivee).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', timeZone:'Africa/Brazzaville' })} — marqué par ${escapeHtml(c.marqueArrivePar)}</div>`
             : '';
           return `
           ${infoArrivee}
@@ -429,14 +430,14 @@ export function openColisDetailPDV(id) {
         }
 
         if (c.statut === 'retire') {
-          const labelPiece = { cni: 'CNI', passeport: 'Passeport', permis: 'Permis de conduire', aucune: 'Aucune pièce' }[c.typePieceIdentite] || c.typePieceIdentite;
+          const labelPiece = escapeHtml({ cni: 'CNI', passeport: 'Passeport', permis: 'Permis de conduire', aucune: 'Aucune pièce' }[c.typePieceIdentite] || c.typePieceIdentite);
           const lignePiece = c.typePieceIdentite === 'aucune'
-            ? `<div style="font-size:12.5px;color:var(--white);margin-top:2px;">Pièce : ${labelPiece}${c.infoSansPiece ? ' — ' + c.infoSansPiece : ''}</div>`
-            : `<div style="font-size:12.5px;color:var(--white);margin-top:2px;">Pièce : ${labelPiece} n° ${c.numeroPieceIdentite || '—'}</div>`;
+            ? `<div style="font-size:12.5px;color:var(--white);margin-top:2px;">Pièce : ${labelPiece}${c.infoSansPiece ? ' — ' + escapeHtml(c.infoSansPiece) : ''}</div>`
+            : `<div style="font-size:12.5px;color:var(--white);margin-top:2px;">Pièce : ${labelPiece} n° ${escapeHtml(c.numeroPieceIdentite || '—')}</div>`;
           return `
           <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-radius:12px;padding:12px 14px;margin-top:14px;">
             <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;">${ICONS.check} Colis retiré</div>
-            ${c.retirePar ? `<div style="font-size:12.5px;color:var(--white);">Par : ${c.retirePar}</div>` : ''}
+            ${c.retirePar ? `<div style="font-size:12.5px;color:var(--white);">Par : ${escapeHtml(c.retirePar)}</div>` : ''}
             ${c.typePieceIdentite ? lignePiece : ''}
             ${c.dateRetrait ? `<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${new Date(c.dateRetrait).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' })} à ${new Date(c.dateRetrait).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' })}</div>` : ''}
           </div>`;
@@ -514,11 +515,11 @@ export function ouvrirConfirmationRetraitColisPDV(id) {
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:14px;">
         <div style="font-size:13px;font-weight:600;color:var(--white);">Destinataire attendu</div>
-        <div style="font-size:13px;color:var(--white);margin-top:4px;">${c.destinataireNom} · ${c.destinataireTel}</div>
+        <div style="font-size:13px;color:var(--white);margin-top:4px;">${escapeHtml(c.destinataireNom)} · ${escapeHtml(c.destinataireTel)}</div>
       </div>
       <div class="vente-field-group">
         <label>Nom de la personne qui retire le colis <span class="req">*</span></label>
-        <input type="text" class="vente-input" id="colisRetraitPar" placeholder="Ex : ${c.destinataireNom}">
+        <input type="text" class="vente-input" id="colisRetraitPar" placeholder="Ex : ${escapeHtml(c.destinataireNom)}">
       </div>
 
       <div class="vente-field-group">
@@ -688,7 +689,7 @@ export async function verifierCodeColisPDV() {
       if (resultEl) {
         resultEl.innerHTML = `
           <div style="background:rgba(255,77,106,0.08);border:1px solid rgba(255,77,106,0.25);border-radius:12px;padding:12px 14px;font-size:13px;color:#FF4D6A;">
-            ${data.message || 'Colis introuvable.'}
+            ${escapeHtml(data.message || 'Colis introuvable.')}
           </div>`;
       }
       return;
@@ -701,8 +702,8 @@ export async function verifierCodeColisPDV() {
     if (resultEl) {
       resultEl.innerHTML = `
         <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-radius:12px;padding:12px 14px;">
-          <div style="font-size:13px;font-weight:700;color:var(--white);">${c.destinataireNom}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${c.destinataireTel} · ${c.nature}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(c.destinataireNom)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${escapeHtml(c.destinataireTel)} · ${escapeHtml(c.nature)}</div>
           <button style="width:100%;margin-top:10px;background:var(--accent);color:var(--dark);border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;" onclick="closeVerificationCodeColisPDV();openColisDetailPDV('${c.id}')">
             Voir le détail
           </button>

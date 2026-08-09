@@ -1,6 +1,7 @@
 // ─── TRAVIO — PDV — Vente (sélection trajet, passagers, colis, soumission, tickets) ───
 
 import { apiFetch } from '../api.js';
+import { escapeHtml } from '../sanitize.js';
 import {
   ICONS, BACKEND, OFFSET_MS_FIN, toBrazzaDate,
   nomType, ageRangeLabel, peuplerSelectType,
@@ -795,13 +796,13 @@ export function showVenteRecap() {
   let totalGeneral  = 0;
 
   blocks.forEach((block, i) => {
-    const prenom  = block.querySelector('.p-prenom')?.value.trim() || '—';
-    const nom     = block.querySelector('.p-nom')?.value.trim()    || '—';
-    const tel     = block.querySelector('.p-tel')?.value.trim()    || '—';
+    const prenom  = escapeHtml(block.querySelector('.p-prenom')?.value.trim() || '—');
+    const nom     = escapeHtml(block.querySelector('.p-nom')?.value.trim()    || '—');
+    const tel     = escapeHtml(block.querySelector('.p-tel')?.value.trim()    || '—');
     const type    = block.querySelector('.p-type')?.value || 'adulte';
     const bagages = parseFloat(block.querySelector('.p-bagages')?.value || 0);
     const nombreBagages = parseInt(block.querySelector('.p-bagages-nombre')?.value || 0, 10);
-    const siege   = block.querySelector('.p-siege')?.value.trim() || '—';
+    const siege   = escapeHtml(block.querySelector('.p-siege')?.value.trim() || '—');
 
     let prixBase = isArrets
       ? (t._segmentPrixParType?.[type] || 0)
@@ -810,7 +811,7 @@ export function showVenteRecap() {
     const prixColisSoute = block.querySelector('.p-colis-soute-toggle')?.checked
       ? Number(block.querySelector('.p-colis-soute-prix')?.value || 0)
       : 0;
-    const colisSouteNature = block.querySelector('.p-colis-soute-nature')?.value.trim() || null;
+    const colisSouteNature = escapeHtml(block.querySelector('.p-colis-soute-nature')?.value.trim() || '') || null;
     const colisSoutePoids = parseFloat(block.querySelector('.p-colis-soute-poids')?.value) || null;
     const colisSouteValeur = parseFloat(block.querySelector('.p-colis-soute-valeur')?.value) || null;
 
@@ -844,7 +845,7 @@ export function showVenteRecap() {
     ? `${t._arretMontee} → ${t._arretDescente}`
     : `${t.villeDepart} → ${t.villeArrivee}`;
 
-  const remarquesVal = document.getElementById('vente-remarques')?.value.trim() || null;
+  const remarquesVal = escapeHtml(document.getElementById('vente-remarques')?.value.trim() || '') || null;
 
   let embDebHtml = '';
   if (!isArrets) {
@@ -941,12 +942,12 @@ export function closeVenteRecap() {
 window.closeVenteRecap = closeVenteRecap;
 
 export function showColisRecapShared() {
-  const expNom  = document.getElementById('colis-exp-nom')?.value.trim();
-  const expTel  = document.getElementById('colis-exp-tel')?.value.trim();
-  const destNom = document.getElementById('colis-dest-nom')?.value.trim();
-  const destTel = document.getElementById('colis-dest-tel')?.value.trim();
-  const nature  = document.getElementById('colis-nature')?.value.trim();
-  const prix    = Number(document.getElementById('colis-prix')?.value || 0);
+  const expNom  = escapeHtml(document.getElementById('colis-exp-nom')?.value.trim() || '');
+  const expTel  = escapeHtml(document.getElementById('colis-exp-tel')?.value.trim() || '');
+  const destNom = escapeHtml(document.getElementById('colis-dest-nom')?.value.trim() || '');
+  const destTel = escapeHtml(document.getElementById('colis-dest-tel')?.value.trim() || '');
+  const nature  = escapeHtml(document.getElementById('colis-nature')?.value.trim() || '');
+  const prix    = Number(document.getElementById('colis-prix')?.value || 0); // ← ne pas toucher, c'est un nombre
 
   if (!expNom || !expTel)   { showToast('Informations expéditeur manquantes.', ICONS.warning); return; }
   if (!destNom || !destTel) { showToast('Informations destinataire manquantes.', ICONS.warning); return; }
@@ -993,7 +994,7 @@ export function showColisRecapShared() {
   const dateFormatee = date ? new Date(date).toLocaleDateString('fr-FR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' }) : '—';
   const poids = document.getElementById('colis-poids')?.value || '—';
   const valeur = document.getElementById('colis-valeur')?.value;
-  const remarques = document.getElementById('colis-remarques')?.value.trim();
+  const remarques = escapeHtml(document.getElementById('colis-remarques')?.value.trim() || '');
 
   let overlay = document.getElementById('recapVenteOverlay');
   if (overlay) overlay.remove();

@@ -3,7 +3,7 @@
 import { BACKEND, trajetList } from './state.js';
 import { showToast, TOAST_ICONS } from './toast-utils.js';
 import { apiFetch } from './api.js';
-import { escapeHtml } from './sanitize.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
 const ICONS = {
   close:    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -94,9 +94,9 @@ export async function loadBusSessions(departId, hasArrets, trajet) {
       const jourLabel = jours[dateObj.getDay()];
       const arretsLabel = escapeHtml((s.arretsActifs || []).map(a => a.ville || a.nom).join(' → ')) || '—';
 
-      let horaire = s.heureDepart || '—';
-      if (s.heureArrivee)  horaire += ` → ${s.heureArrivee}`;
-      if (s.dureeEstimee)  horaire += ` · ${s.dureeEstimee}`;
+      let horaire = escapeHtml(s.heureDepart) || '—';
+      if (s.heureArrivee)  horaire += ` → ${escapeHtml(s.heureArrivee)}`;
+      if (s.dureeEstimee)  horaire += ` · ${escapeHtml(s.dureeEstimee)}`;
 
       return `
         <div style="
@@ -110,7 +110,7 @@ export async function loadBusSessions(departId, hasArrets, trajet) {
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
             <div>
               <span style="font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;">${jourLabel}</span>
-              <span style="font-size:13px;font-weight:700;color:var(--white);margin-left:8px;">${s.date}</span>
+              <span style="font-size:13px;font-weight:700;color:var(--white);margin-left:8px;">${escapeHtml(s.date)}</span>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
               ${s.statut === 'annulée'
@@ -124,7 +124,7 @@ export async function loadBusSessions(departId, hasArrets, trajet) {
 
           ${s.statut === 'annulée' && s.causeAnnulation ? `
           <div style="font-size:11px;color:#FF4D6A;margin-bottom:8px;background:#FF4D6A11;padding:6px 10px;border-radius:6px;">
-            ${causeLabels[s.causeAnnulation] || s.causeAnnulation}
+            ${causeLabels[s.causeAnnulation] || escapeHtml(s.causeAnnulation)}
             ${s.detailsIncident ? `<br><span style="color:var(--muted);font-size:10px;">${escapeHtml(s.detailsIncident)}</span>` : ''}
           </div>` : ''}
 
@@ -134,11 +134,11 @@ export async function loadBusSessions(departId, hasArrets, trajet) {
           </div>` : ''}
 
           ${s.statut !== 'annulée' ? `
-          <button onclick="openEditSessionById('${s.id}')"
+          <button onclick="openEditSessionById('${escapeJsAttr(s.id)}')"
             class="pdv-action-btn" style="font-size:11px;padding:7px 12px;width:100%;margin-bottom:6px;">
             ${ICONS.edit} Modifier cette session
           </button>
-          <button onclick="openIncidentSession('${s.id}', '${s.date}')"
+          <button onclick="openIncidentSession('${escapeJsAttr(s.id)}', '${escapeJsAttr(s.date)}')"
             class="pdv-action-btn danger" style="font-size:11px;padding:7px 12px;width:100%;">
             ${ICONS.banned} Signaler un incident
           </button>` : ''}
@@ -199,11 +199,11 @@ export function openEditSession(sessionId, arretsDisponibles, heureActuelle, arr
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="pdv-field-group">
             <label>Heure de départ</label>
-            <input type="time" class="pdv-input" id="editSession-heure" value="${heureActuelle || ''}">
+            <input type="time" class="pdv-input" id="editSession-heure" value="${escapeHtml(heureActuelle) || ''}">
           </div>
           <div class="pdv-field-group">
             <label>Heure d'arrivée</label>
-            <input type="time" class="pdv-input" id="editSession-heure-arrivee" value="${heureArriveeActuelle}">
+            <input type="time" class="pdv-input" id="editSession-heure-arrivee" value="${escapeHtml(heureArriveeActuelle)}">
           </div>
         </div>
         <div class="pdv-field-group">
@@ -228,7 +228,7 @@ export function openEditSession(sessionId, arretsDisponibles, heureActuelle, arr
           </div>
         </div>` : ''}
       </div>
-      <button class="pdv-btn-next" id="editSessionBtn" onclick="submitEditSession('${sessionId}')">
+      <button class="pdv-btn-next" id="editSessionBtn" onclick="submitEditSession('${escapeJsAttr(sessionId)}')">
         ${ICONS.save} Sauvegarder
       </button>
     </div>
@@ -322,7 +322,7 @@ export function openIncidentSession(sessionId, dateSession) {
       <div class="pdv-overlay-header">
         <div>
           <h2>${ICONS.banned} Signaler un incident</h2>
-          <p>Session du ${dateSession}</p>
+          <p>Session du ${escapeHtml(dateSession)}</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeIncidentSession()">${ICONS.close}</button>
       </div>
@@ -353,7 +353,7 @@ export function openIncidentSession(sessionId, dateSession) {
         </p>
       </div>
       <button class="pdv-btn-next delete-confirm" id="incidentSubmitBtn"
-        onclick="submitIncidentSession('${sessionId}')"
+        onclick="submitIncidentSession('${escapeJsAttr(sessionId)}')"
         style="opacity:0.4;cursor:not-allowed;" disabled>
         ${ICONS.banned} Confirmer l'annulation
       </button>

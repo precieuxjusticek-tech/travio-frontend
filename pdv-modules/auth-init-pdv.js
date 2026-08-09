@@ -1,6 +1,7 @@
 // ─── TRAVIO — PDV — Auth, navigation, drawer ───
 
 import { auth } from '../firebase-client.js';
+import { escapeHtml } from '../sanitize.js';
 import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { ICONS } from './state-pdv.js';
 
@@ -53,7 +54,7 @@ export function setAgentUI(session, pdv) {
   if (pdvName)  pdvName.textContent  = `${prenom} ${nom}`.trim();
   if (drawerAv) drawerAv.textContent = initiale;
   if (drawerNm) drawerNm.textContent = `${prenom} ${nom}`.trim();
-  if (greeting) greeting.innerHTML = `Bonjour ${prenom} ${ICONS.wave}`;
+  if (greeting) greeting.innerHTML = `Bonjour ${escapeHtml(prenom)} ${ICONS.wave}`;
   if (sub && pdv) sub.textContent = `${pdv.nom} — ${pdv.ville || ''}`;
 }
 

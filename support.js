@@ -1,6 +1,7 @@
 import { auth } from './firebase-client.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { showToast, TOAST_ICONS } from './toast-utils.js';
+import { apiFetch } from './api.js';
 
 const BACKEND = 'https://travio-backend-pa4q.onrender.com';
 let currentUserEmail = null;
@@ -11,7 +12,7 @@ onAuthStateChanged(auth, async (user) => {
   currentUserEmail = user.email;
 
   try {
-    const res  = await fetch(`${BACKEND}/auth/login`, {
+    const res  = await  apiFetch(`${BACKEND}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: user.email }),
@@ -34,7 +35,7 @@ window.submitSupportMessage = async function() {
   if (btn) { btn.disabled = true; btn.textContent = 'Envoi...'; }
 
   try {
-    const res = await fetch(`${BACKEND}/support/create`, {
+    const res = await apiFetch(`${BACKEND}/support/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -454,7 +454,7 @@ async function renderPDVTrajetsDOM(trajets, pdvId, container) {
                 <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</div>
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                   ${roleBadge}${statutBadge}
-                  <span style="font-size:11px;color:var(--muted);">${t.typeTrajet === 'arrets' ? 'Avec arrêts' : 'Direct'} ${heureLabel}</span>
+                  <span style="font-size:11px;color:var(--muted);">${t.typeTrajet === 'arrets' ? 'Avec arrêts' : 'Direct'} ${escapeHtml(heureLabel)}</span>
                 </div>
               </div>
               <div style="text-align:right;flex-shrink:0;margin-left:12px;">
@@ -467,7 +467,7 @@ async function renderPDVTrajetsDOM(trajets, pdvId, container) {
             ${nbBus > 0 ? `
             <div style="padding:8px 14px 10px;border-top:1px solid var(--border);background:var(--surface);display:flex;gap:16px;flex-wrap:wrap;">
               <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">${ICONS.bus} ${nbBus} bus actif${nbBus > 1 ? 's' : ''}</div>
-              <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">${ICONS.calendar} ${joursLabel}</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">${ICONS.calendar} ${escapeHtml(joursLabel)}</div>
             </div>` : `
             <div style="padding:8px 14px 10px;border-top:1px solid var(--border);background:var(--surface);">
               <span style="font-size:12px;color:var(--muted);">Aucun bus configuré sur ce trajet</span>

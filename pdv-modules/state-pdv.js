@@ -1,5 +1,7 @@
 // ─── TRAVIO — PDV — State partagé ───
 
+import { escapeHtml } from '../sanitize.js';
+
 // ════════════════════════════════
 //  CONSTANTES
 // ════════════════════════════════
@@ -83,6 +85,6 @@ export function ageRangeLabel(typeId) {
 export function peuplerSelectType(select) {
   if (!select) return;
   select.innerHTML = (agenceData?.typesBillet || []).map(t =>
-    `<option value="${t.id}">${t.nom} — ${ageRangeLabel(t.id)}</option>`
+    `<option value="${escapeHtml(t.id)}">${escapeHtml(t.nom)} — ${ageRangeLabel(t.id)}</option>`
   ).join('');
 }

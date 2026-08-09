@@ -1,6 +1,7 @@
 // ─── TRAVIO — PDV — Finances (KPIs, graphique, stats colis) ───
 
 import { apiFetch } from '../api.js';
+import { escapeHtml } from '../sanitize.js';
 import {
   ICONS, BACKEND, OFFSET_MS_FIN, toBrazzaDate,
   resaList, colisEnvoyesList, trajetList,
@@ -148,7 +149,7 @@ function populateFinFiltresPDV() {
 
   if (!selT.dataset.bound) {
     selT.innerHTML = '<option value="">Tous les trajets</option>' +
-      trajetList.map(t => `<option value="${t.id}">${t.villeDepart} → ${t.villeArrivee}</option>`).join('');
+     trajetList.map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</option>`).join('');
 
     populateFinBusSelectCascadePDV('');
 
@@ -166,13 +167,13 @@ function populateFinBusSelectCascadePDV(trajetId) {
       .then(departs => {
         const busNoms = [...new Set(departs.map(d => d.busNom).filter(Boolean))].sort();
         selB.innerHTML = '<option value="">Tous les bus</option>' +
-          busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('');
+          busNoms.map(nom => `<option value="${escapeHtml(nom)}">${escapeHtml(nom)}</option>`).join('');
       })
       .catch(err => console.error('Erreur chargement bus filtre finances PDV :', err));
   } else {
     getBusNomsPourPDV().then(busNoms => {
       selB.innerHTML = '<option value="">Tous les bus</option>' +
-        busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('');
+        busNoms.map(nom => `<option value="${escapeHtml(nom)}">${escapeHtml(nom)}</option>`).join('');
     });
   }
 }
@@ -488,8 +489,8 @@ function renderFinanceTrajetsPDV(resas, fmt) {
     const key = r.trajetId || 'inconnu';
     const trajetRef = trajetList.find(t => t.id === r.trajetId);
     const label = (r.arretMontee && r.arretDescente)
-      ? `${r.arretMontee} → ${r.arretDescente}`
-      : (trajetRef ? `${trajetRef.villeDepart} → ${trajetRef.villeArrivee}` : (r.routeLabel || '—'));
+      ? `${escapeHtml(r.arretMontee)} → ${escapeHtml(r.arretDescente)}`
+      : (trajetRef ? `${escapeHtml(trajetRef.villeDepart)} → ${escapeHtml(trajetRef.villeArrivee)}` : escapeHtml(r.routeLabel || '—'))
     if (!parTrajet[key]) parTrajet[key] = { label, billets: 0, montant: 0 };
     parTrajet[key].billets += (r.nbPassagers || 1);
     parTrajet[key].montant += (r.prixTotal || 0);
@@ -591,8 +592,8 @@ function renderMeilleurTrajet(resas) {
   resas.forEach(r => {
     const key   = r.trajetId || 'inconnu';
     const label = (r.arretMontee && r.arretDescente)
-      ? `${r.arretMontee} → ${r.arretDescente}`
-      : (r.routeLabel || '—');
+      ? `${escapeHtml(r.arretMontee)} → ${escapeHtml(r.arretDescente)}`
+      : escapeHtml(r.routeLabel || '—');
     if (!parTrajet[key]) parTrajet[key] = { label, billets: 0, montant: 0 };
     parTrajet[key].billets += (r.nbPassagers || 1);
     parTrajet[key].montant += (r.prixTotal   || 0);

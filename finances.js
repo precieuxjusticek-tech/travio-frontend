@@ -4,6 +4,7 @@ import { BACKEND, agenceData, resaList, pdvList, trajetList } from './state.js';
 import { loadDeparts, loadAllDeparts } from './trajets.js';
 import { showToast, TOAST_ICONS } from './toast-utils.js';
 import { apiFetch } from './api.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -519,7 +520,7 @@ function populateFinPdvSelectCascade(ville) {
   if (!pdvSelect) return;
   const pdvsFiltres = ville ? pdvList.filter(p => p.ville === ville) : pdvList;
   pdvSelect.innerHTML = `<option value="">Tous les PDV</option>` +
-    pdvsFiltres.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+    pdvsFiltres.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.nom)}</option>`).join('');
 }
 
 function populateFinTrajetSelectCascade(pdvId, ville) {
@@ -546,7 +547,7 @@ function populateFinTrajetSelectCascade(pdvId, ville) {
     });
   }
   trajetSelect.innerHTML = `<option value="">Tous les trajets</option>` +
-    trajetsFiltres.map(t => `<option value="${t.id}">${t.villeDepart} → ${t.villeArrivee} ${getTypeTrajetLabelFin(t)}</option>`).join('');
+    trajetsFiltres.map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)} ${getTypeTrajetLabelFin(t)}</option>`).join('');
 }
 
 async function populateFinBusSelectCascade(trajetId) {
@@ -561,7 +562,7 @@ async function populateFinBusSelectCascade(trajetId) {
 
     const busNoms = [...new Set(departs.map(d => d.busNom).filter(Boolean))].sort();
     busSelect.innerHTML = `<option value="">Tous les bus</option>` +
-      busNoms.map(nom => `<option value="${nom}">${nom}</option>`).join('');
+      busNoms.map(nom => `<option value="${escapeHtml(nom)}">${escapeHtml(nom)}</option>`).join('');
   } catch (err) {
     console.error('Erreur chargement bus filtre finances :', err);
   }
@@ -624,7 +625,7 @@ function populateFinFiltres() {
     if (selVille) {
       const villes = [...new Set(pdvList.map(p => p.ville).filter(Boolean))].sort();
       selVille.innerHTML = `<option value="">Toutes les villes</option>` +
-        villes.map(v => `<option value="${v}">${v}</option>`).join('');
+        villes.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
     }
 
     populateFinPdvSelectCascade('');
@@ -1168,7 +1169,7 @@ function _renderFinanceTrophy(conf, fmt) {
     trophyEl.innerHTML = `
       <span>${ICONS.trophy}</span>
       <div style="font-size:13px;color:var(--white);">
-        Meilleur point de vente : <strong>${bestPDV.nom}</strong>
+        Meilleur point de vente : <strong>${escapeHtml(bestPDV.nom)}</strong>
         &nbsp;<span style="color:var(--muted);">— ${fmt(bestPDV.ca)} générés sur la période</span>
       </div>`;
   }
@@ -1237,20 +1238,20 @@ function _renderFinancePdv(conf, fmt) {
     <div style="margin-bottom:6px;">
       <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;
         letter-spacing:1px;padding:10px 0 7px;display:flex;align-items:center;gap:5px;">
-        ${ICONS.pin} ${ville}
+        ${ICONS.pin} ${escapeHtml(ville)}
       </div>
       ${pdvParVille[ville].map(p => {
         const rang = pdvSorted.findIndex(x => x.id === p.id);
         const medailles = [ICONS.medal1, ICONS.medal2, ICONS.medal3];
         const medaille = rang < 3 ? medailles[rang] : '';
         return `
-        <div onclick="openFinancePdvDetail('${p.id}')"
+        <div onclick="openFinancePdvDetail('${escapeJsAttr(p.id)}')"
           style="padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;"
           onmouseover="this.style.background='var(--surface2)'"
           onmouseout="this.style.background='transparent'">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
             <div>
-              <div style="font-size:13px;font-weight:600;color:var(--white);">${medaille}${p.nom}</div>
+              <div style="font-size:13px;font-weight:600;color:var(--white);">${medaille}${escapeHtml(p.nom)}</div>
               <div style="font-size:11px;color:var(--muted);">${p.billets} vendu${p.billets>1?'s':''} · ${p.resas} réservation${p.resas>1?'s':''}
                 &nbsp;·&nbsp;<span id="finPdvTaux-${p.id}" style="color:var(--muted);">taux —</span>
               </div>
@@ -1319,14 +1320,14 @@ function _renderFinanceTrajets(conf, fmt) {
       ? `<span style="font-size:10px;background:rgba(0,87,255,0.12);color:#5B9BFF;padding:1px 7px;border-radius:6px;margin-left:6px;">Avec arrêts</span>`
       : `<span style="font-size:10px;background:var(--surface2);color:var(--muted);padding:1px 7px;border-radius:6px;margin-left:6px;">Direct</span>`;
     return `
-      <div onclick="openFinanceTrajetDetail('${t.id}')"
+      <div onclick="openFinanceTrajetDetail('${escapeJsAttr(t.id)}')"
         style="margin-bottom:12px;cursor:pointer;padding:8px;border-radius:8px;
           transition:background .15s;margin-left:-8px;margin-right:-8px;"
         onmouseover="this.style.background='var(--surface2)'"
         onmouseout="this.style.background='transparent'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;flex-wrap:wrap;gap:4px;">
           <span style="font-size:13px;font-weight:600;color:var(--white);display:flex;align-items:center;">
-            ${t.nom}${badge}
+            ${escapeHtml(t.nom)}${badge}
           </span>
           <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--white);">${fmt(t.ca)}</span>
         </div>
@@ -1390,8 +1391,8 @@ export function openFinancePdvDetail(pdvId) {
     <div class="pdv-overlay-panel" style="max-width:480px;">
       <div class="pdv-overlay-header">
         <div>
-          <h2>${pdv.nom}</h2>
-          <p>${ICONS.pin} ${pdv.ville || '—'}</p>
+          <h2>${escapeHtml(pdv.nom)}</h2>
+          <p>${ICONS.pin} ${escapeHtml(pdv.ville || '—')}</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeFinancePdvDetail()">${ICONS.close}</button>
       </div>
@@ -1418,7 +1419,7 @@ export function openFinancePdvDetail(pdvId) {
       ${meilleurTrajet ? `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:16px;">
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Trajet le plus vendu ici</div>
-        <div style="font-size:13px;font-weight:600;color:var(--white);">${meilleurTrajet.nom}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(meilleurTrajet.nom)}</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;">${fmt(meilleurTrajet.ca)} · ${meilleurTrajet.billets} passager${meilleurTrajet.billets>1?'s':''}</div>
       </div>` : ''}
 
@@ -1440,8 +1441,8 @@ export function openFinancePdvDetail(pdvId) {
               return `
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
                   <div>
-                    <div style="font-size:13px;font-weight:600;color:var(--white);">${nomComplet}</div>
-                    <div style="font-size:11px;color:var(--muted);">${t ? t.villeDepart+' → '+t.villeArrivee : '—'} · ${dateLabel}</div>
+                    <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(nomComplet)}</div>
+                    <div style="font-size:11px;color:var(--muted);">${escapeHtml(t ? t.villeDepart+' → '+t.villeArrivee : '—')} · ${dateLabel}</div>
                   </div>
                   <div style="font-size:13px;font-weight:700;color:var(--white);">${fmt(r.prixTotal||0)}</div>
                 </div>`;
@@ -1471,12 +1472,12 @@ export function openFinancePdvDetail(pdvId) {
       container.innerHTML = trajetsTries.map(t => {
         const couleur = t.taux >= 75 ? 'var(--accent)' : t.taux >= 50 ? '#FFB23F' : '#FF4D6A';
         return `
-          <div onclick="openFinanceBusDetail('${pdvId}', '${t.id}')"
+          <div onclick="openFinanceBusDetail('${escapeJsAttr(pdvId)}', '${escapeJsAttr(t.id)}')"
             style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--surface);cursor:pointer;transition:background .15s;"
             onmouseover="this.style.background='var(--surface2)'"
             onmouseout="this.style.background='var(--surface)'">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:13px;font-weight:600;color:var(--white);">${t.villeDepart} → ${t.villeArrivee}</span>
+              <span style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</span>
               <span style="font-size:13px;font-weight:700;color:${couleur};">${t.taux}%</span>
             </div>
             <div style="height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;">
@@ -1517,7 +1518,7 @@ export function openFinanceBusDetail(pdvId, trajetId) {
     <div class="pdv-overlay-panel" style="max-width:480px;">
       <div class="pdv-overlay-header">
         <div>
-          <h2>${trajet.villeDepart} → ${trajet.villeArrivee}</h2>
+          <h2>${escapeHtml(trajet.villeDepart)} → ${escapeHtml(trajet.villeArrivee)}</h2>
           <p>Part des ventes de ce PDV par bus</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeFinanceBusDetail()">${ICONS.close}</button>
@@ -1533,10 +1534,10 @@ export function openFinanceBusDetail(pdvId, trajetId) {
               return `
                 <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--surface);">
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                    <span style="font-size:13px;font-weight:600;color:var(--white);">${ICONS.bus} ${b.nom}${statutBadge}</span>
+                    <span style="font-size:13px;font-weight:600;color:var(--white);">${ICONS.bus} ${escapeHtml(b.nom)}${statutBadge}</span>
                     <span style="font-size:13px;font-weight:700;color:${couleur};">${b.taux}%</span>
                   </div>
-                  <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">${b.heureDepart || '—'} · ${b.vendus}/${b.capaciteTotale} places vendues · ${b.nbSessions} départ${b.nbSessions>1?'s':''}</div>
+                  <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">${escapeHtml(b.heureDepart || '—')} · ${b.vendus}/${b.capaciteTotale} places vendues · ${b.nbSessions} départ${b.nbSessions>1?'s':''}</div>
                   <div style="height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;">
                     <div style="height:100%;width:${Math.min(b.taux, 100)}%;background:${couleur};border-radius:99px;"></div>
                   </div>
@@ -1606,7 +1607,7 @@ export function openFinanceTrajetDetail(trajetId) {
     <div class="pdv-overlay-panel" style="max-width:480px;">
       <div class="pdv-overlay-header">
         <div>
-          <h2>${t.villeDepart} → ${t.villeArrivee}</h2>
+          <h2>${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</h2>
           <p>${t.typeTrajet === 'arrets' ? 'Avec arrêts' : 'Direct'}</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeFinanceTrajetDetail()">${ICONS.close}</button>
@@ -1648,7 +1649,7 @@ export function openFinanceTrajetDetail(trajetId) {
           : pdvSorted.map(p => `
               <div style="padding:9px 0;border-bottom:1px solid var(--border);">
                 <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-                  <span style="font-size:13px;font-weight:600;color:var(--white);">${p.nom}</span>
+                  <span style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(p.nom)}</span>
                   <span style="font-size:13px;font-weight:700;color:var(--white);">${fmt(p.ca)}</span>
                 </div>
                 <div style="height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;">
@@ -1683,7 +1684,7 @@ export function openFinanceTrajetDetail(trajetId) {
         return `
           <div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--surface);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:13px;font-weight:600;color:var(--white);">${ICONS.bus} ${b.nom}</span>
+              <span style="font-size:13px;font-weight:600;color:var(--white);">${ICONS.bus} ${escapeHtml(b.nom)}</span>
               <span style="font-size:13px;font-weight:700;color:${couleur};">${b.taux}%</span>
             </div>
             <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">${b.vendus}/${b.capaciteTotale} places vendues · ${b.nbSessions} départ${b.nbSessions>1?'s':''}</div>
@@ -1748,8 +1749,8 @@ export function openFinanceJourDetail(dateStr) {
               return `
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
                   <div>
-                    <div style="font-size:13px;font-weight:600;color:var(--white);">${nomComplet}</div>
-                    <div style="font-size:11px;color:var(--muted);">${t ? t.villeDepart+' → '+t.villeArrivee : '—'} · ${pdv?.nom||'—'} · ${heure}</div>
+                    <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(nomComplet)}</div>
+                    <div style="font-size:11px;color:var(--muted);">${escapeHtml(t ? t.villeDepart+' → '+t.villeArrivee : '—')} · ${escapeHtml(pdv?.nom||'—')} · ${heure}</div>
                   </div>
                   <div style="font-size:13px;font-weight:700;color:var(--white);">${fmt(r.prixTotal||0)}</div>
                 </div>`;

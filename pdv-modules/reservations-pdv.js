@@ -1,6 +1,7 @@
 // ─── TRAVIO — PDV — Réservations (liste, filtres, détail, annulation, retrait, modification) ───
 
 import { apiFetch } from '../api.js';
+import { escapeHtml } from '../sanitize.js';
 import {
   ICONS, OFFSET_MS_FIN, toBrazzaDate,
   nomType, nomTypeResa, nomTypePassager, peuplerSelectType,
@@ -356,12 +357,13 @@ export function renderResaList(list, groupMode = null) {
       : (r.prenomPassager?.[0]?.toUpperCase() || '?');
 
     const nomAffiche = isMulti
-      ? `${r.prenomPassager} + ${nbPass - 1}`
-      : `${r.prenomPassager || '—'} ${r.nomPassager || ''}`;
+      ? `${escapeHtml(r.prenomPassager)} + ${nbPass - 1}`
+      : `${escapeHtml(r.prenomPassager || '—')} ${escapeHtml(r.nomPassager || '')}`;
+
 
     const routeComplete = (r.arretMontee && r.arretDescente)
-      ? `${r.arretMontee} → ${r.arretDescente}`
-      : routeStr;
+      ? `${escapeHtml(r.arretMontee)} → ${escapeHtml(r.arretDescente)}`
+      : escapeHtml(routeStr);
 
     const dateObj  = r.dateDepart ? new Date(r.dateDepart + 'T00:00:00') : null;
     const today    = new Date().toISOString().split('T')[0];
@@ -375,7 +377,7 @@ export function renderResaList(list, groupMode = null) {
 
     const extras = [];
     if (r.bagages > 0) extras.push(`${ICONS.bag} ${r.bagages} kg`);
-    if (r.siege)       extras.push(`${ICONS.seat} ${r.siege}`);
+    if (r.siege)       extras.push(`${ICONS.seat} ${escapeHtml(r.siege)}`);
 
     return `
       <div class="resa-card" onclick="openResaDetail('${r.id}')" style="${isAnnulee ? 'opacity:0.6;' : ''}">
@@ -456,8 +458,8 @@ export function openResaDetail(resaId) {
 
   const routeBase = trajet ? `${trajet.villeDepart} → ${trajet.villeArrivee}` : (resa.routeLabel || '—');
   const routeAffichee = (resa.arretMontee && resa.arretDescente)
-    ? `${resa.arretMontee} → ${resa.arretDescente}`
-    : routeBase;
+    ? `${escapeHtml(resa.arretMontee)} → ${escapeHtml(resa.arretDescente)}`
+    : escapeHtml(routeBase);
 
   const nbPass  = resa.passagers?.length || 1;
   const isMulti = nbPass > 1;
@@ -466,13 +468,13 @@ export function openResaDetail(resaId) {
   const passagersHtml = isMulti ? resa.passagers.map((p, i) => `
     <div class="recap-passager-card">
       <div class="recap-passager-title">Passager ${i + 1}</div>
-      <div class="recap-row"><span>Nom complet</span><strong>${p.prenom || '—'} ${p.nom || ''}</strong></div>
-      ${p.telephone ? `<div class="recap-row"><span>Téléphone</span><strong>${p.telephone}</strong></div>` : ''}
+      <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(p.prenom || '—')} ${escapeHtml(p.nom || '')}</strong></div>
+      ${p.telephone ? `<div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(p.telephone)}</strong></div>` : ''}
       <div class="recap-row"><span>Type</span><strong>${nomTypePassager(p)}</strong></div>
-      ${p.siege ? `<div class="recap-row"><span>Siège</span><strong>${p.siege}</strong></div>` : ''}
+      ${p.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(p.siege)}</strong></div>` : ''}
       ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.nombreBagages > 0 ? ` · ${p.nombreBagages} colis` : ''}${p.prixBagages > 0 ? ` (+${Number(p.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
       ${p.colisSoute ? `
-        <div class="recap-row"><span>Colis en soute</span><strong>${p.colisSoute.nature || '—'} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+        <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(p.colisSoute.nature || '—')} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
         ${p.colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${p.colisSoute.poids} kg</strong></div>` : ''}
         ${p.colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(p.colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
       ` : ''}
@@ -488,7 +490,7 @@ export function openResaDetail(resaId) {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
         <div>
           <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--white);">
-            ${isMulti ? `${resa.prenomPassager} + ${nbPass - 1} passager${nbPass > 2 ? 's' : ''}` : `${resa.prenomPassager} ${resa.nomPassager || ''}`}
+            ${isMulti ? `${escapeHtml(resa.prenomPassager)} + ${nbPass - 1} passager${nbPass > 2 ? 's' : ''}` : `${escapeHtml(resa.prenomPassager)} ${escapeHtml(resa.nomPassager || '')}`}
           </div>
           <div style="font-size:12px;color:var(--muted);margin-top:3px;">${routeAffichee}</div>
         </div>
@@ -500,23 +502,23 @@ export function openResaDetail(resaId) {
         <div class="recap-row"><span>Ligne</span><strong>${routeAffichee}</strong></div>
         <div class="recap-row"><span>Date</span><strong>${dateStr}</strong></div>
         <div class="recap-row"><span>Départ</span><strong>${resa.heureDepart || '—'}</strong></div>
-        <div class="recap-row"><span>Bus</span><strong>${resa.busNom || '—'}</strong></div>
+        <div class="recap-row"><span>Bus</span><strong>${escapeHtml(resa.busNom || '—')}</strong></div>
         <div class="recap-row"><span>Vendu le</span><strong>${resa.createdAt ? new Date(resa.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) + ' à ' + new Date(resa.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' }) : '—'}</strong></div>
-        <div class="recap-row"><span>Embarquement</span><strong>${resa.pdvEmbarquementNom || '—'}${(resa.arretMontee || trajet?.villeDepart) ? ' (' + (resa.arretMontee || trajet?.villeDepart) + ')' : ''}</strong></div>
-        <div class="recap-row"><span>Débarquement</span><strong>${resa.pdvDebarquementNom || '—'}${(resa.arretDescente || trajet?.villeArrivee) ? ' (' + (resa.arretDescente || trajet?.villeArrivee) + ')' : ''}</strong></div>
+        <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(resa.pdvEmbarquementNom || '—')}${(resa.arretMontee || trajet?.villeDepart) ? ' (' + escapeHtml(resa.arretMontee || trajet?.villeDepart) + ')' : ''}</strong></div>
+        <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(resa.pdvDebarquementNom || '—')}${(resa.arretDescente || trajet?.villeArrivee) ? ' (' + escapeHtml(resa.arretDescente || trajet?.villeArrivee) + ')' : ''}</strong></div>
         ${isMulti ? `<div class="recap-row"><span>Passagers</span><strong>${nbPass} personnes</strong></div>` : ''}
       </div>
 
       <div class="recap-section-title">Passager${isMulti ? 's' : ''}</div>
       ${isMulti ? passagersHtml : `
       <div class="recap-card" style="margin-bottom:14px;">
-        <div class="recap-row"><span>Nom complet</span><strong>${resa.prenomPassager || '—'} ${resa.nomPassager || ''}</strong></div>
-        <div class="recap-row"><span>Téléphone</span><strong>${resa.telephonePassager || '—'}</strong></div>
+        <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(resa.prenomPassager || '—')} ${escapeHtml(resa.nomPassager || '')}</strong></div>
+        <div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(resa.telephonePassager || '—')}</strong></div>
         <div class="recap-row"><span>Type</span><strong>${nomTypeResa(resa)}</strong></div>
-        ${resa.siege ? `<div class="recap-row"><span>Siège</span><strong>${resa.siege}</strong></div>` : ''}
+        ${resa.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(resa.siege)}</strong></div>` : ''}
         ${resa.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${resa.bagages} kg${resa.nombreBagages > 0 ? ` · ${resa.nombreBagages} colis` : ''}${resa.prixBagages > 0 ? ` (+${Number(resa.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
         ${resa.passagers?.[0]?.colisSoute ? `
-          <div class="recap-row"><span>Colis en soute</span><strong>${resa.passagers[0].colisSoute.nature || '—'} (${Number(resa.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+          <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(resa.passagers[0].colisSoute.nature || '—')} (${Number(resa.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
           ${resa.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${resa.passagers[0].colisSoute.poids} kg</strong></div>` : ''}
           ${resa.passagers[0].colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(resa.passagers[0].colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
         ` : ''}
@@ -524,7 +526,7 @@ export function openResaDetail(resaId) {
 
       ${resa.remarques ? `
       <div class="recap-section-title">Remarques</div>
-      <div class="recap-card" style="margin-bottom:14px;"><div class="recap-row" style="display:block;"><span>${resa.remarques}</span></div></div>` : ''}
+      <div class="recap-card" style="margin-bottom:14px;"><div class="recap-row" style="display:block;"><span>${escapeHtml(resa.remarques)}</span></div></div>` : ''}
 
       <div class="recap-total-row">
         <span>Total encaissé</span>
@@ -560,7 +562,7 @@ export function openResaDetail(resaId) {
         <div style="font-size:12px;font-weight:700;color:#FFB23F;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">${ICONS.person} Retrait de passager</div>
         ${(resa.historiqueRetraits || []).map(h => `
           <p style="font-size:12.5px;color:var(--white);line-height:1.5;margin-top:4px;">
-            <strong>${h.nom}</strong> retiré le ${new Date(h.retireAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' })}
+            <strong>${escapeHtml(h.nom)}</strong> retiré le ${new Date(h.retireAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' })}
             — ${Number(h.montantRembourse).toLocaleString()} XAF remboursés
           </p>
         `).join('')}
@@ -570,7 +572,7 @@ export function openResaDetail(resaId) {
       <div style="background:rgba(77,159,255,0.06);border:1px solid rgba(77,159,255,0.2);border-radius:12px;padding:14px 16px;margin-top:14px;">
         <div style="font-size:12px;font-weight:700;color:#4D9FFF;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">${ICONS.refresh} Réservation réaffectée</div>
         <p style="font-size:12.5px;color:var(--white);line-height:1.5;">
-          Déplacée de <strong>${resa.ancienBusNom || '—'}</strong> vers <strong>${resa.nouveauBusNom || '—'}</strong>
+          Déplacée de <strong>${escapeHtml(resa.ancienBusNom || '—')}</strong> vers <strong>${escapeHtml(resa.nouveauBusNom || '—')}</strong>
           le ${resa.dateReaffectation ? new Date(resa.dateReaffectation).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) : '—'}.
         </p>
       </div>` : ''}
@@ -723,8 +725,8 @@ export function ouvrirAnnulationCompletePDV(resaId) {
       </div>
 
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:4px;">
-        <div style="font-size:13px;font-weight:600;color:var(--white);">${r.prenomPassager || ''} ${r.nomPassager || ''}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px;">${r.routeLabel || '—'} · ${r.dateDepart || '—'} à ${r.heureDepart || '—'}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(r.prenomPassager || '')} ${escapeHtml(r.nomPassager || '')}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">${escapeHtml(r.routeLabel || '—')} · ${r.dateDepart || '—'} à ${r.heureDepart || '—'}</div>  
       </div>
 
       ${resumeHTML}
@@ -778,9 +780,9 @@ export function ouvrirListePassagersAnnulationPDV(resaId) {
   const rowsHTML = (r.passagers || []).map((p, i) => `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:8px;">
       <div>
-        <div style="font-size:13px;font-weight:600;color:var(--white);">${p.prenom || ''} ${p.nom || ''}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(p.prenom || '')} ${escapeHtml(p.nom || '')}</div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">
-          ${nomType(p.type)}${p.siege ? ' · Siège ' + p.siege : ''} · ${Number(p.sousTotal || 0).toLocaleString()} XAF
+          ${nomType(p.type)}${p.siege ? ' · Siège ' + escapeHtml(p.siege) : ''} · ${Number(p.sousTotal || 0).toLocaleString()} XAF
         </div>
       </div>
       ${nbPass > 1 ? `
@@ -799,7 +801,7 @@ export function ouvrirListePassagersAnnulationPDV(resaId) {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
         <div>
           <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--white);">Annuler / Retirer un passager</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px;">${r.routeLabel || '—'} · ${r.dateDepart || '—'} à ${r.heureDepart || '—'}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">${escapeHtml(r.routeLabel || '—')} · ${r.dateDepart || '—'} à ${r.heureDepart || '—'}</div>
         </div>
         <button onclick="closePdvListePassagers()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0;">${ICONS.close}</button>
       </div>
@@ -898,7 +900,7 @@ export function ouvrirConfirmationRetraitPassagerPDV(resaId, passagerIndex) {
         <button onclick="closePdvRetraitConfirm()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0;">${ICONS.close}</button>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;">
-        <div style="font-size:13px;font-weight:600;color:var(--white);">Vous voulez retirer ${p.prenom || ''} ${p.nom || ''} du trajet ${r.routeLabel || '—'}.</div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);">Vous voulez retirer ${escapeHtml(p.prenom || '')} ${escapeHtml(p.nom || '')} du trajet ${escapeHtml(r.routeLabel || '—')}.</div>
         <div style="font-size:12px;color:var(--muted);margin-top:3px;">Sa place ne sera plus comptée.</div>
       </div>
       ${resumeHTML}
@@ -1081,15 +1083,15 @@ export function handleModifierResa(resaId) {
     ? r.passagers.map((p, i) => `
         <div class="recap-passager-card">
           <div class="recap-passager-title">Passager ${i + 1}</div>
-          <div class="vente-field-group"><label>Prénom</label><input type="text" class="vente-input" id="modifPrenom_${i}" value="${p.prenom || ''}"></div>
-          <div class="vente-field-group"><label>Nom</label><input type="text" class="vente-input" id="modifNom_${i}" value="${p.nom || ''}"></div>
-          <div class="vente-field-group"><label>Téléphone</label><input type="text" class="vente-input" id="modifTel_${i}" value="${p.telephone || ''}"></div>
+          <div class="vente-field-group"><label>Prénom</label><input type="text" class="vente-input" id="modifPrenom_${i}" value="${escapeHtml(p.prenom || '')}"></div>
+          <div class="vente-field-group"><label>Nom</label><input type="text" class="vente-input" id="modifNom_${i}" value="${escapeHtml(p.nom || '')}"></div>
+          <div class="vente-field-group"><label>Téléphone</label><input type="text" class="vente-input" id="modifTel_${i}" value="${escapeHtml(p.telephone || '')}"></div>
           <div class="vente-field-group"><label>Type de billet</label><select class="vente-select modif-passager-type" id="modifType_${i}" onchange="recalculerTotalModif()"></select></div>
         </div>`).join('')
     : `
-        <div class="vente-field-group"><label>Prénom</label><input type="text" class="vente-input" id="modifPrenom" value="${r.prenomPassager || ''}"></div>
-        <div class="vente-field-group"><label>Nom</label><input type="text" class="vente-input" id="modifNom" value="${r.nomPassager || ''}"></div>
-        <div class="vente-field-group"><label>Téléphone</label><input type="text" class="vente-input" id="modifTel" value="${r.telephonePassager || ''}"></div>
+        <div class="vente-field-group"><label>Prénom</label><input type="text" class="vente-input" id="modifPrenom" value="${escapeHtml(r.prenomPassager || '')}"></div>
+        <div class="vente-field-group"><label>Nom</label><input type="text" class="vente-input" id="modifNom" value="${escapeHtml(r.nomPassager || '')}"></div>
+        <div class="vente-field-group"><label>Téléphone</label><input type="text" class="vente-input" id="modifTel" value="${escapeHtml(r.telephonePassager || '')}"></div>
         <div class="vente-field-group"><label>Type de billet</label><select class="vente-select modif-passager-type" id="modifType_0" onchange="recalculerTotalModif()"></select></div>`;
 
   const overlay = document.createElement('div');
@@ -1113,13 +1115,13 @@ export function handleModifierResa(resaId) {
       ${passagersFieldsHTML}
       <div class="recap-section-title" style="margin-top:6px;">Trajet</div>
       <div class="recap-card">
-        <div class="recap-row"><span>Ville de montée</span><strong>${r.arretMontee || trajet?.villeDepart || '—'}</strong></div>
+        <div class="recap-row"><span>Ville de montée</span><strong>${escapeHtml(r.arretMontee || trajet?.villeDepart || '—')}</strong></div>
         <div class="vente-field-group" style="margin-top:10px;"><label>Lieu d'embarquement</label><select class="vente-select" id="modifPdvEmbarquement"></select></div>
         <div class="vente-field-group"><label>Ville de descente</label><select class="vente-select" id="modifDescente" onchange="onDescenteModifChange();recalculerTotalModif()"></select></div>
         <div class="vente-field-group"><label>Lieu de débarquement</label><select class="vente-select" id="modifPdvDebarquement"></select></div>
       </div>
       <div class="vente-field-group"><label>Bagages (kg)</label><input type="number" class="vente-input" id="modifBagages" value="${r.bagages || 0}" min="0" oninput="recalculerTotalModif()"></div>
-      <div class="vente-field-group"><label>Remarques</label><input type="text" class="vente-input" id="modifRemarques" value="${r.remarques || ''}"></div>
+      <div class="vente-field-group"><label>Remarques</label><input type="text" class="vente-input" id="modifRemarques" value="${escapeHtml(r.remarques || '')}"></div>
       <div class="vente-field-group"><label>Raison de la modification (optionnel)</label><input type="text" class="vente-input" id="modifRaison" placeholder="Ex : erreur ville descente, demande client..."></div>
       <div class="recap-total-row" style="margin-top:6px;"><span>Total encaissé (calcul automatique)</span><strong id="modifTotalDisplay">${Number(r.prixTotal || 0).toLocaleString()} XAF</strong></div>
       <input type="hidden" id="modifPrixTotal" value="${r.prixTotal || 0}">
