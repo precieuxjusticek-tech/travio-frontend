@@ -2,6 +2,7 @@
 
 import { auth } from './firebase-client.js';
 import { apiFetch } from './api.js';
+import { escapeHtml } from './sanitize.js';
 import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail
@@ -220,7 +221,7 @@ async function handleLogin() {
       return;
     }
 
-    btn.innerHTML = `${TOAST_ICONS.wave} Bienvenue ${data.prenom} !`;
+    btn.innerHTML = `${TOAST_ICONS.wave} Bienvenue ${escapeHtml(data.prenom)} !`;
     showToast(`Bienvenue ${data.prenom} !`, 'wave');
     setTimeout(() => window.location.href = 'dashboard.html', 1500);
 

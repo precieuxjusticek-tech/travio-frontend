@@ -6,7 +6,9 @@
    À remplacer plus tard par de vrais appels API (Firestore / server.js).
    ========================================================= */
 
-(function () {
+   import { escapeHtml, escapeJsAttr } from './sanitize.js';
+   
+   (function () {
   "use strict";
 
     // ---------------------------------------------------------
@@ -346,8 +348,8 @@
         <div class="history-item" data-index="${allItems.indexOf(h)}">
           <span class="history-item__status ${h.statut !== "valide" ? "history-item__status--rejected" : ""}"></span>
           <div class="history-item__body">
-            <div class="history-item__code">${h.code}</div>
-            <div class="history-item__meta">${h.passager} · ${h.type}</div>
+          <div class="history-item__code">${escapeHtml(h.code)}</div>
+          <div class="history-item__meta">${escapeHtml(h.passager)} · ${escapeHtml(h.type)}</div>
           </div>
           ${multiBadge}
           <span class="history-item__time">${h.heure}</span>
@@ -373,8 +375,8 @@
         (p) => `
         <div class="passenger-item">
           <div>
-            <div class="passenger-item__name">${p.nom}</div>
-            <div class="passenger-item__type">${p.type}</div>
+          <div class="passenger-item__name">${escapeHtml(p.nom)}</div>
+          <div class="passenger-item__type">${escapeHtml(p.type)}</div>
           </div>
           <span class="passenger-item__status ${entry.statut !== "valide" ? "passenger-item__status--rejected" : ""}">${entry.statut === "valide" ? "Validé" : "Refusé"}</span>
         </div>

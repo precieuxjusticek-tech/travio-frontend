@@ -7,6 +7,7 @@ import { BACKEND, agenceData } from './state.js';
 import { apiFetch } from './api.js';
 import { loadChauffeursListe } from './vehicules.js';
 import { showToast, togglePdvPassword, TOAST_ICONS } from './toast-utils.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
 // ════════════════════════════════
 //  STATE LOCAL (temporaire, en attendant state.js)
@@ -135,13 +136,13 @@ export function renderControleurCard(c) {
   const statusColor = c.actif ? 'var(--accent)' : '#FF4D6A';
 
   return `
-    <div class="controleur-card" onclick="openControleurDetail('${c.id}')">
-      <div class="pdv-card-header">
-        <div style="display:flex;align-items:center;gap:9px;min-width:0;flex:1;">
-          <div class="pdv-card-avatar" style="flex-shrink:0;background:rgba(166,124,255,0.15);border-color:rgba(166,124,255,0.2);color:#A67CFF;">${c.nom?.[0] || 'C'}</div>
-          <div style="min-width:0;">
-            <div class="pdv-card-name">${c.nom}</div>
-            <div style="font-size:11px;color:var(--muted);">${ICONS.phone} ${c.telephone || '—'}</div>
+  <div class="controleur-card" onclick="openControleurDetail('${escapeJsAttr(c.id)}')">
+  <div class="pdv-card-header">
+    <div style="display:flex;align-items:center;gap:9px;min-width:0;flex:1;">
+      <div class="pdv-card-avatar" style="flex-shrink:0;background:rgba(166,124,255,0.15);border-color:rgba(166,124,255,0.2);color:#A67CFF;">${escapeHtml(c.nom?.[0] || 'C')}</div>
+      <div style="min-width:0;">
+        <div class="pdv-card-name">${escapeHtml(c.nom)}</div>
+        <div style="font-size:11px;color:var(--muted);">${ICONS.phone} ${escapeHtml(c.telephone) || '—'}</div>
           </div>
         </div>
         <span class="pdv-status-badge ${statusClass}" style="flex-shrink:0;align-self:flex-start;white-space:nowrap;">
@@ -150,11 +151,11 @@ export function renderControleurCard(c) {
       </div>
       <div class="pdv-card-body">
         <div style="margin-bottom:10px;">
-          <div class="controleur-bus-badge">${ICONS.bus} ${c.busNom || 'Aucun bus assigné'}</div>
+        <div class="controleur-bus-badge">${ICONS.bus} ${escapeHtml(c.busNom) || 'Aucun bus assigné'}</div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:6px 8px;background:var(--surface2);border-radius:8px;margin-bottom:8px;">
           <span style="color:var(--muted);">${ICONS.person} Email connexion</span>
-          <span style="color:var(--white);font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.emailConnexion || '—'}</span>
+          <span style="color:var(--white);font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(c.emailConnexion) || '—'}</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
           <div style="background:var(--surface2);border-radius:8px;padding:7px;text-align:center;">
@@ -203,7 +204,7 @@ export function openCreateControleur() {
             <p class="pdv-field-hint">Un contrôleur ne peut être assigné qu'à un seul bus à la fois. Un bus peut avoir plusieurs contrôleurs.</p>
             <select class="pdv-select" id="ctrl-bus">
               <option value="">Sélectionner un bus</option>
-              ${BUS_MOCK.map(b => `<option value="${b.id}" data-nom="${b.nom}">${b.nom}</option>`).join('')}
+              ${BUS_MOCK.map(b => `<option value="${escapeHtml(b.id)}" data-nom="${escapeHtml(b.nom)}">${escapeHtml(b.nom)}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -327,16 +328,16 @@ export function openControleurDetail(controleurId) {
     <div class="pdv-overlay-backdrop" onclick="closeControleurDetail()"></div>
     <div class="pdv-overlay-panel pdv-detail-panel">
       <div class="pdv-overlay-header">
-        <div>
-          <h2>${c.nom}</h2>
-          <p>${ICONS.bus} ${c.busNom || 'Aucun bus assigné'}</p>
-        </div>
-        <button class="pdv-overlay-close" onclick="closeControleurDetail()">${ICONS.close}</button>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:16px;">
-        <div class="pdv-detail-row"><span class="pdv-detail-label">Téléphone</span><span class="pdv-detail-val">${c.telephone || '—'}</span></div>
-        <div class="pdv-detail-row"><span class="pdv-detail-label">Email connexion</span><span class="pdv-detail-val">${c.emailConnexion || '—'}</span></div>
-        <div class="pdv-detail-row" style="border-bottom:none;"><span class="pdv-detail-label">Bus assigné</span><span class="pdv-detail-val">${c.busNom || '—'}</span></div>
+      <div>
+      <h2>${escapeHtml(c.nom)}</h2>
+      <p>${ICONS.bus} ${escapeHtml(c.busNom) || 'Aucun bus assigné'}</p>
+    </div>
+    <button class="pdv-overlay-close" onclick="closeControleurDetail()">${ICONS.close}</button>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:16px;">
+    <div class="pdv-detail-row"><span class="pdv-detail-label">Téléphone</span><span class="pdv-detail-val">${escapeHtml(c.telephone) || '—'}</span></div>
+    <div class="pdv-detail-row"><span class="pdv-detail-label">Email connexion</span><span class="pdv-detail-val">${escapeHtml(c.emailConnexion) || '—'}</span></div>
+    <div class="pdv-detail-row" style="border-bottom:none;"><span class="pdv-detail-label">Bus assigné</span><span class="pdv-detail-val">${escapeHtml(c.busNom) || '—'}</span></div>
       </div>
       <div class="pdv-detail-actions">
         <button class="pdv-action-btn">${ICONS.edit} Modifier les infos</button>
@@ -406,10 +407,10 @@ export async function renderChauffeursPage() {
             <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
           <div class="bf-row-main">
-            <div class="bf-row-name">${c.nom || 'Chauffeur sans nom'}</div>
+            <div class="bf-row-name">${escapeHtml(c.nom) || 'Chauffeur sans nom'}</div>
             <div class="bf-row-meta">
-              <span class="bf-row-capacite">${ICONS.phone} ${c.tel}</span>
-              <span class="bf-row-capacite">${ICONS.bus} ${(c.bus || []).join(', ')}</span>
+              <span class="bf-row-capacite">${ICONS.phone} ${escapeHtml(c.tel)}</span>
+              <span class="bf-row-capacite">${ICONS.bus} ${(c.bus || []).map(escapeHtml).join(', ')}</span>
             </div>
           </div>
         </div>`).join('')}
@@ -472,15 +473,15 @@ export function openPartageLienPanel(lien) {
       </div>
 
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:12px;color:var(--muted);word-break:break-all;">
-        ${lien}
+        ${escapeHtml(lien)}
       </div>
 
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <button class="pdv-action-btn" onclick="copierLienChauffeur('${lien}')">
+      <button class="pdv-action-btn" onclick="copierLienChauffeur('${escapeJsAttr(lien)}')">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:6px;"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 11V3a1 1 0 011-1h8" stroke="currentColor" stroke-width="1.4"/></svg>
           Copier le lien
         </button>
-        <button class="pdv-action-btn" onclick="envoyerLienChauffeurWhatsapp('${lien}')">
+        <button class="pdv-action-btn" onclick="envoyerLienChauffeurWhatsapp('${escapeJsAttr(lien)}')">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:6px;"><path d="M8 1a7 7 0 00-6 10.6L1 15l3.5-1A7 7 0 108 1z" stroke="currentColor" stroke-width="1.4"/></svg>
           Envoyer via WhatsApp
         </button>

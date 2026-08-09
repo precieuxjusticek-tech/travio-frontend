@@ -1,6 +1,7 @@
 // ─── TRAVIO — Moteur de génération des billets (partagé) ───
 // Ne fait ni sauvegarde ni impression : juste "donne-moi le HTML d'un billet".
 
+import { escapeHtml } from './sanitize.js';
 export const TICKET_CSS = `
 <style id="ticketPreviewStyles">
   .tp-navy{color:#0B1220;}
@@ -134,6 +135,24 @@ export function buildTicketHTML(format, design, data = {}) {
     delaiFormalite = null,
   } = data;
 
+  const safeNomAgence    = escapeHtml(nomAgence);
+  const safeVilleAgence  = escapeHtml(villeAgence);
+  const safeLogoUrl      = logoUrl ? escapeHtml(logoUrl) : null;
+  const safeSlogan       = escapeHtml(slogan);
+  const safeVilleDepart  = escapeHtml(villeDepart);
+  const safeVilleArrivee = escapeHtml(villeArrivee);
+  const safeDateLabel    = escapeHtml(dateLabel);
+  const safeHeureDepart  = escapeHtml(heureDepart);
+  const safeBusNom       = escapeHtml(busNom);
+  const safeSiege        = escapeHtml(siege);
+  const safePrix         = escapeHtml(prix);
+  const safeAgentNom     = escapeHtml(agentNom);
+  const safeCodeControle = codeControle ? escapeHtml(codeControle) : null;
+  const safePassagerNom  = escapeHtml(passagerNom);
+  const safeBagagesLabel = bagagesLabel ? escapeHtml(bagagesLabel) : null;
+  const safePdvEmbarquementNom   = pdvEmbarquementNom ? escapeHtml(pdvEmbarquementNom) : null;
+  const safePdvDebarquementNom   = pdvDebarquementNom ? escapeHtml(pdvDebarquementNom) : null;
+  
   const initiales = getInitiales(nomAgence);
 
   if (format === 'a4a5') {
@@ -141,41 +160,41 @@ export function buildTicketHTML(format, design, data = {}) {
       <div class="tp-a5 tp-${design}">
         <div class="tp-head">
           <div class="tp-head-top">
-            ${logoUrl
-              ? `<img class="tp-logo" src="${logoUrl}" alt="${nomAgence}">`
-              : `<div class="tp-logo-fallback">${initiales}</div>`}
+            ${safeLogoUrl
+              ? `<img class="tp-logo" src="${safeLogoUrl}" alt="${safeNomAgence}">`
+              : `<div class="tp-logo-fallback">${escapeHtml(initiales)}</div>`}
             <div class="tp-agence-block">
-              <div class="tp-agence-nom">${nomAgence}</div>
-              ${slogan ? `<div class="tp-slogan">${slogan}</div>` : ''}
+              <div class="tp-agence-nom">${safeNomAgence}</div>
+              ${safeSlogan ? `<div class="tp-slogan">${safeSlogan}</div>` : ''}
             </div>
           </div>
-          ${villeAgence ? `<div class="tp-agence-tag">${villeAgence}</div>` : ''}
+          ${safeVilleAgence ? `<div class="tp-agence-tag">${safeVilleAgence}</div>` : ''}
         </div>
         <div class="tp-body">
           <div class="tp-route">
-            <span class="tp-city">${villeDepart}</span>
+            <span class="tp-city">${safeVilleDepart}</span>
             <span class="tp-arrow">→</span>
-            <span class="tp-city">${villeArrivee}</span>
+            <span class="tp-city">${safeVilleArrivee}</span>
           </div>
           <div class="tp-info-grid">
-            <div style="grid-column:1/-1;"><div class="tp-k">Passager</div><div class="tp-v">${passagerNom}</div></div>
-            <div><div class="tp-k">Date</div><div class="tp-v">${dateLabel}</div></div>
-            <div><div class="tp-k">Départ</div><div class="tp-v">${heureDepart}</div></div>
-            <div><div class="tp-k">Bus / Siège</div><div class="tp-v">${busNom}${siege ? ' — ' + siege : ''}</div></div>
+            <div style="grid-column:1/-1;"><div class="tp-k">Passager</div><div class="tp-v">${safePassagerNom}</div></div>
+            <div><div class="tp-k">Date</div><div class="tp-v">${safeDateLabel}</div></div>
+            <div><div class="tp-k">Départ</div><div class="tp-v">${safeHeureDepart}</div></div>
+            <div><div class="tp-k">Bus / Siège</div><div class="tp-v">${safeBusNom}${safeSiege ? ' — ' + safeSiege : ''}</div></div>
             <div><div class="tp-k">Voyageurs</div><div class="tp-v">${nbVoyageurs}</div></div>
-            ${bagagesLabel ? `<div><div class="tp-k">Bagages</div><div class="tp-v">${bagagesLabel}</div></div>` : ''}
-            <div><div class="tp-k">Embarquement</div><div class="tp-v">${pdvEmbarquementNom || '—'}</div></div>
-            <div><div class="tp-k">Débarquement</div><div class="tp-v">${pdvDebarquementNom || '—'}</div></div>
-            ${delaiFormalite ? `<div style="grid-column:1/-1;"><div class="tp-k">Présentation</div><div class="tp-v">${formatDelaiFormalite(delaiFormalite)}</div></div>` : ''}
-            <div style="grid-column:1/-1;"><div class="tp-k">Prix total</div><div class="tp-v">${prix}</div></div>
+            ${safeBagagesLabel ? `<div><div class="tp-k">Bagages</div><div class="tp-v">${safeBagagesLabel}</div></div>` : ''}
+            <div><div class="tp-k">Embarquement</div><div class="tp-v">${safePdvEmbarquementNom || '—'}</div></div>
+            <div><div class="tp-k">Débarquement</div><div class="tp-v">${safePdvDebarquementNom || '—'}</div></div>
+            ${delaiFormalite ? `<div style="grid-column:1/-1;"><div class="tp-k">Présentation</div><div class="tp-v">${escapeHtml(formatDelaiFormalite(delaiFormalite))}</div></div>` : ''}
+            <div style="grid-column:1/-1;"><div class="tp-k">Prix total</div><div class="tp-v">${safePrix}</div></div>
           </div>
-          ${codeControle
-            ? `<div class="tp-stamp" style="letter-spacing:2px;font-weight:700;">${codeControle}</div>`
+          ${safeCodeControle
+            ? `<div class="tp-stamp" style="letter-spacing:2px;font-weight:700;">${safeCodeControle}</div>`
             : (design === 'colore' ? `<div class="tp-stamp">Cachet de l'agence</div>` : '')}
-          ${politiqueAnnulation ? `<div class="tp-politique">${formatPolitiqueCourte(politiqueAnnulation)}</div>` : ''}
+          ${politiqueAnnulation ? `<div class="tp-politique">${escapeHtml(formatPolitiqueCourte(politiqueAnnulation))}</div>` : ''}
         </div>
         <div class="tp-foot">
-          <span>Agent : ${agentNom}</span>
+          <span>Agent : ${safeAgentNom}</span>
           <span class="tp-foot-brand">Propulsé par Travio</span>
         </div>
       </div>`;
@@ -183,31 +202,31 @@ export function buildTicketHTML(format, design, data = {}) {
 
   // format thermique
   return `
-    <div class="tp-thermal tp-${design}">
-      <div class="tp-t-logo-row">
-        ${logoUrl
-          ? `<img class="tp-t-logo" src="${logoUrl}" alt="${nomAgence}">`
-          : `<div class="tp-t-logo-fallback">${initiales}</div>`}
-      </div>
-      <div class="tp-t-brand">${nomAgence}</div>
-      ${slogan ? `<div class="tp-t-slogan">${slogan}</div>` : ''}
-      ${villeAgence ? `<div class="tp-t-agence">${villeAgence}</div>` : ''}
-      <hr>
-      <div class="tp-t-row"><span>Passager</span><span>${passagerNom}</span></div>
-      <div class="tp-t-route">${villeDepart.toUpperCase()} → ${villeArrivee.toUpperCase()}</div>
-      <div class="tp-t-row"><span>Date</span><span>${dateLabel}</span></div>
-      <div class="tp-t-row"><span>Départ</span><span>${heureDepart}</span></div>
-      <div class="tp-t-row"><span>Bus/Siège</span><span>${busNom}${siege ? ' / ' + siege : ''}</span></div>
-      <div class="tp-t-row"><span>Voyageurs</span><span>${nbVoyageurs}</span></div>
-      ${bagagesLabel ? `<div class="tp-t-row"><span>Bagages</span><span>${bagagesLabel}</span></div>` : ''}
-      <div class="tp-t-row"><span>Embarq.</span><span>${pdvEmbarquementNom || '—'}</span></div>
-      <div class="tp-t-row"><span>Débarq.</span><span>${pdvDebarquementNom || '—'}</span></div>
-      ${delaiFormalite ? `<div class="tp-t-row"><span>Présentation</span><span>${formatDelaiFormalite(delaiFormalite)}</span></div>` : ''}
-      <div class="tp-t-row"><span>Prix total</span><span>${prix}</span></div>
-      ${codeControle ? `<div class="tp-t-row"><span>Code</span><span>${codeControle}</span></div>` : ''}
-      ${politiqueAnnulation ? `<div class="tp-t-politique">${formatPolitiqueCourte(politiqueAnnulation)}</div>` : ''}
-      <div class="tp-t-foot">Agent : ${agentNom}<br>Propulsé par Travio</div>
-    </div>`;
+  <div class="tp-thermal tp-${design}">
+    <div class="tp-t-logo-row">
+      ${safeLogoUrl
+        ? `<img class="tp-t-logo" src="${safeLogoUrl}" alt="${safeNomAgence}">`
+        : `<div class="tp-t-logo-fallback">${escapeHtml(initiales)}</div>`}
+    </div>
+    <div class="tp-t-brand">${safeNomAgence}</div>
+    ${safeSlogan ? `<div class="tp-t-slogan">${safeSlogan}</div>` : ''}
+    ${safeVilleAgence ? `<div class="tp-t-agence">${safeVilleAgence}</div>` : ''}
+    <hr>
+    <div class="tp-t-row"><span>Passager</span><span>${safePassagerNom}</span></div>
+    <div class="tp-t-route">${safeVilleDepart.toUpperCase()} → ${safeVilleArrivee.toUpperCase()}</div>
+    <div class="tp-t-row"><span>Date</span><span>${safeDateLabel}</span></div>
+    <div class="tp-t-row"><span>Départ</span><span>${safeHeureDepart}</span></div>
+    <div class="tp-t-row"><span>Bus/Siège</span><span>${safeBusNom}${safeSiege ? ' / ' + safeSiege : ''}</span></div>
+    <div class="tp-t-row"><span>Voyageurs</span><span>${nbVoyageurs}</span></div>
+    ${safeBagagesLabel ? `<div class="tp-t-row"><span>Bagages</span><span>${safeBagagesLabel}</span></div>` : ''}
+    <div class="tp-t-row"><span>Embarq.</span><span>${safePdvEmbarquementNom || '—'}</span></div>
+    <div class="tp-t-row"><span>Débarq.</span><span>${safePdvDebarquementNom || '—'}</span></div>
+    ${delaiFormalite ? `<div class="tp-t-row"><span>Présentation</span><span>${escapeHtml(formatDelaiFormalite(delaiFormalite))}</span></div>` : ''}
+    <div class="tp-t-row"><span>Prix total</span><span>${safePrix}</span></div>
+    ${safeCodeControle ? `<div class="tp-t-row"><span>Code</span><span>${safeCodeControle}</span></div>` : ''}
+    ${politiqueAnnulation ? `<div class="tp-t-politique">${escapeHtml(formatPolitiqueCourte(politiqueAnnulation))}</div>` : ''}
+    <div class="tp-t-foot">Agent : ${safeAgentNom}<br>Propulsé par Travio</div>
+  </div>`;
 }
 
 function formatPolitiqueCourte(pol) {

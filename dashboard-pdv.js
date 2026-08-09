@@ -5,7 +5,7 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { initInstallPrompt } from './install-prompt.js';
 import { apiFetch } from './api.js';
 import { initBackGuard } from './back-guard.js';
-import { escapeHtml } from './sanitize.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
 import * as StatePdv from './pdv-modules/state-pdv.js';
 import {
@@ -169,7 +169,7 @@ function renderAccueilVentes() {
     const estAujourdhui = toBrazzaDate(r.createdAt) === today;
 
     return `
-      <div class="vente-row" style="cursor:pointer;${estAujourdhui ? 'border-left:3px solid var(--accent);padding-left:9px;' : ''}" onclick="openResaDetail('${r.id}')">
+    <div class="vente-row" style="cursor:pointer;${estAujourdhui ? 'border-left:3px solid var(--accent);padding-left:9px;' : ''}" onclick="openResaDetail('${escapeJsAttr(r.id)}')">
         <div class="vente-row-info">
           <div class="vente-row-name">
             ${estAujourdhui ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle;"></span>` : ''}

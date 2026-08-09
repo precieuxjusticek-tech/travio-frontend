@@ -5,6 +5,7 @@ import { ensureCssInjected, buildTicketHTML, formatFromMode } from './billet-tem
 import { showToast, TOAST_ICONS } from './toast-utils.js';
 // À ajouter avec les autres imports
 import { apiFetch } from './api.js';
+import { escapeHtml } from './sanitize.js';
 
 const MANUAL_PREVIEW_CSS = `
 <style id="manualPreviewStyles">
@@ -38,8 +39,8 @@ function ensureManualCssInjected() {
 }
 
 function buildManualPreviewHTML() {
-  const nomAgence   = agenceData?.nom   || 'Votre agence';
-  const villeAgence = agenceData?.ville || '';
+  const nomAgence   = escapeHtml(agenceData?.nom   || 'Votre agence');
+  const villeAgence = escapeHtml(agenceData?.ville || '');
   return `
     <div class="mp-phone">
       <div class="mp-topbar">
