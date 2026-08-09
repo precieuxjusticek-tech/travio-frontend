@@ -552,7 +552,8 @@ export function updatePrixPreview() {
   blocks.forEach((block, i) => {
     const type    = block.querySelector('.p-type')?.value || 'adulte';
     const bagages = parseFloat(block.querySelector('.p-bagages')?.value || 0);
-    const prixColisSoute = block.querySelector('.p-colis-soute-toggle')?.checked
+    const colisSouteCheck = !!block.querySelector('.p-colis-soute-toggle')?.checked;
+    const prixColisSoute = colisSouteCheck
       ? Number(block.querySelector('.p-colis-soute-prix')?.value || 0)
       : 0;
 
@@ -808,12 +809,13 @@ export function showVenteRecap() {
       ? (t._segmentPrixParType?.[type] || 0)
       : (t.prixParType?.[type] || 0);
 
-    const prixColisSoute = block.querySelector('.p-colis-soute-toggle')?.checked
-      ? Number(block.querySelector('.p-colis-soute-prix')?.value || 0)
-      : 0;
-    const colisSouteNature = escapeHtml(block.querySelector('.p-colis-soute-nature')?.value.trim() || '') || null;
-    const colisSoutePoids = parseFloat(block.querySelector('.p-colis-soute-poids')?.value) || null;
-    const colisSouteValeur = parseFloat(block.querySelector('.p-colis-soute-valeur')?.value) || null;
+      const colisSouteCheck = !!block.querySelector('.p-colis-soute-toggle')?.checked;
+      const prixColisSoute = colisSouteCheck
+        ? Number(block.querySelector('.p-colis-soute-prix')?.value || 0)
+        : 0;
+      const colisSouteNature = escapeHtml(block.querySelector('.p-colis-soute-nature')?.value.trim() || '') || null;
+      const colisSoutePoids = parseFloat(block.querySelector('.p-colis-soute-poids')?.value) || null;
+      const colisSouteValeur = parseFloat(block.querySelector('.p-colis-soute-valeur')?.value) || null;
 
     const excesBag  = bagages > (t.limiteBagages || 0) ? Math.max(0, bagages - (t.limiteBagages || 0)) : 0;
     const prixBag   = excesBag * (t.fraisExcesBagages || 0);
@@ -828,8 +830,8 @@ export function showVenteRecap() {
         <div class="recap-row"><span>Type</span><strong>${nomType(type)} <small style="color:var(--muted);">(${ageRangeLabel(type)})</small></strong></div>
         ${siege !== '—' ? `<div class="recap-row"><span>Siège</span><strong>${siege}</strong></div>` : ''}
         ${bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${bagages} kg${nombreBagages > 0 ? ` · ${nombreBagages} colis` : ''}${prixBag > 0 ? ` (+${Number(prixBag).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
-        ${prixColisSoute > 0 ? `
-          <div class="recap-row"><span>Colis en soute</span><strong>${colisSouteNature || '—'} (${Number(prixColisSoute).toLocaleString()} XAF)</strong></div>
+        ${colisSouteCheck ? `
+          <div class="recap-row"><span>Colis en soute</span><strong>${colisSouteNature || '—'}${prixColisSoute > 0 ? ` (${Number(prixColisSoute).toLocaleString()} XAF)` : ''}</strong></div>
           ${colisSoutePoids ? `<div class="recap-row"><span>Poids du colis</span><strong>${colisSoutePoids} kg</strong></div>` : ''}
           ${colisSouteValeur ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(colisSouteValeur).toLocaleString()} XAF</strong></div>` : ''}
         ` : ''}
