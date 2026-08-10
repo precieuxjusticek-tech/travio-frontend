@@ -5,6 +5,7 @@ import { loadDeparts, invalidateDeparts, invalidateAllDepartsCache, renderDepart
 import { loadBusSessions } from './sessions.js';
 import { showToast, showToastAction, toggleTousJours, toggleJour, TOAST_ICONS } from './toast-utils.js';
 import { apiFetch } from './api.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -48,13 +49,13 @@ export async function openCreateDepart(trajetId) {
 
     const html = Object.entries(parVille).map(([ville, arrets]) => `
       <div style="margin-bottom:10px;">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">${ICONS.pin} ${ville}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">${ICONS.pin} ${escapeHtml(ville)}</div>
         <div style="display:flex;flex-direction:column;gap:6px;padding-left:8px;border-left:2px solid var(--border2);">
           ${arrets.map(a => `
             <label class="pdv-multi-item">
-              <input type="checkbox" value="${a._index}" data-nom="${a.nom}" data-id="${a.id || ''}" data-type="${a.type}" class="arret-actif-check" checked>
+              <input type="checkbox" value="${a._index}" data-nom="${escapeHtml(a.nom)}" data-id="${escapeHtml(a.id || '')}" data-type="${escapeHtml(a.type)}" class="arret-actif-check" checked>
               <span class="pdv-multi-label">
-                <strong>${a.nom}</strong>
+                <strong>${escapeHtml(a.nom)}</strong>
                 <small>${a.type === 'pdv' ? 'PDV' : 'Lieu'}</small>
               </span>
             </label>`).join('')}
@@ -78,7 +79,7 @@ export async function openCreateDepart(trajetId) {
       <div class="pdv-overlay-header">
         <div>
           <h2>${ICONS.bus} Ajouter un bus</h2>
-          <p>${trajet ? trajet.villeDepart + ' → ' + trajet.villeArrivee : ''}</p>
+          <p>${trajet ? escapeHtml(trajet.villeDepart) + ' → ' + escapeHtml(trajet.villeArrivee) : ''}</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeCreateDepart()">${ICONS.close}</button>
       </div>
@@ -89,7 +90,7 @@ export async function openCreateDepart(trajetId) {
             <option value="">Sélectionner un véhicule</option>
             ${vehiculeList.map(v => {
               const dejaPris = vehiculesDejaPris.includes(v.id);
-              return `<option value="${v.id}" data-nom="${v.nom}" data-type="${v.type}" data-capacite="${v.capacite}" ${dejaPris ? 'disabled' : ''}>${v.nom} · ${v.type} · ${v.capacite} places${dejaPris ? ' (déjà sur ce trajet)' : ''}</option>`;
+              return `<option value="${v.id}" data-nom="${escapeHtml(v.nom)}" data-type="${escapeHtml(v.type)}" data-capacite="${v.capacite}" ${dejaPris ? 'disabled' : ''}>${escapeHtml(v.nom)} · ${escapeHtml(v.type)} · ${v.capacite} places${dejaPris ? ' (déjà sur ce trajet)' : ''}</option>`;
             }).join('')}
           </select>
           <p class="pdv-field-hint" id="cd-no-vehicule-hint" style="${vehiculeList.filter(v => !vehiculesDejaPris.includes(v.id)).length === 0 ? '' : 'display:none;'}">
@@ -301,15 +302,15 @@ export function openEditDepart(departId, trajetId) {
 
       const arretsHtml = Object.entries(parVille).map(([ville, arrets]) => `
         <div style="margin-bottom:10px;">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">${ICONS.pin} ${ville}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">${ICONS.pin} ${escapeHtml(ville)}</div>
           <div style="display:flex;flex-direction:column;gap:6px;padding-left:8px;border-left:2px solid var(--border2);">
             ${arrets.map(a => {
               const actif = (d.arretsActifs || []).some(aa => aa.nom === a.nom);
               return `
                 <label class="pdv-multi-item">
-                  <input type="checkbox" value="${a._index}" data-nom="${a.nom}" class="arret-actif-check" ${actif ? 'checked' : ''}>
+                  <input type="checkbox" value="${a._index}" data-nom="${escapeHtml(a.nom)}" class="arret-actif-check" ${actif ? 'checked' : ''}>
                   <span class="pdv-multi-label">
-                    <strong>${a.nom}</strong>
+                    <strong>${escapeHtml(a.nom)}</strong>
                     <small>${a.type === 'pdv' ? 'PDV' : 'Lieu'}</small>
                   </span>
                 </label>`;
@@ -331,13 +332,13 @@ export function openEditDepart(departId, trajetId) {
         <div class="pdv-overlay-backdrop" onclick="closeEditDepart()"></div>
         <div class="pdv-overlay-panel" style="max-width:560px;">
           <div class="pdv-overlay-header">
-            <div><h2>${ICONS.edit} Modifier le bus</h2><p>${d.busNom}</p></div>
+          <div><h2>${ICONS.edit} Modifier le bus</h2><p>${escapeHtml(d.busNom)}</p></div>
             <button class="pdv-overlay-close" onclick="closeEditDepart()">${ICONS.close}</button>
           </div>
           <div class="pdv-create-fields">
             <div class="pdv-field-group">
               <label>Nom du bus <span class="req">*</span></label>
-              <input type="text" class="pdv-input" id="ed-bus-nom" value="${d.busNom || ''}">
+              <input type="text" class="pdv-input" id="ed-bus-nom" value="${escapeHtml(d.busNom || '')}">
             </div>
             <div class="pdv-field-group">
               <label>Type <span class="req">*</span></label>
@@ -501,7 +502,7 @@ export function confirmDeleteDepart(departId, trajetId, busNom) {
       <div class="pdv-confirm-icon">${ICONS.trash}</div>
       <h2>Supprimer ce bus ?</h2>
       <p>
-        Vous allez supprimer <strong>${busNom}</strong> de ce trajet.<br><br>
+      Vous allez supprimer <strong>${escapeHtml(busNom)}</strong> de ce trajet.<br><br>
         <span style="color:var(--accent);">Sessions passées :</span> conservées dans l'historique (1 an).<br>
         <span style="color:#FF4D6A;">Sessions futures :</span> supprimées définitivement.
       </p>
@@ -642,7 +643,7 @@ export async function openBusDetail(departId, trajetId) {
     <div class="pdv-overlay-panel" style="max-width:560px;">
       <div class="pdv-overlay-header">
         <div>
-          <h2>${ICONS.bus} ${depart.busNom}</h2>
+        <h2>${ICONS.bus} ${escapeHtml(depart.busNom)}</h2>
           <p>${depart.busType} · ${depart.busCapacite} places</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeBusDetail()">${ICONS.close}</button>
@@ -664,13 +665,13 @@ export async function openBusDetail(departId, trajetId) {
         </button>
         <button class="pdv-action-btn ${depart.actif !== false ? 'danger' : ''}"
           onclick="${depart.vehiculeId
-            ? `openScopeChoice({action:'statut', departId:'${departId}', trajetId:'${trajetId}', vehiculeId:'${depart.vehiculeId}', busNom:'${depart.busNom}', nouvelEtat:${depart.actif === false}})`
+            ? `openScopeChoice({action:'statut', departId:'${departId}', trajetId:'${trajetId}', vehiculeId:'${depart.vehiculeId}', busNom:'${escapeJsAttr(depart.busNom)}', nouvelEtat:${depart.actif === false}})`
             : `toggleDepartStatut('${departId}', '${trajetId}', ${depart.actif !== false})`}">
           ${depart.actif !== false ? ICONS.stop + ' Désactiver le bus' : ICONS.play + ' Activer le bus'}
         </button>
         <button class="pdv-action-btn delete" onclick="${depart.vehiculeId
-            ? `closeBusDetail();openScopeChoice({action:'delete', departId:'${departId}', trajetId:'${trajetId}', vehiculeId:'${depart.vehiculeId}', busNom:'${depart.busNom}'})`
-            : `closeBusDetail();confirmDeleteDepart('${departId}', '${trajetId}', '${depart.busNom}')`}">${ICONS.trash} Supprimer le bus</button>
+          ? `closeBusDetail();openScopeChoice({action:'delete', departId:'${departId}', trajetId:'${trajetId}', vehiculeId:'${depart.vehiculeId}', busNom:'${escapeJsAttr(depart.busNom)}'})`
+          : `closeBusDetail();confirmDeleteDepart('${departId}', '${trajetId}', '${escapeJsAttr(depart.busNom)}')`}">${ICONS.trash} Supprimer le bus</button>
       </div>
 
       <h3 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--white);margin-bottom:10px;">${ICONS.calendar} Sessions</h3>
@@ -773,8 +774,8 @@ function renderResolutionSessions() {
 
       shortcutWrap.innerHTML = `
         ${busCommun ? `
-        <button class="pdv-action-btn" style="width:100%;margin-bottom:14px;" onclick="toutReaffecterVersResolution('${busCommun.departId}','${busCommun.busNom}')">
-          ${ICONS.refresh} Tout réaffecter vers ${busCommun.busNom}
+        <button class="pdv-action-btn" style="width:100%;margin-bottom:14px;" onclick="toutReaffecterVersResolution('${busCommun.departId}','${escapeJsAttr(busCommun.busNom)}')">
+        ${ICONS.refresh} Tout réaffecter vers ${escapeHtml(busCommun.busNom)}
         </button>` : ''}
         ${sessionsSansBus.length > 0 ? `
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
@@ -808,7 +809,7 @@ function renderResolutionSessions() {
     <div class="resolution-session-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div>
-          <div style="font-size:13px;font-weight:700;color:var(--white);">${s.busNom || ''} · ${s.date} · ${s.heureDepart}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(s.busNom || '')} · ${escapeHtml(s.date)} · ${escapeHtml(s.heureDepart)}</div>
           <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${s.nbReservations} réservation${s.nbReservations > 1 ? 's' : ''}</div>
         </div>
         ${!suppressionTotale ? `
@@ -819,7 +820,7 @@ function renderResolutionSessions() {
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         ${(!suppressionTotale && s.busesDisponibles.length > 0) ? `
         <select class="pdv-select resolution-bus-select" id="resolutionSelect-${s.sessionId}" style="flex:1;min-width:180px;">
-          ${s.busesDisponibles.map(b => `<option value="${b.departId}">${b.busNom} · ${b.heureDepart || ''} · ${b.placesLibres} place${b.placesLibres > 1 ? 's' : ''} libre${b.placesLibres > 1 ? 's' : ''}</option>`).join('')}
+        ${s.busesDisponibles.map(b => `<option value="${b.departId}">${escapeHtml(b.busNom)} · ${escapeHtml(b.heureDepart || '')} · ${b.placesLibres} place${b.placesLibres > 1 ? 's' : ''} libre${b.placesLibres > 1 ? 's' : ''}</option>`).join('')}
         </select>
         <button class="pdv-action-btn" style="flex-shrink:0;" onclick="reaffecterSessionResolution('${s.sessionId}')">
           ${ICONS.refresh} Réaffecter
@@ -833,7 +834,7 @@ function renderResolutionSessions() {
   list.innerHTML = ordreGroupes.map((key, idx) => {
     const items = groupes[key];
     const trajet = key !== 'sans-trajet' ? trajetList.find(t => t.id === key) : null;
-    const titreGroupe = trajet ? `${trajet.villeDepart} → ${trajet.villeArrivee}` : 'Trajet inconnu';
+    const titreGroupe = trajet ? `${escapeHtml(trajet.villeDepart)} → ${escapeHtml(trajet.villeArrivee)}` : 'Trajet inconnu';
 
     return `
       <div>
@@ -913,7 +914,7 @@ export async function annulerSessionResolution(sessionId) {
       <div class="pdv-overlay-header">
         <div>
           <h2>${ICONS.stop} Annuler ces réservations ?</h2>
-          <p>${s ? `${s.date} ${s.heureDepart ? 'à ' + s.heureDepart : ''}` : ''}</p>
+          <p>${s ? `${escapeHtml(s.date)} ${s.heureDepart ? 'à ' + escapeHtml(s.heureDepart) : ''}` : ''}</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeConfirmAnnulerSession()">${ICONS.close}</button>
       </div>
@@ -935,8 +936,8 @@ export async function annulerSessionResolution(sessionId) {
     const rowsHTML = reservations.map(r => `
       <div class="pdv-detail-row">
         <div>
-          <div style="font-size:13px;font-weight:600;color:var(--white);">${r.prenomPassager || ''} ${r.nomPassager || ''}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${r.telephonePassager || '—'} · ${r.nbPassagers} place${r.nbPassagers > 1 ? 's' : ''}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(r.prenomPassager || '')} ${escapeHtml(r.nomPassager || '')}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${escapeHtml(r.telephonePassager || '—')} · ${r.nbPassagers} place${r.nbPassagers > 1 ? 's' : ''}</div>
         </div>
         <div style="text-align:right;">
           <div style="font-size:12px;color:var(--white);">${r.prixTotal.toLocaleString()} XAF</div>

@@ -3,6 +3,7 @@
 import { auth } from './firebase-client.js';
 import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { showToast, TOAST_ICONS } from './toast-utils.js';
+import { escapeHtml } from './sanitize.js';
 
 // ════════════════════════════════
 //  PAGE LOADER
@@ -29,7 +30,7 @@ export function setUserUI(data) {
 
   if (sidebarName)   sidebarName.textContent  = `${prenom} ${nom}`.trim();
   if (sidebarAvatar) sidebarAvatar.textContent = initiale;
-  if (greeting)      greeting.innerHTML        = `Bonjour ${prenom} <svg width="20" height="20" viewBox="0 0 16 16" fill="none" style="vertical-align:-3px;"><path d="M8 1a2 2 0 012 2v4M8 1a2 2 0 00-2 2v5M11 5a1.3 1.3 0 012.6 0v3M6 7a1.3 1.3 0 00-2.6 0v1.5c0 3 2 5.5 5 5.5h1c2.5 0 4.5-2 4.5-4.5V7a1.3 1.3 0 00-2.6 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  if (greeting)      greeting.innerHTML        = `Bonjour ${escapeHtml(prenom)} <svg width="20" height="20" viewBox="0 0 16 16" fill="none" style="vertical-align:-3px;"><path d="M8 1a2 2 0 012 2v4M8 1a2 2 0 00-2 2v5M11 5a1.3 1.3 0 012.6 0v3M6 7a1.3 1.3 0 00-2.6 0v1.5c0 3 2 5.5 5 5.5h1c2.5 0 4.5-2 4.5-4.5V7a1.3 1.3 0 00-2.6 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 // ════════════════════════════════

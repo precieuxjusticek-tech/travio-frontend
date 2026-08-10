@@ -1,6 +1,7 @@
 // ─── TRAVIO — Agence (onboarding, profil, édition) ───
 
 import { BACKEND, agenceData, setAgenceData, currentUser, uploadedLogo, setUploadedLogo, uploadedPhotos, setUploadedPhotos, currentStep, setCurrentStep, editNewLogo, setEditNewLogo, editPhotosToDelete, setEditPhotosToDelete, editPhotosToAdd, setEditPhotosToAdd, pdvList } from './state.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 import { showToast, setBtnLoading, TOAST_ICONS } from './toast-utils.js';
 import { updateBilletConfigBadge } from './billet-config.js';
 import { loadTrajets } from './trajets.js';
@@ -50,8 +51,8 @@ export function updateAgenceUI(data) {
   const topbarLogo = document.getElementById('topbarAgenceLogo');
   if (topbarLogo) {
     topbarLogo.innerHTML = data.logoUrl
-      ? `<img src="${data.logoUrl}" style="width:100%;height:100%;object-fit:cover;">`
-      : (data.nom?.[0] || '?');
+      ? `<img src="${escapeHtml(data.logoUrl)}" style="width:100%;height:100%;object-fit:cover;">`
+      : escapeHtml(data.nom?.[0] || '?');
   }
   const subtitle = document.getElementById('overviewAgence');
   if (subtitle) subtitle.textContent = `${data.nom} — Voici ce qui se passe aujourd'hui.`;
@@ -88,11 +89,11 @@ export function renderAgenceProfile(data) {
 
   const pointsList = [data.point1, data.point2, data.point3]
     .filter(Boolean)
-    .map(p => `<div class="agence-point-item"><div class="agence-point-bullet"></div>${p}</div>`)
+    .map(p => `<div class="agence-point-item"><div class="agence-point-bullet"></div>${escapeHtml(p)}</div>`)
     .join('');
 
   const photosStrip = (data.photos && data.photos.length)
-    ? data.photos.map(url => `<div class="agence-photo-item"><img src="${url}" alt="Photo agence"></div>`).join('')
+  ? data.photos.map(url => `<div class="agence-photo-item"><img src="${escapeHtml(url)}" alt="Photo agence"></div>`).join('')
     : `<div class="agence-photo-item" style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;width:100%">Aucune photo ajoutée</div>`;
 
   container.innerHTML = `
@@ -100,39 +101,39 @@ export function renderAgenceProfile(data) {
       <div class="agence-photos-strip">${photosStrip}</div>
       <div class="agence-hero-info">
         <div class="agence-logo-wrap">
-          ${data.logoUrl ? `<img src="${data.logoUrl}" alt="${data.nom}">` : data.nom?.[0] || '?'}
+        ${data.logoUrl ? `<img src="${escapeHtml(data.logoUrl)}" alt="${escapeHtml(data.nom)}">` : escapeHtml(data.nom?.[0] || '?')}
         </div>
         <div class="agence-hero-text">
-          <div class="agence-hero-name">${data.nom || '—'}</div>
-          ${data.slogan ? `<div class="agence-hero-slogan">"${data.slogan}"</div>` : ''}
+          <div class="agence-hero-name">${escapeHtml(data.nom || '—')}</div>
+          ${data.slogan ? `<div class="agence-hero-slogan">"${escapeHtml(data.slogan)}"</div>` : ''}
           <div class="agence-hero-meta">
             <span class="agence-meta-tag">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1a5 5 0 00-5 5c0 3.5 5 9 5 9s5-5.5 5-9a5 5 0 00-5-5z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
-              ${data.ville || '—'}, ${data.pays || 'Congo Brazzaville'}
+              ${escapeHtml(data.ville || '—')}, ${escapeHtml(data.pays || 'Congo Brazzaville')}
             </span>
             ${data.telephone ? `<span class="agence-meta-tag">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 2h3l1.5 3.5-2 1.2A8.5 8.5 0 009.3 10.5l1.2-2L14 10v3a1 1 0 01-1 1A12 12 0 012 3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/></svg>
-              ${data.telephone}
+              ${escapeHtml(data.telephone)}
             </span>` : ''}
-            ${data.anneeCreation ? `<span class="agence-meta-tag">Depuis ${data.anneeCreation}</span>` : ''}
+            ${data.anneeCreation ? `<span class="agence-meta-tag">Depuis ${escapeHtml(String(data.anneeCreation))}</span>` : ''}
           </div>
         </div>
       </div>
     </div>
     <div class="agence-info-grid">
-      ${data.description ? `<div class="agence-info-card"><h4>Description</h4><p>${data.description}</p></div>` : ''}
-      ${data.histoire    ? `<div class="agence-info-card"><h4>Notre histoire</h4><p>${data.histoire}</p></div>` : ''}
+    ${data.description ? `<div class="agence-info-card"><h4>Description</h4><p>${escapeHtml(data.description)}</p></div>` : ''}
+      ${data.histoire    ? `<div class="agence-info-card"><h4>Notre histoire</h4><p>${escapeHtml(data.histoire)}</p></div>` : ''}
       ${pointsList       ? `<div class="agence-info-card"><h4>Pourquoi nous choisir</h4><div class="agence-points-list">${pointsList}</div></div>` : ''}
-      ${data.engagements ? `<div class="agence-info-card"><h4>Nos engagements</h4><p>${data.engagements}</p></div>` : ''}
-      ${data.regles      ? `<div class="agence-info-card"><h4>Règles de l'agence</h4><p>${data.regles}</p></div>` : ''}
+      ${data.engagements ? `<div class="agence-info-card"><h4>Nos engagements</h4><p>${escapeHtml(data.engagements)}</p></div>` : ''}
+      ${data.regles      ? `<div class="agence-info-card"><h4>Règles de l'agence</h4><p>${escapeHtml(data.regles)}</p></div>` : ''}
       ${data.politiqueAnnulation ? `<div class="agence-info-card"><h4>Politique d'annulation</h4><p>${
         !data.politiqueAnnulation.autorise
           ? 'Vente définitive — aucune annulation possible.'
           : data.politiqueAnnulation.remboursement
-            ? `Annulation avec remboursement, jusqu'à ${data.politiqueAnnulation.delaiHeures || '?'}h avant le départ.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + data.politiqueAnnulation.precisions + '%</small>' : ''}`
-            : `Annulation autorisée sans remboursement.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + data.politiqueAnnulation.precisions + '%</small>' : ''}`
+            ? `Annulation avec remboursement, jusqu'à ${data.politiqueAnnulation.delaiHeures || '?'}h avant le départ.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + escapeHtml(String(data.politiqueAnnulation.precisions)) + '%</small>' : ''}`
+            : `Annulation autorisée sans remboursement.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + escapeHtml(String(data.politiqueAnnulation.precisions)) + '%</small>' : ''}`
       }</p></div>` : ''}
-      <div class="agence-info-card"><h4>Contact</h4><p>${data.adresse || '—'}<br>${data.telephone || '—'}</p></div>
+      <div class="agence-info-card"><h4>Contact</h4><p>${escapeHtml(data.adresse || '—')}<br>${escapeHtml(data.telephone || '—')}</p></div><div class="agence-info-card"><h4>Contact</h4><p>${data.adresse || '—'}<br>${data.telephone || '—'}</p></div>
     </div>
   `;
 }
@@ -407,21 +408,21 @@ export function showCongrats(data) {
       </div>
       <div class="congrats-logo-wrap">
         ${data.logoUrl
-          ? `<img src="${data.logoUrl}" alt="${data.nom}" class="congrats-logo-img">`
-          : `<div class="congrats-logo-placeholder">${data.nom?.[0] || '?'}</div>`}
+          ? `<img src="${escapeHtml(data.logoUrl)}" alt="${escapeHtml(data.nom)}" class="congrats-logo-img">`
+          : `<div class="congrats-logo-placeholder">${escapeHtml(data.nom?.[0] || '?')}</div>`}
         <div class="congrats-check">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
       </div>
       <div class="congrats-text">
         <div class="congrats-badge">Agence créée avec succès</div>
-        <h2>Bienvenue sur Travio,<br><em>${data.nom}</em></h2>
+        <h2>Bienvenue sur Travio,<br><em>${escapeHtml(data.nom)}</em></h2>
         <p>Votre agence est créée. Votre période d'essai gratuit de 12 jours commence maintenant — accédez à votre dashboard et configurez vos trajets.</p>
       </div>
       <div class="congrats-summary">
-        <div class="congrats-summary-item"><span class="cs-label">Agence</span><span class="cs-value">${data.nom}</span></div>
+        <div class="congrats-summary-item"><span class="cs-label">Agence</span><span class="cs-value">${escapeHtml(data.nom)}</span></div>
         <div class="congrats-summary-divider"></div>
-        <div class="congrats-summary-item"><span class="cs-label">Ville</span><span class="cs-value">${data.ville}</span></div>
+        <div class="congrats-summary-item"><span class="cs-label">Ville</span><span class="cs-value">${escapeHtml(data.ville)}</span></div>
         <div class="congrats-summary-divider"></div>
         <div class="congrats-summary-item"><span class="cs-label">Statut</span><span class="cs-value" style="color:var(--accent);">${ICONS.check} Essai actif</span></div>
       </div>
@@ -509,19 +510,19 @@ export function openEditFiche() {
         </button>
       </div>
       <div class="pdv-create-fields">
-        <div class="pdv-field-group"><label>Nom de l'agence <span class="req">*</span></label><input type="text" class="pdv-input" id="edit-nom" value="${d.nom || ''}"></div>
-        <div class="pdv-field-group"><label>Slogan / Devise <span class="req">*</span></label><input type="text" class="pdv-input" id="edit-slogan" value="${d.slogan || ''}"></div>
-        <div class="pdv-field-group"><label>Description <span class="req">*</span></label><textarea class="ob-textarea" id="edit-description" rows="3">${d.description || ''}</textarea></div>
-        <div class="pdv-field-group"><label>Notre histoire</label><textarea class="ob-textarea" id="edit-histoire" rows="3">${d.histoire || ''}</textarea></div>
-        <div class="pdv-field-group"><label>Ville <span class="req">*</span></label><input type="text" class="pdv-input" id="edit-ville" value="${d.ville || ''}"></div>
-        <div class="pdv-field-group"><label>Adresse <span class="req">*</span></label><input type="text" class="pdv-input" id="edit-adresse" value="${d.adresse || ''}"></div>
-        <div class="pdv-field-group"><label>Téléphone <span class="req">*</span></label><input type="tel" class="pdv-input" id="edit-telephone" value="${d.telephone || ''}"></div>
-        <div class="pdv-field-group"><label>Année de création</label><input type="number" class="pdv-input" id="edit-annee" value="${d.anneeCreation || ''}" min="1950" max="2025"></div>
-        <div class="pdv-field-group"><label>Pourquoi nous choisir — Point 1</label><input type="text" class="pdv-input" id="edit-point1" value="${d.point1 || ''}"></div>
-        <div class="pdv-field-group"><label>Pourquoi nous choisir — Point 2</label><input type="text" class="pdv-input" id="edit-point2" value="${d.point2 || ''}"></div>
-        <div class="pdv-field-group"><label>Pourquoi nous choisir — Point 3</label><input type="text" class="pdv-input" id="edit-point3" value="${d.point3 || ''}"></div>
-        <div class="pdv-field-group"><label>Nos engagements</label><textarea class="ob-textarea" id="edit-engagements" rows="3">${d.engagements || ''}</textarea></div>
-        <div class="pdv-field-group"><label>Règles de l'agence</label><textarea class="ob-textarea" id="edit-regles" rows="3">${d.regles || ''}</textarea></div>
+        <div class="pdv-field-group"><label>Nom de l'agence <span class="req">*</span></label><input type="text" class="pdv-input" id="edit-nom" value="${escapeHtml(d.nom || '')}"></div>
+        <div class="pdv-field-group"><label>Slogan / Devise <span class="req">*</span></label><input type="text" class="pdv-input" id="edit-slogan" value="${escapeHtml(d.slogan || '')}"></div>
+        <div class="pdv-field-group"><label>Description <span class="req">*</span></label><textarea class="ob-textarea" id="edit-description" rows="3">${escapeHtml(d.description || '')}</textarea></div>
+        <div class="pdv-field-group"><label>Notre histoire</label><textarea class="ob-textarea" id="edit-histoire" rows="3">${escapeHtml(d.histoire || '')}</textarea></div>
+        <div class="pdv-field-group"><label>Ville <span class="req">*</span></label><input type="text" class="pdv-input" id="edit-ville" value="${escapeHtml(d.ville || '')}"></div>
+        <div class="pdv-field-group"><label>Adresse <span class="req">*</span></label><input type="text" class="pdv-input" id="edit-adresse" value="${escapeHtml(d.adresse || '')}"></div>
+        <div class="pdv-field-group"><label>Téléphone <span class="req">*</span></label><input type="tel" class="pdv-input" id="edit-telephone" value="${escapeHtml(d.telephone || '')}"></div>
+        <div class="pdv-field-group"><label>Année de création</label><input type="number" class="pdv-input" id="edit-annee" value="${escapeHtml(String(d.anneeCreation || ''))}" min="1950" max="2025"></div>
+        <div class="pdv-field-group"><label>Pourquoi nous choisir — Point 1</label><input type="text" class="pdv-input" id="edit-point1" value="${escapeHtml(d.point1 || '')}"></div>
+        <div class="pdv-field-group"><label>Pourquoi nous choisir — Point 2</label><input type="text" class="pdv-input" id="edit-point2" value="${escapeHtml(d.point2 || '')}"></div>
+        <div class="pdv-field-group"><label>Pourquoi nous choisir — Point 3</label><input type="text" class="pdv-input" id="edit-point3" value="${escapeHtml(d.point3 || '')}"></div>
+        <div class="pdv-field-group"><label>Nos engagements</label><textarea class="ob-textarea" id="edit-engagements" rows="3">${escapeHtml(d.engagements || '')}</textarea></div>
+        <div class="pdv-field-group"><label>Règles de l'agence</label><textarea class="ob-textarea" id="edit-regles" rows="3">${escapeHtml(d.regles || '')}</textarea></div>
         <div class="pdv-field-group">
           <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">Politique d'annulation</label>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;margin-bottom:10px;">
@@ -666,7 +667,7 @@ export function openEditImages() {
         <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:8px;">Logo actuel</label>
         <div style="display:flex;align-items:center;gap:14px;">
           <div id="editLogoPreview" style="width:72px;height:72px;border-radius:14px;background:var(--surface2);border:2px solid var(--border2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--primary);flex-shrink:0;">
-            ${agenceData.logoUrl ? `<img src="${agenceData.logoUrl}" style="width:100%;height:100%;object-fit:cover;">` : (agenceData.nom?.[0] || '?')}
+            ${agenceData.logoUrl ? `<img src="${escapeHtml(agenceData.logoUrl)}" style="width:100%;height:100%;object-fit:cover;">` : escapeHtml(agenceData.nom?.[0] || '?')}
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;">
             <button class="pdv-action-btn" style="padding:8px 14px;font-size:12px;" onclick="document.getElementById('editLogoInput').click()">
@@ -716,9 +717,9 @@ export function renderEditPhotos() {
 
   current.forEach(url => {
     html += `
-      <div style="position:relative;width:72px;height:72px;flex-shrink:0;">
-        <img src="${url}" style="width:72px;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(--border);">
-        <button onclick="markPhotoDelete('${url}')" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#FF4D6A;border:none;color:white;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+     <div style="position:relative;width:72px;height:72px;flex-shrink:0;">
+       <img src="${escapeHtml(url)}" style="width:72px;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(--border);">
+        <button onclick="markPhotoDelete('${escapeJsAttr(url)}')" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#FF4D6A;border:none;color:white;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
       </div>`;
   });
 
@@ -925,7 +926,7 @@ function showAbonnementBubble(texte, couleur, icone) {
   bubble.innerHTML = `
     <div style="font-size:18px;flex-shrink:0;">${icone}</div>
     <div style="flex:1;min-width:0;">
-      <p style="font-size:12.5px;color:var(--white);line-height:1.5;margin-bottom:8px;">${texte}</p>
+      <p style="font-size:12.5px;color:var(--white);line-height:1.5;margin-bottom:8px;">${escapeHtml(texte)}</p>
     </div>
     <button onclick="document.getElementById('abonnementBubble')?.remove();"
     style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;flex-shrink:0;padding:0;">
