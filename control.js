@@ -133,14 +133,14 @@
   // ---------------------------------------------------------
   function trajetCardHTML(t, isActive) {
     return `
-      <button class="trajet-card ${isActive ? "trajet-card--active" : ""}" data-trajet-id="${t.id}" type="button">
+    <button class="trajet-card ${isActive ? "trajet-card--active" : ""}" data-trajet-id="${escapeJsAttr(t.id)}" type="button">
         <div class="trajet-card__time">
           <span class="trajet-card__time-h">${t.heure}</span>
           <span class="trajet-card__time-l">Départ</span>
         </div>
         <div class="trajet-card__body">
-          <div class="trajet-card__route">${t.depart} → ${t.arrivee}</div>
-          <div class="trajet-card__meta">${t.ticketsVendus} billets vendus · ${history[t.id].length} contrôlés</div>
+          <div class="trajet-card__route">${escapeHtml(t.depart)} → ${escapeHtml(t.arrivee)}</div>
+          <div class="trajet-card__meta">${Number(t.ticketsVendus) || 0} billets vendus · ${history[t.id].length} contrôlés</div>
         </div>
         <span class="trajet-card__badge">${isActive ? "Actif" : "Choisir"}</span>
       </button>

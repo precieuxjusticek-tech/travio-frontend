@@ -66,11 +66,11 @@ export async function renderMonPDVPage() {
                 <div class="monpdv-session-bus">${ICONS.bus} ${escapeHtml(s.busNom)}</div>
               </div>
               <div class="monpdv-session-right">
-                <div class="monpdv-session-count">${s.placesVendues}/${s.placesTotal}</div>
+              <div class="monpdv-session-count">${Number(s.placesVendues)}/${Number(s.placesTotal)}</div>
                 <div class="monpdv-session-bar-wrap">
                   <div class="monpdv-session-bar" style="width:${barW}%;background:${barColor};"></div>
                 </div>
-                <div style="font-size:10px;color:var(--muted);text-align:right;">${s.taux}%</div>
+                <div style="font-size:10px;color:var(--muted);text-align:right;">${Number(s.taux)}%</div>
               </div>
             </div>`;
         }).join('');

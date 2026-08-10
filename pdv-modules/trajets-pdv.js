@@ -64,7 +64,7 @@ export function renderTrajetsPDV() {
 }
 
 function renderTrajetCardPDV(t) {
-  const joursLabel = t.tousLesJours ? 'Tous les jours' : (t.jours || []).join(', ');
+  const joursLabel = t.tousLesJours ? 'Tous les jours' : escapeHtml((t.jours || []).join(', '));
 
   const arretsSection = t.typeTrajet === 'arrets' && t.arrets?.length
     ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;">
@@ -73,7 +73,7 @@ function renderTrajetCardPDV(t) {
           <div style="display:flex;align-items:center;gap:6px;">
             <span style="font-size:10px;color:var(--accent);">${ICONS.dotGreen}</span>
             <span style="color:var(--white);font-weight:600;">${escapeHtml(t.villeDepart)}</span>
-            ${t.heureDepart ? `<span style="color:var(--muted);font-size:11px;">· ${t.heureDepart}</span>` : ''}
+            ${t.heureDepart ? `<span style="color:var(--muted);font-size:11px;">· ${escapeHtml(t.heureDepart)}</span>` : ''}
           </div>
           ${(t.arrets || []).map(a => {
             const villeLabel = a.ville || a.nom;
@@ -82,7 +82,7 @@ function renderTrajetCardPDV(t) {
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                   <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);"></span>
                   <span>${escapeHtml(villeLabel)}</span>
-                  ${a.heurePassage ? `<span style="color:var(--accent);font-size:11px;font-weight:600;">· ${a.heurePassage}</span>` : ''}
+                  ${a.heurePassage ? `<span style="color:var(--accent);font-size:11px;font-weight:600;">· ${escapeHtml(a.heurePassage)}</span>` : ''}
                 </div>
                 <span style="color:var(--muted);font-size:11px;">${Object.values(a.prixParType || {}).map(p => Number(p).toLocaleString()).join(' / ')} XAF</span>
               </div>`;
@@ -102,9 +102,9 @@ function renderTrajetCardPDV(t) {
           <div class="trajet-card-route">${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}</div>
           <div class="trajet-card-meta">
             ${joursLabel}
-            ${t.heureDepart ? ` · ${t.heureDepart}` : ''}
-            ${t.heureArrivee ? ` → ${t.heureArrivee}` : ''}
-            ${t.dureeEstimee ? ` · ${t.dureeEstimee}` : ''}
+            ${t.heureDepart ? ` · ${escapeHtml(t.heureDepart)}` : ''}
+            ${t.heureArrivee ? ` → ${escapeHtml(t.heureArrivee)}` : ''}
+            ${t.dureeEstimee ? ` · ${escapeHtml(t.dureeEstimee)}` : ''}
           </div>
         </div>
         <span class="trajet-status-badge active"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:4px;vertical-align:middle;"></span>Actif</span>
@@ -205,7 +205,7 @@ export async function openTrajetDetailPDV(trajetId) {
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;">
               <div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;"></div>
               <span style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(t.villeDepart)}</span>
-              ${t.heureDepart ? `<span style="font-size:11px;color:var(--muted);margin-left:auto;">${ICONS.clock} ${t.heureDepart}</span>` : ''}
+              ${t.heureDepart ? `<span style="font-size:11px;color:var(--muted);margin-left:auto;">${ICONS.clock} ${escapeHtml(t.heureDepart)}</span>` : ''}
             </div>
             ${(t.arrets || []).map(a => `
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);margin-left:4px;">
@@ -214,7 +214,7 @@ export async function openTrajetDetailPDV(trajetId) {
                 <span style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(a.ville || a.nom)}</span>
                 <span style="font-size:11px;color:var(--muted);margin-left:8px;">${Object.values(a.prixParType || {}).map(p => Number(p).toLocaleString()).join(' / ')} XAF</span>
               </div>
-              ${a.heurePassage ? `<span style="font-size:11px;color:var(--accent);font-weight:600;">${ICONS.clock} ${a.heurePassage}</span>` : ''}
+              ${a.heurePassage ? `<span style="font-size:11px;color:var(--accent);font-weight:600;">${ICONS.clock} ${escapeHtml(a.heurePassage)}</span>` : ''}
             </div>`).join('')}
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);">
               <div style="width:10px;height:10px;border-radius:50%;background:#FF4D6A;flex-shrink:0;"></div>
@@ -280,7 +280,7 @@ export async function openTrajetDetailPDV(trajetId) {
     }
 
     list.innerHTML = departs.map(d => {
-      const joursLabel = d.tousLesJours ? 'Tous les jours' : (d.jours || []).join(', ');
+      const joursLabel = d.tousLesJours ? 'Tous les jours' : escapeHtml((d.jours || []).join(', '));
       return `
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
@@ -289,8 +289,8 @@ export async function openTrajetDetailPDV(trajetId) {
           </div>
           <div style="font-size:11.5px;color:var(--muted);">${escapeHtml(d.busType)} · ${d.busCapacite} places</div>
           <div style="font-size:11.5px;color:var(--white);margin-top:4px;font-weight:600;">
-            ${ICONS.clock} ${d.heureDepart}${d.heureArrivee ? ' → ' + d.heureArrivee : ''}
-            ${d.dureeEstimee ? `<span style="color:var(--muted);font-weight:400;"> · ${d.dureeEstimee}</span>` : ''}
+            ${ICONS.clock} ${escapeHtml(d.heureDepart)}${d.heureArrivee ? ' → ' + escapeHtml(d.heureArrivee) : ''}
+            ${d.dureeEstimee ? `<span style="color:var(--muted);font-weight:400;"> · ${escapeHtml(d.dureeEstimee)}</span>` : ''}
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px;">${joursLabel}</div>
         </div>`;
@@ -335,7 +335,7 @@ export function renderAccueilTrajets() {
           </div>
         </div>
         <div class="trajet-quick-right">
-          <div class="trajet-quick-heure">${t.heureDepart || '—'}</div>
+        <div class="trajet-quick-heure">${escapeHtml(t.heureDepart || '—')}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:2px;">Vendre →</div>
         </div>
       </div>`;

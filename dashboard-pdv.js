@@ -208,8 +208,8 @@ async function updateAccueilStats() {
   const confJour = resasJour.filter(r => r.statut !== 'annulée');
   const confMois = resasMois.filter(r => r.statut !== 'annulée');
 
-  const vendusJour = confJour.reduce((s, r) => s + (r.nbPassagers || r.passagers?.length || 1), 0);
-  const revJour     = confJour.reduce((s, r) => s + (r.prixTotal || 0), 0);
+  const vendusJour = confJour.reduce((s, r) => s + (Number(r.nbPassagers) || r.passagers?.length || 1), 0);
+  const revJour     = confJour.reduce((s, r) => s + Number(r.prixTotal || 0), 0);
 
   // Revenus colis du jour
   const colisJour       = (colisList || []).filter(c => toBrazzaDate(c.createdAt) === today);
@@ -220,8 +220,8 @@ async function updateAccueilStats() {
   const resasHierTotal = resaList.filter(r => toBrazzaDate(r.createdAt) === yesterday);
   const resasHierConf  = resasHierTotal.filter(r => r.statut !== 'annulée');
 
-  const vendusHier = resasHierConf.reduce((s, r) => s + (r.nbPassagers || r.passagers?.length || 1), 0);
-  const revHier     = resasHierConf.reduce((s, r) => s + (r.prixTotal || 0), 0);
+  const vendusHier = resasHierConf.reduce((s, r) => s + (Number(r.nbPassagers) || r.passagers?.length || 1), 0);
+  const revHier     = resasHierConf.reduce((s, r) => s + Number(r.prixTotal || 0), 0);
 
   const setEl   = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };

@@ -142,7 +142,7 @@ export function renderControleurCard(c) {
       <div class="pdv-card-avatar" style="flex-shrink:0;background:rgba(166,124,255,0.15);border-color:rgba(166,124,255,0.2);color:#A67CFF;">${escapeHtml(c.nom?.[0] || 'C')}</div>
       <div style="min-width:0;">
         <div class="pdv-card-name">${escapeHtml(c.nom)}</div>
-        <div style="font-size:11px;color:var(--muted);">${ICONS.phone} ${escapeHtml(c.telephone) || '—'}</div>
+        <div style="font-size:11px;color:var(--muted);">${ICONS.phone} ${escapeHtml(c.telephone || '—')}</div>
           </div>
         </div>
         <span class="pdv-status-badge ${statusClass}" style="flex-shrink:0;align-self:flex-start;white-space:nowrap;">
@@ -151,11 +151,11 @@ export function renderControleurCard(c) {
       </div>
       <div class="pdv-card-body">
         <div style="margin-bottom:10px;">
-        <div class="controleur-bus-badge">${ICONS.bus} ${escapeHtml(c.busNom) || 'Aucun bus assigné'}</div>
+        <div class="controleur-bus-badge">${ICONS.bus} ${escapeHtml(c.busNom || 'Aucun bus assigné')}</div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:6px 8px;background:var(--surface2);border-radius:8px;margin-bottom:8px;">
           <span style="color:var(--muted);">${ICONS.person} Email connexion</span>
-          <span style="color:var(--white);font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(c.emailConnexion) || '—'}</span>
+          <span style="color:var(--white);font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(c.emailConnexion || '—')}</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
           <div style="background:var(--surface2);border-radius:8px;padding:7px;text-align:center;">
@@ -330,14 +330,14 @@ export function openControleurDetail(controleurId) {
       <div class="pdv-overlay-header">
       <div>
       <h2>${escapeHtml(c.nom)}</h2>
-      <p>${ICONS.bus} ${escapeHtml(c.busNom) || 'Aucun bus assigné'}</p>
+      <p>${ICONS.bus} ${escapeHtml(c.busNom || 'Aucun bus assigné')}</p>
     </div>
     <button class="pdv-overlay-close" onclick="closeControleurDetail()">${ICONS.close}</button>
   </div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:16px;">
-    <div class="pdv-detail-row"><span class="pdv-detail-label">Téléphone</span><span class="pdv-detail-val">${escapeHtml(c.telephone) || '—'}</span></div>
-    <div class="pdv-detail-row"><span class="pdv-detail-label">Email connexion</span><span class="pdv-detail-val">${escapeHtml(c.emailConnexion) || '—'}</span></div>
-    <div class="pdv-detail-row" style="border-bottom:none;"><span class="pdv-detail-label">Bus assigné</span><span class="pdv-detail-val">${escapeHtml(c.busNom) || '—'}</span></div>
+  <div class="pdv-detail-row"><span class="pdv-detail-label">Téléphone</span><span class="pdv-detail-val">${escapeHtml(c.telephone || '—')}</span></div>
+  <div class="pdv-detail-row"><span class="pdv-detail-label">Email connexion</span><span class="pdv-detail-val">${escapeHtml(c.emailConnexion || '—')}</span></div>
+  <div class="pdv-detail-row" style="border-bottom:none;"><span class="pdv-detail-label">Bus assigné</span><span class="pdv-detail-val">${escapeHtml(c.busNom || '—')}</span></div>
       </div>
       <div class="pdv-detail-actions">
         <button class="pdv-action-btn">${ICONS.edit} Modifier les infos</button>
@@ -407,9 +407,9 @@ export async function renderChauffeursPage() {
             <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
           <div class="bf-row-main">
-            <div class="bf-row-name">${escapeHtml(c.nom) || 'Chauffeur sans nom'}</div>
+          <div class="bf-row-name">${escapeHtml(c.nom || 'Chauffeur sans nom')}</div>
             <div class="bf-row-meta">
-              <span class="bf-row-capacite">${ICONS.phone} ${escapeHtml(c.tel)}</span>
+            <span class="bf-row-capacite">${ICONS.phone} ${escapeHtml(c.tel || '—')}</span>
               <span class="bf-row-capacite">${ICONS.bus} ${(c.bus || []).map(escapeHtml).join(', ')}</span>
             </div>
           </div>

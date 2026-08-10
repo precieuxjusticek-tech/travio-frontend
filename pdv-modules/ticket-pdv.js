@@ -159,7 +159,7 @@ export function showTicket(resa, trajet) {
     </div>` : `
     <div class="ticket-row">
       <span>Type</span>
-      <strong>${escapeHtml(nomTypeResa(resa))}</strong>
+      <strong>${nomTypeResa(resa)}</strong>
     </div>`}
     <div class="ticket-row">
       <span>Date</span>
