@@ -467,8 +467,35 @@
                             <input type="text" class="vente-input p-siege" placeholder="Ex : 12A">
                           </div>
                         </div>
-                      </div> <!-- ferme .more-options -->
-                    </div>   <!-- ferme .passager-block -->
+
+                        <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--white);">
+                          <input type="checkbox" class="p-colis-soute-toggle" onchange="toggleColisSoute(this)">
+                          Colis en soute avec ce passager
+                        </label>
+                        <div class="p-colis-soute-fields" style="display:none;margin-top:8px;">
+                          <div class="vente-field-row">
+                            <div class="vente-field-group">
+                              <label>Nature du colis</label>
+                              <input type="text" class="vente-input p-colis-soute-nature" placeholder="Ex : Bagage personnel">
+                            </div>
+                            <div class="vente-field-group">
+                              <label>Poids (kg)</label>
+                              <input type="number" class="vente-input p-colis-soute-poids" min="0">
+                            </div>
+                          </div>
+                          <div class="vente-field-row">
+                            <div class="vente-field-group">
+                              <label>Valeur déclarée (optionnel)</label>
+                              <input type="number" class="vente-input p-colis-soute-valeur" min="0">
+                            </div>
+                            <div class="vente-field-group">
+                              <label>Prix du colis (XAF)</label>
+                              <input type="number" class="vente-input p-colis-soute-prix" min="0" oninput="updatePrixPreview()">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- Bouton ajouter passager -->

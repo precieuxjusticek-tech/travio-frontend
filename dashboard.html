@@ -382,6 +382,14 @@
           </svg>
           Vue d'ensemble
         </a>
+        <a class="nav-item" data-page="vente-siege" onclick="showPage('vente-siege', this)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="2" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M6 5V4a3 3 0 016 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M9 10v2M7 11h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Guichet de vente
+        </a>
         <a class="nav-item" data-page="reservations" onclick="showPage('reservations', this)">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <rect x="1" y="3" width="16" height="13" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
@@ -619,7 +627,7 @@
               </div>
               <div class="quick-actions">
 
-                <button class="quick-action" onclick="venteRapidePlaceholder()">
+                <button class="quick-action" onclick="showPage('vente-siege', document.querySelector('[data-page=vente-siege]'))">
                   <div class="qa-icon">
                     <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
                       <rect x="2" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
@@ -679,6 +687,326 @@
 
         </div>
 
+      </div>
+
+      <!-- ── PAGE : VENTE (SIÈGE) ── -->
+      <div class="page" id="page-vente-siege">
+
+        <div class="page-header" style="flex-direction:column;">
+          <div>
+            <h1 class="page-title" id="venteSiegePageTitle">Vente de billets</h1>
+            <p class="page-subtitle">Vente directe depuis le siège — accès à tout le réseau.</p>
+
+            <div class="trajet-type-toggle" style="margin-top:10px;">
+              <button class="trajet-type-btn active" id="btnModeBilletSiege" onclick="setVenteMode('billet')">
+                <span class="ttb-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 5V4a3 3 0 016 0v1" stroke="currentColor" stroke-width="1.5"/></svg>
+                </span>
+                <div><div class="ttb-label">Billet</div><div class="ttb-desc">Vendre un passage</div></div>
+              </button>
+              <button class="trajet-type-btn" id="btnModeColisSiege" onclick="setVenteMode('colis')">
+                <span class="ttb-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 5l6-3 6 3v6l-6 3-6-3V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M2 5l6 3 6-3M8 8v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <div><div class="ttb-label">Colis</div><div class="ttb-desc">Expédier un colis</div></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="vente-wrap">
+
+          <!-- Étape 1 : PDV vendeur + Trajet -->
+          <div class="vente-step" id="venteSiegeStep1">
+
+            <div class="vente-step-head">
+              <div class="vente-step-num">•</div>
+              <div class="vente-step-head-info">
+                <strong>Point de vente</strong>
+                <small>Attribuer cette vente à un PDV, ou vente directe siège</small>
+              </div>
+            </div>
+            <div class="vente-step-body">
+              <div class="vente-field-group">
+                <label>Vendre au nom de</label>
+                <select class="vente-select" id="siege-pdv-vendeur" onchange="onPdvVendeurChange()">
+                  <option value="">Vente directe — Siège</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="vente-step-head">
+              <div class="vente-step-num">1</div>
+              <div class="vente-step-head-info">
+                <strong>Choisir le trajet</strong>
+                <small>Sélectionnez la ligne et la date de départ</small>
+              </div>
+            </div>
+            <div class="vente-step-body">
+
+              <div class="trajet-search-box">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#7A8BA8" stroke-width="1.5"/><path d="M10 10l4 4" stroke="#7A8BA8" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <input type="text" id="trajetSearchInputSiege" placeholder="Chercher une ville, une ligne..." oninput="filterTrajetCardsSiege()">
+              </div>
+
+              <div class="trajet-type-toggle">
+                <button class="trajet-type-btn active" id="btnTypeDirectSiege" onclick="setTrajetType('direct')">
+                  <span class="ttb-icon">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                  <div><div class="ttb-label">Direct</div><div class="ttb-desc">Sans arrêt intermédiaire</div></div>
+                </button>
+                <button class="trajet-type-btn" id="btnTypeArretsSiege" onclick="setTrajetType('arrets')">
+                  <span class="ttb-icon">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 4l5-1.5 4 1.5 5-1.5v10l-5 1.5-4-1.5-5 1.5V4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                  </span>
+                  <div><div class="ttb-label">Avec arrêts</div><div class="ttb-desc">Montée / descente en route</div></div>
+                </button>
+              </div>
+
+              <div class="vente-field-group">
+                <label>Ligne <span class="req">*</span></label>
+                <select class="vente-select" id="vente-siege-trajet" onchange="onSelectTrajet()" style="display:none;">
+                  <option value="">Sélectionner un trajet</option>
+                </select>
+                <div class="trajet-card-list" id="trajetCardListSiege"></div>
+              </div>
+
+              <div class="trajet-recap trajet-recap-direct" id="trajetRecapDirectSiege" style="display:none;">
+                <div class="trajet-recap-route" id="recapRouteSiege">—</div>
+                <div class="trajet-recap-meta" id="recapMetaSiege">—</div>
+                <div class="trajet-recap-prix" id="recapPrixTypesSiege"></div>
+              </div>
+
+              <div class="trajet-recap trajet-recap-arrets" id="trajetRecapArretsSiege" style="display:none;">
+                <div class="trajet-recap-route" id="recapRouteArretsSiege">—</div>
+                <div class="arrets-timeline" id="arretsTimelineSiege"></div>
+
+                <div class="arrets-segment">
+                  <div class="vente-field-group" style="margin-bottom:10px;">
+                    <label>Ville de montée <span class="req">*</span></label>
+                    <select class="vente-select" id="vente-siege-montee-ville" onchange="onMonteeVilleChangeSiege()">
+                      <option value="">— Ville de montée —</option>
+                    </select>
+                    <label style="margin-top:8px;">PDV d'embarquement (optionnel — lieu libre sinon)</label>
+                    <select class="vente-select" id="vente-siege-pdv-montee">
+                      <option value="">— Sélectionnez d'abord la montée —</option>
+                    </select>
+                  </div>
+                  <div class="vente-field-group">
+                    <label>Ville de descente <span class="req">*</span></label>
+                    <select class="vente-select" id="vente-siege-descente" onchange="onSegmentChangeSiege()">
+                      <option value="">— Sélectionnez d'abord la montée —</option>
+                    </select>
+                    <label style="margin-top:8px;">PDV de débarquement (optionnel — lieu libre sinon)</label>
+                    <select class="vente-select" id="vente-siege-pdv-debarquement-arrets">
+                      <option value="">— Sélectionner —</option>
+                    </select>
+                  </div>
+                  <div class="segment-prix" id="segmentPrixTypesSiege" style="display:none;"></div>
+                </div>
+              </div>
+
+              <div class="vente-field-group" id="dateSessionBlockSiege" style="display:none;">
+                <label>Session de départ <span class="req">*</span></label>
+                <div id="sessionsDisponiblesSiege" class="sessions-list">
+                  <div class="empty-state small"><p>Chargement des sessions...</p></div>
+                </div>
+                <input type="hidden" id="vente-siege-date">
+                <input type="hidden" id="vente-siege-session-id">
+              </div>
+
+              <button class="vente-btn-next" onclick="venteGoStepSiege(2)">Suivant →</button>
+            </div>
+          </div>
+
+          <!-- Étape 2 : Passager(s) / Colis -->
+          <div class="vente-step locked" id="venteSiegeStep2">
+            <div class="vente-step-head">
+              <div class="vente-step-num">2</div>
+              <div class="vente-step-head-info">
+                <strong id="venteSiegeStep2Title">Informations passager(s)</strong>
+                <small id="venteSiegeStep2Subtitle">Ajoutez autant de passagers que nécessaire</small>
+              </div>
+            </div>
+            <div class="vente-step-body">
+
+              <div id="secteurBilletSiege" style="display:flex;flex-direction:column;gap:14px;">
+                <div id="passagersListSiege">
+                  <div class="passager-block" data-index="0">
+                    <div class="passager-block-header">
+                      <span class="passager-block-num">Passager 1</span>
+                    </div>
+                    <div class="vente-field-row">
+                      <div class="vente-field-group">
+                        <label>Prénom <span class="req">*</span></label>
+                        <input type="text" class="vente-input p-prenom" placeholder="Ex : Jean">
+                      </div>
+                      <div class="vente-field-group">
+                        <label>Nom <span class="req">*</span></label>
+                        <input type="text" class="vente-input p-nom" placeholder="Ex : Moukala">
+                      </div>
+                    </div>
+                    <div class="vente-field-row">
+                      <div class="vente-field-group">
+                        <label>Téléphone <span class="req">*</span></label>
+                        <input type="tel" class="vente-input p-tel" placeholder="+242 06 xxx xx xx">
+                      </div>
+                      <div class="vente-field-group">
+                        <label>Type de billet <span class="req">*</span></label>
+                        <select class="vente-select p-type" onchange="updatePrixPreview()"></select>
+                      </div>
+                    </div>
+                    <div class="more-options-toggle" onclick="toggleMoreOptionsSiege(this)">
+                      <span class="more-icon">＋</span> Bagages, siège (facultatif)
+                    </div>
+                    <div class="more-options">
+                      <div class="vente-field-row">
+                        <div class="vente-field-group">
+                          <label>Bagages (kg)</label>
+                          <input type="number" class="vente-input p-bagages" placeholder="0" min="0" oninput="updatePrixPreview()">
+                        </div>
+                        <div class="vente-field-group">
+                          <label>Nombre de bagages</label>
+                          <input type="number" class="vente-input p-bagages-nombre" placeholder="0" min="0">
+                        </div>
+                      </div>
+                      <div class="vente-field-row">
+                        <div class="vente-field-group">
+                          <label>Siège (optionnel)</label>
+                          <input type="text" class="vente-input p-siege" placeholder="Ex : 12A">
+                        </div>
+                      </div>
+                      <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--white);">
+                        <input type="checkbox" class="p-colis-soute-toggle" onchange="toggleColisSouteSiege(this)">
+                        Colis en soute avec ce passager
+                      </label>
+                      <div class="p-colis-soute-fields" style="display:none;margin-top:8px;">
+                        <div class="vente-field-row">
+                          <div class="vente-field-group">
+                            <label>Nature du colis</label>
+                            <input type="text" class="vente-input p-colis-soute-nature" placeholder="Ex : Bagage personnel">
+                          </div>
+                          <div class="vente-field-group">
+                            <label>Poids (kg)</label>
+                            <input type="number" class="vente-input p-colis-soute-poids" min="0">
+                          </div>
+                        </div>
+                        <div class="vente-field-row">
+                          <div class="vente-field-group">
+                            <label>Valeur déclarée (optionnel)</label>
+                            <input type="number" class="vente-input p-colis-soute-valeur" min="0">
+                          </div>
+                          <div class="vente-field-group">
+                            <label>Prix du colis (XAF)</label>
+                            <input type="number" class="vente-input p-colis-soute-prix" min="0" oninput="updatePrixPreview()">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <button class="btn-add-passager" onclick="addPassagerSiege()">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Ajouter un passager
+                </button>
+
+                <div class="vente-field-group">
+                  <label>Remarques (optionnel)</label>
+                  <textarea class="vente-textarea" id="vente-siege-remarques" placeholder="Notes sur la réservation..." rows="2"></textarea>
+                </div>
+              </div>
+
+              <div id="secteurColisSiege" style="display:none;flex-direction:column;gap:14px;">
+                <div class="recap-section-title">Expéditeur</div>
+                <div class="vente-field-row">
+                  <div class="vente-field-group">
+                    <label>Nom complet <span class="req">*</span></label>
+                    <input type="text" class="vente-input" id="colis-siege-exp-nom" placeholder="Ex : Jean Moukala">
+                  </div>
+                  <div class="vente-field-group">
+                    <label>Téléphone <span class="req">*</span></label>
+                    <input type="tel" class="vente-input" id="colis-siege-exp-tel" placeholder="+242 06 xxx xx xx">
+                  </div>
+                </div>
+
+                <div class="recap-section-title" style="margin-top:6px;">Destinataire</div>
+                <div class="vente-field-row">
+                  <div class="vente-field-group">
+                    <label>Nom complet <span class="req">*</span></label>
+                    <input type="text" class="vente-input" id="colis-siege-dest-nom" placeholder="Ex : Marie Bakala">
+                  </div>
+                  <div class="vente-field-group">
+                    <label>Téléphone <span class="req">*</span></label>
+                    <input type="tel" class="vente-input" id="colis-siege-dest-tel" placeholder="+242 06 xxx xx xx">
+                  </div>
+                </div>
+
+                <div class="recap-section-title" style="margin-top:6px;">Colis</div>
+                <div class="vente-field-row">
+                  <div class="vente-field-group">
+                    <label>Nature du colis <span class="req">*</span></label>
+                    <input type="text" class="vente-input" id="colis-siege-nature" placeholder="Ex : Documents, vêtements...">
+                  </div>
+                  <div class="vente-field-group">
+                    <label>Poids estimé (kg)</label>
+                    <input type="number" class="vente-input" id="colis-siege-poids" min="0" placeholder="0">
+                  </div>
+                </div>
+                <div class="vente-field-row">
+                  <div class="vente-field-group">
+                    <label>Valeur déclarée (XAF)</label>
+                    <input type="number" class="vente-input" id="colis-siege-valeur" min="0" placeholder="Optionnel">
+                  </div>
+                  <div class="vente-field-group">
+                    <label>Prix du transport (XAF) <span class="req">*</span></label>
+                    <input type="number" class="vente-input" id="colis-siege-prix" min="0" placeholder="0" oninput="updateColisPrixPreview()">
+                  </div>
+                </div>
+                <div class="vente-field-group">
+                  <label>Remarques (optionnel)</label>
+                  <textarea class="vente-textarea" id="colis-siege-remarques" placeholder="Fragile, à manipuler avec précaution..." rows="2"></textarea>
+                </div>
+              </div>
+
+              <div class="vente-field-row" id="embarquementDebarquementBlockSiege" style="align-items:flex-start; justify-content:space-between;">
+                <div class="vente-field-group" style="flex:1;">
+                  <label>Ville de départ</label>
+                  <input type="text" class="vente-input" id="vente-siege-ville-depart" readonly>
+                  <label style="margin-top:8px;">PDV d'embarquement <span class="req">*</span></label>
+                  <select class="vente-select" id="vente-siege-pdv-embarquement"><option value="">— Sélectionner —</option></select>
+                </div>
+                <div class="vente-field-group" style="flex:1;">
+                  <label>Ville d'arrivée</label>
+                  <input type="text" class="vente-input" id="vente-siege-ville-arrivee" readonly>
+                  <label style="margin-top:8px;">PDV de débarquement <span class="req">*</span></label>
+                  <select class="vente-select" id="vente-siege-pdv-debarquement"><option value="">— Sélectionner —</option></select>
+                </div>
+              </div>
+
+              <div class="prix-preview" id="prixPreviewSiege">
+                <div id="prixPreviewLinesSiege"></div>
+                <div class="prix-preview-divider"></div>
+                <div class="prix-preview-row total">
+                  <span>Total à encaisser</span>
+                  <strong id="previewTotalSiege">— XAF</strong>
+                </div>
+              </div>
+
+              <div class="vente-btn-row">
+                <button class="vente-btn-back" onclick="venteGoStepSiege(1)">← Retour</button>
+                <button class="vente-btn-next vente-btn-confirm" id="venteSiegeBtnConfirm" onclick="submitVenteSiege()">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;">
+                    <path d="M4 8l3 3 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Confirmer la vente
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       <!-- ── PAGE : RÉSERVATIONS ── -->

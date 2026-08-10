@@ -152,32 +152,32 @@ html, body {
 
 .sidebar-nav {
   flex: 1;
-  padding: 16px 12px;
+  padding: 10px 10px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   overflow-y: auto;
 }
 
 .nav-section-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  padding: 4px 8px;
-  margin-bottom: 2px;
-  margin-top: 4px;
+  padding: 3px 8px;
+  margin-bottom: 1px;
+  margin-top: 6px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 10px;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: 9px;
   color: var(--muted);
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.18s, color 0.18s;
@@ -3693,4 +3693,626 @@ html, body {
   font-size: 11px;
   color: var(--muted);
   margin-top: 6px;
+}
+
+/* ══════════════════════════════
+   VENTE SIÈGE — composants repris du PDV
+══════════════════════════════ */
+
+/* Toggle type (Direct / Avec arrêts / Billet / Colis) */
+.trajet-type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.trajet-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s, background 0.18s;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+}
+
+.trajet-type-btn:hover {
+  border-color: var(--border2);
+  background: var(--surface2);
+}
+
+.trajet-type-btn.active {
+  border-color: var(--accent);
+  background: rgba(0,229,160,0.07);
+}
+
+.ttb-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.trajet-type-btn.active .ttb-icon {
+  color: var(--accent);
+}
+
+.ttb-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.2;
+}
+
+.ttb-desc {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Conteneur global du formulaire de vente */
+.vente-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.vente-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.2s, opacity 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.vente-step.locked {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.vente-step-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.vente-step-head-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vente-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0,87,255,0.15);
+  border: 1px solid rgba(0,87,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #5B9BFF;
+  flex-shrink: 0;
+}
+
+.vente-step-head strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.vente-step-head small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.vente-step-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vente-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.vente-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.vente-field-group label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.vente-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 13.5px;
+  font-family: 'Inter', sans-serif;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.vente-input::placeholder { color: rgba(122,139,168,0.45); }
+
+.vente-input:focus {
+  border-color: var(--primary);
+  background: rgba(0,87,255,0.06);
+  box-shadow: 0 0 0 3px rgba(0,87,255,0.1);
+}
+
+.vente-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+}
+
+.vente-select {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 36px 10px 13px;
+  font-size: 13.5px;
+  font-family: 'Inter', sans-serif;
+  color: var(--white);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 7L11 1' stroke='%237A8BA8' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+  transition: border-color 0.2s;
+}
+
+.vente-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0,87,255,0.1);
+}
+
+.vente-select option { background: #0F1525; color: var(--white); }
+
+.vente-textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: var(--white);
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.vente-textarea::placeholder { color: rgba(122,139,168,0.45); }
+
+.vente-textarea:focus {
+  border-color: var(--primary);
+  background: rgba(0,87,255,0.06);
+  box-shadow: 0 0 0 3px rgba(0,87,255,0.1);
+}
+
+/* Recherche de trajet */
+.trajet-search-box {
+  display: flex; align-items: center; gap: 8px; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 13px; margin-bottom: 2px;
+}
+.trajet-search-box input { flex: 1; background: none; border: none; outline: none; color: var(--white); font-size: 13.5px; font-family: 'Inter', sans-serif; }
+.trajet-search-box input::placeholder { color: rgba(122,139,168,.5); }
+
+/* Liste de trajets en cartes */
+.trajet-card-list {
+  display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: 14px; padding: 8px; background: rgba(255,255,255,.02);
+}
+.trajet-card-pick {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 12px 13px; display: flex; align-items: center; gap: 11px; cursor: pointer; flex-shrink: 0;
+}
+.trajet-card-pick.selected { border-color: var(--accent); background: rgba(0,229,160,.08); }
+.trajet-card-pick-route { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 13px; }
+.trajet-card-pick-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.trajet-card-pick-price { font-family: 'Manrope', sans-serif; font-weight: 800; color: var(--accent); font-size: 12.5px; margin-left: auto; flex-shrink: 0; }
+
+/* Récap trajet direct / arrêts */
+.trajet-recap-direct {
+  background: rgba(0,229,160,0.05);
+  border: 1px solid rgba(0,229,160,0.2);
+  border-left: 3px solid var(--accent);
+  border-radius: 11px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.trajet-recap-arrets {
+  background: rgba(0,87,255,0.04);
+  border: 1px solid rgba(0,87,255,0.18);
+  border-left: 3px solid var(--primary);
+  border-radius: 11px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trajet-recap-route {
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.trajet-recap-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.trajet-recap-meta span {
+  background: var(--surface2);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trajet-recap-prix {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.trajet-recap-prix strong {
+  color: var(--white);
+  font-weight: 700;
+}
+
+/* Timeline des arrêts */
+.arrets-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 4px 0;
+}
+
+.arret-line-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  position: relative;
+}
+
+.arret-line-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 26px;
+  width: 2px;
+  height: calc(100% - 6px);
+  background: var(--border2);
+}
+
+.arret-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border2);
+  background: var(--surface);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.arret-dot.origin { background: var(--accent); border-color: var(--accent); }
+.arret-dot.destination { background: #FF4D6A; border-color: #FF4D6A; }
+.arret-dot.stop { background: var(--surface2); border-color: var(--primary); }
+
+.arret-line-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.arret-line-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.arret-line-heure {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.arret-line-prix {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(0,87,255,0.12);
+  color: #5B9BFF;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.arrets-segment {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.segment-prix {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(0,229,160,0.05);
+  border: 1px solid rgba(0,229,160,0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.segment-prix strong { color: var(--white); font-weight: 700; }
+
+/* Sessions de départ */
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+  user-select: none;
+}
+
+.session-item:hover { border-color: var(--border2); background: var(--surface2); }
+.session-item.selected { border-color: var(--accent); background: rgba(0,229,160,0.07); }
+.session-item.complet { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+.session-item-left { display: flex; flex-direction: column; gap: 2px; }
+.session-item-date { font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 800; color: var(--white); }
+.session-item-bus { font-size: 11px; color: var(--muted); }
+.session-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.session-item-heure { font-size: 12px; font-weight: 700; color: var(--white); }
+.session-item-places { font-size: 11px; font-weight: 600; color: var(--accent); }
+.session-item-places.zero { color: #FF4D6A; }
+
+/* Options facultatives passager */
+.more-options-toggle {
+  display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--primary);
+  font-weight: 600; cursor: pointer; padding: 4px 2px;
+}
+.more-options { display: none; flex-direction: column; gap: 10px; }
+.more-options.open { display: flex; }
+
+/* Bloc passager */
+.passager-block {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.passager-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.passager-block-num {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.passager-block-remove {
+  background: rgba(255,77,106,0.1);
+  border: 1px solid rgba(255,77,106,0.2);
+  border-radius: 7px;
+  color: #FF4D6A;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+}
+
+.passager-block-remove:hover { background: rgba(255,77,106,0.18); }
+
+.btn-add-passager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  background: none;
+  border: 1.5px dashed var(--border2);
+  border-radius: 11px;
+  padding: 11px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-add-passager:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Prix estimé */
+.prix-preview {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border2);
+  border-radius: 11px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prix-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.prix-preview-row strong { color: var(--white); font-weight: 600; }
+
+.prix-preview-divider { height: 1px; background: var(--border2); }
+
+.prix-preview-row.total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.prix-preview-row.total strong {
+  font-family: 'Manrope', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* Boutons de navigation entre étapes */
+.vente-btn-next {
+  width: 100%;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 11px;
+  padding: 13px;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.vente-btn-next:hover  { opacity: 0.88; }
+.vente-btn-next:active { transform: scale(0.98); }
+.vente-btn-next:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.vente-btn-confirm {
+  flex: 1;
+  background: var(--accent);
+  color: var(--dark);
+}
+
+.vente-btn-back {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 13px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.vente-btn-back:hover { background: var(--surface2); color: var(--white); }
+
+.vente-btn-row { display: flex; gap: 10px; }
+
+/* Animation d'entrée étape 2 — ⚠️ id spécifique au siège */
+#venteSiegeStep2 {
+  display: none;
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#venteSiegeStep2.slide-in {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Centrage de la page vente siège */
+#page-vente-siege { align-items: center; }
+#page-vente-siege .page-header { width: 100%; max-width: 640px; }
+
+@media (max-width: 640px) {
+  #page-vente-siege { align-items: stretch; }
+  #page-vente-siege .page-header { max-width: 100%; }
+  .vente-wrap { margin: 0; }
+}
+
+@media (max-width: 600px) {
+  .vente-field-row { grid-template-columns: 1fr; }
+  .vente-step-head { flex-wrap: wrap; }
+  .vente-step-body { padding: 12px; }
 }

@@ -61,6 +61,9 @@ import { openPageHelp, closePageHelp } from './page-help.js';
 // ── Colis ──
 import { renderColisPage, openColisDetail, closeColisDetail, marquerColisArrive, marquerColisRetire, applyColisFiltres, updateColisBadge } from './colis-page.js';
 
+// ── Vente Siège ──
+import { populateVenteSiegeSelect, onPdvVendeurChange, setTrajetType, setVenteMode, renderTrajetCardListSiege, pickTrajetCardSiege, filterTrajetCardsSiege, toggleMoreOptionsSiege, onSelectTrajet, onMonteeVilleChangeSiege, onSegmentChangeSiege, selectSessionSiege, updatePrixPreview, updateColisPrixPreview, addPassagerSiege, toggleColisSouteSiege, removePassagerSiege, venteGoStepSiege, submitVenteSiege } from './vente-siege.js';
+
 // retour
 import { initBackGuard } from './back-guard.js';
 
@@ -118,6 +121,8 @@ onAuthStateChanged(auth, async (user) => {
 const _origShowPage = showPage;
 window.showPage = function(pageId, navEl) {
   _origShowPage(pageId, navEl);
+  const venteSiegePage = document.getElementById('page-vente-siege');
+  if (venteSiegePage?.classList.contains('active')) populateVenteSiegeSelect();
   const finPage = document.getElementById('page-finances');
   if (finPage?.classList.contains('active')) renderFinancePage();
   const aboPage = document.getElementById('page-abonnement');
@@ -156,10 +161,25 @@ document.addEventListener('change', (e) => {
   }
 });
 
-function venteRapidePlaceholder() {
-  showToast('Vente depuis le siège — à connecter.', TOAST_ICONS.info);
-}
-window.venteRapidePlaceholder = venteRapidePlaceholder;
+window.populateVenteSiegeSelect = populateVenteSiegeSelect;
+window.onPdvVendeurChange        = onPdvVendeurChange;
+window.setTrajetType             = setTrajetType;
+window.setVenteMode              = setVenteMode;
+window.renderTrajetCardListSiege = renderTrajetCardListSiege;
+window.pickTrajetCardSiege       = pickTrajetCardSiege;
+window.filterTrajetCardsSiege    = filterTrajetCardsSiege;
+window.toggleMoreOptionsSiege    = toggleMoreOptionsSiege;
+window.onSelectTrajet            = onSelectTrajet;
+window.onMonteeVilleChangeSiege  = onMonteeVilleChangeSiege;
+window.onSegmentChangeSiege      = onSegmentChangeSiege;
+window.selectSessionSiege        = selectSessionSiege;
+window.updatePrixPreview         = updatePrixPreview;
+window.updateColisPrixPreview    = updateColisPrixPreview;
+window.addPassagerSiege          = addPassagerSiege;
+window.toggleColisSouteSiege     = toggleColisSouteSiege;
+window.removePassagerSiege       = removePassagerSiege;
+window.venteGoStepSiege          = venteGoStepSiege;
+window.submitVenteSiege          = submitVenteSiege;
 
 // ════════════════════════════════
 //  EXPOSER TOUT AU HTML
