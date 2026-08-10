@@ -133,7 +133,7 @@ export function renderAgenceProfile(data) {
             ? `Annulation avec remboursement, jusqu'à ${data.politiqueAnnulation.delaiHeures || '?'}h avant le départ.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + escapeHtml(String(data.politiqueAnnulation.precisions)) + '%</small>' : ''}`
             : `Annulation autorisée sans remboursement.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + escapeHtml(String(data.politiqueAnnulation.precisions)) + '%</small>' : ''}`
       }</p></div>` : ''}
-      <div class="agence-info-card"><h4>Contact</h4><p>${escapeHtml(data.adresse || '—')}<br>${escapeHtml(data.telephone || '—')}</p></div><div class="agence-info-card"><h4>Contact</h4><p>${data.adresse || '—'}<br>${data.telephone || '—'}</p></div>
+      <div class="agence-info-card"><h4>Contact</h4><p>${escapeHtml(data.adresse || '—')}<br>${escapeHtml(data.telephone || '—')}</p></div>
     </div>
   `;
 }

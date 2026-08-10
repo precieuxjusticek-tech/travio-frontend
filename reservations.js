@@ -859,98 +859,9 @@ export function openResaDetail(resaId) {
 
       <div style="padding:0 24px;display:flex;flex-direction:column;gap:14px;padding-bottom:24px;">
 
-        <div>
-          <div class="recap-section-title">Trajet</div>
-          <div class="recap-card">
-            <div class="recap-row"><span>Ligne</span><strong>${routeLabel}</strong></div>
-            <div class="recap-row"><span>Date</span><strong>${dateStr}</strong></div>
-            <div class="recap-row"><span>Heure de départ</span><strong>${escapeHtml(r.heureDepart) || '—'}</strong></div>
-            <div class="recap-row"><span>Bus</span><strong>${escapeHtml(r.busNom) || '—'}</strong></div>
-            <div class="recap-row"><span>Vendu par</span><strong>${escapeHtml(pdv?.nom) || '—'}</strong></div>
-            <div class="recap-row">
-              <span>Vendu le</span>
-              <strong>
-                ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) + ' à ' + new Date(r.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' }) : '—'}
-              </strong>
-            </div>
-            <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(r.pdvEmbarquementNom) || '—'}${(r.arretMontee || trajet?.villeDepart) ? ' (' + escapeHtml(r.arretMontee || trajet?.villeDepart) + ')' : ''}</strong></div>
-            <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(r.pdvDebarquementNom) || '—'}${(r.arretDescente || trajet?.villeArrivee) ? ' (' + escapeHtml(r.arretDescente || trajet?.villeArrivee) + ')' : ''}</strong></div>>
-            ${isMulti ? `<div class="recap-row"><span>Nb. passagers</span><strong>${nbPass} personnes</strong></div>` : ''}
-            <div class="recap-row"><span>Statut</span>
-              <span class="pdv-status-badge ${isAnnulee ? 'inactive' : 'active'}">
-                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${isAnnulee ? '#FF4D6A' : '#00E5A0'};margin-right:5px;vertical-align:middle;"></span>
-                ${isAnnulee ? 'Annulée' : 'Confirmée'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div class="recap-section-title">Passager${isMulti ? 's' : ''}</div>
-          ${isMulti ? r.passagers.map((p, i) => `
-            <div class="recap-passager-card">
-              <div class="recap-passager-title">Passager ${i + 1}</div>
-              <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(p.prenom) || '—'} ${escapeHtml(p.nom) || ''}</strong></div>
-              ${p.telephone ? `<div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(p.telephone)}</strong></div>` : ''}
-              <div class="recap-row"><span>Type</span><strong>${escapeHtml(nomTypePassager(p))}</strong></div>
-              ${p.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(p.siege)}</strong></div>` : ''}
-              ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.nombreBagages > 0 ? ' · ' + p.nombreBagages + ' colis' : ''}${p.prixBagages > 0 ? ' (+' + Number(p.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
-              ${p.colisSoute ? `
-                <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(p.colisSoute.nature) || '—'} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
-                ${p.colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${p.colisSoute.poids} kg</strong></div>` : ''}
-                ${p.colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(p.colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
-              ` : ''}
-              <div class="recap-row"><span>Sous-total</span><strong style="color:var(--accent)">${Number(p.sousTotal || 0).toLocaleString()} XAF</strong></div>
-            </div>`).join('') : `
-            <div class="recap-card">
-              <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(r.prenomPassager) || '—'} ${escapeHtml(r.nomPassager) || ''}</strong></div>
-              <div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(r.telephonePassager) || '—'}</strong></div>
-              <div class="recap-row"><span>Type</span><strong>${escapeHtml(nomTypeResa(r))}</strong></div>
-              ${r.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(r.siege)}</strong></div>` : ''}
-              ${r.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${r.bagages} kg${r.nombreBagages > 0 ? ' · ' + r.nombreBagages + ' colis' : ''}${r.prixBagages > 0 ? ' (+' + Number(r.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
-              ${r.passagers?.[0]?.colisSoute ? `
-                <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(r.passagers[0].colisSoute.nature) || '—'} (${Number(r.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
-                ${r.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${r.passagers[0].colisSoute.poids} kg</strong></div>` : ''}
-                ${r.passagers[0].colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(r.passagers[0].colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
-              ` : ''}
-            </div>`}
-
-        ${r.remarques ? `
-        <div>
-          <div class="recap-section-title">Remarques</div>
-          <div class="recap-card"><div class="recap-row" style="display:block;"><span>${escapeHtml(r.remarques)}</span></div></div>
-        </div>` : ''}
-
         <div class="recap-total-row">
           <span>Total encaissé</span>
           <strong>${Number(r.prixTotal || 0).toLocaleString()} XAF</strong>
-        </div>
-
-        <div>
-          <div class="recap-section-title">Billet de contrôle</div>
-          <div class="recap-card" style="padding:14px 16px;">
-            <div style="display:flex;gap:6px;margin-bottom:12px;">
-              <button class="rqf-btn active" id="billetToggleCode-${escapeHtml(r.id)}" onclick="toggleBilletView('${escapeJsAttr(r.id)}','code')">Code</button>
-              <button class="rqf-btn" id="billetToggleQr-${escapeHtml(r.id)}" onclick="toggleBilletView('${escapeJsAttr(r.id)}','qr')">QR Code</button>
-            </div>
-            <div id="billetViewCode-${escapeHtml(r.id)}" style="text-align:center;padding:18px 0;">
-              <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:6px;color:${r.codeControle ? 'var(--white)' : 'var(--muted)'};background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;padding:16px;">
-                ${escapeHtml(r.codeControle) || '------'}
-              </div>
-              <div style="font-size:11px;color:var(--muted);margin-top:8px;">
-                ${r.codeControle ? 'Code de vérification à 6 caractères' : 'Code de vérification — bientôt disponible'}
-              </div>
-            </div>
-            <div id="billetViewQr-${escapeHtml(r.id)}" style="display:none;text-align:center;padding:18px 0;">
-              <div style="width:140px;height:140px;margin:0 auto;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                <svg width="36" height="36" viewBox="0 0 16 16" fill="none" style="opacity:.35;"><rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="10" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><path d="M10 10h2v2h-2zM13 10h2v2h-2zM10 13h2v2h-2zM13 13h2v2h-2z" fill="currentColor"/></svg>
-              </div>
-              <div style="font-size:11px;color:var(--muted);margin-top:8px;">QR code — bientôt disponible</div>
-            </div>
-            <button class="pdv-action-btn" style="width:100%;margin-top:10px;" onclick="imprimerBillet('${escapeJsAttr(r.id)}')">
-              ${ICONS.impression} Imprimer le billet
-            </button>
-          </div>
         </div>
 
         ${r.passagerRetire ? `
@@ -989,6 +900,98 @@ export function openResaDetail(resaId) {
           </button>
         </div>` : ''}
 
+        <div style="display:flex;gap:6px;">
+          <button class="rqf-btn active" id="resaDetailTabBtn-trajet" onclick="switchResaDetailTab('trajet')">Trajet</button>
+          <button class="rqf-btn" id="resaDetailTabBtn-passager" onclick="switchResaDetailTab('passager')">Passager${isMulti ? 's' : ''}</button>
+          <button class="rqf-btn" id="resaDetailTabBtn-billet" onclick="switchResaDetailTab('billet')">Billet</button>
+        </div>
+
+        <div id="resaDetailTab-trajet">
+          <div class="recap-card">
+            <div class="recap-row"><span>Ligne</span><strong>${routeLabel}</strong></div>
+            <div class="recap-row"><span>Date</span><strong>${dateStr}</strong></div>
+            <div class="recap-row"><span>Heure de départ</span><strong>${escapeHtml(r.heureDepart) || '—'}</strong></div>
+            <div class="recap-row"><span>Bus</span><strong>${escapeHtml(r.busNom) || '—'}</strong></div>
+            <div class="recap-row"><span>Vendu par</span><strong>${escapeHtml(pdv?.nom) || '—'}</strong></div>
+            <div class="recap-row">
+              <span>Vendu le</span>
+              <strong>
+                ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) + ' à ' + new Date(r.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' }) : '—'}
+              </strong>
+            </div>
+            <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(r.pdvEmbarquementNom) || '—'}${(r.arretMontee || trajet?.villeDepart) ? ' (' + escapeHtml(r.arretMontee || trajet?.villeDepart) + ')' : ''}</strong></div>
+            <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(r.pdvDebarquementNom) || '—'}${(r.arretDescente || trajet?.villeArrivee) ? ' (' + escapeHtml(r.arretDescente || trajet?.villeArrivee) + ')' : ''}</strong></div>
+            ${isMulti ? `<div class="recap-row"><span>Nb. passagers</span><strong>${nbPass} personnes</strong></div>` : ''}
+            <div class="recap-row"><span>Statut</span>
+              <span class="pdv-status-badge ${isAnnulee ? 'inactive' : 'active'}">
+                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${isAnnulee ? '#FF4D6A' : '#00E5A0'};margin-right:5px;vertical-align:middle;"></span>
+                ${isAnnulee ? 'Annulée' : 'Confirmée'}
+              </span>
+            </div>
+          </div>
+          ${r.remarques ? `
+          <div style="margin-top:14px;">
+            <div class="recap-section-title">Remarques</div>
+            <div class="recap-card"><div class="recap-row" style="display:block;"><span>${escapeHtml(r.remarques)}</span></div></div>
+          </div>` : ''}
+        </div>
+
+        <div id="resaDetailTab-passager" style="display:none;">
+          ${isMulti ? r.passagers.map((p, i) => `
+            <div class="recap-passager-card">
+              <div class="recap-passager-title">Passager ${i + 1}</div>
+              <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(p.prenom) || '—'} ${escapeHtml(p.nom) || ''}</strong></div>
+              ${p.telephone ? `<div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(p.telephone)}</strong></div>` : ''}
+              <div class="recap-row"><span>Type</span><strong>${escapeHtml(nomTypePassager(p))}</strong></div>
+              ${p.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(p.siege)}</strong></div>` : ''}
+              ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.nombreBagages > 0 ? ' · ' + p.nombreBagages + ' colis' : ''}${p.prixBagages > 0 ? ' (+' + Number(p.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
+              ${p.colisSoute ? `
+                <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(p.colisSoute.nature) || '—'} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+                ${p.colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${p.colisSoute.poids} kg</strong></div>` : ''}
+                ${p.colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(p.colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
+              ` : ''}
+              <div class="recap-row"><span>Sous-total</span><strong style="color:var(--accent)">${Number(p.sousTotal || 0).toLocaleString()} XAF</strong></div>
+            </div>`).join('') : `
+            <div class="recap-card">
+              <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(r.prenomPassager) || '—'} ${escapeHtml(r.nomPassager) || ''}</strong></div>
+              <div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(r.telephonePassager) || '—'}</strong></div>
+              <div class="recap-row"><span>Type</span><strong>${escapeHtml(nomTypeResa(r))}</strong></div>
+              ${r.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(r.siege)}</strong></div>` : ''}
+              ${r.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${r.bagages} kg${r.nombreBagages > 0 ? ' · ' + r.nombreBagages + ' colis' : ''}${r.prixBagages > 0 ? ' (+' + Number(r.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
+              ${r.passagers?.[0]?.colisSoute ? `
+                <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(r.passagers[0].colisSoute.nature) || '—'} (${Number(r.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+                ${r.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${r.passagers[0].colisSoute.poids} kg</strong></div>` : ''}
+                ${r.passagers[0].colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(r.passagers[0].colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
+              ` : ''}
+            </div>`}
+        </div>
+
+        <div id="resaDetailTab-billet" style="display:none;">
+          <div class="recap-card" style="padding:14px 16px;">
+            <div style="display:flex;gap:6px;margin-bottom:12px;">
+              <button class="rqf-btn active" id="billetToggleCode-${escapeHtml(r.id)}" onclick="toggleBilletView('${escapeJsAttr(r.id)}','code')">Code</button>
+              <button class="rqf-btn" id="billetToggleQr-${escapeHtml(r.id)}" onclick="toggleBilletView('${escapeJsAttr(r.id)}','qr')">QR Code</button>
+            </div>
+            <div id="billetViewCode-${escapeHtml(r.id)}" style="text-align:center;padding:18px 0;">
+              <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:6px;color:${r.codeControle ? 'var(--white)' : 'var(--muted)'};background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;padding:16px;">
+                ${escapeHtml(r.codeControle) || '------'}
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:8px;">
+                ${r.codeControle ? 'Code de vérification à 6 caractères' : 'Code de vérification — bientôt disponible'}
+              </div>
+            </div>
+            <div id="billetViewQr-${escapeHtml(r.id)}" style="display:none;text-align:center;padding:18px 0;">
+              <div style="width:140px;height:140px;margin:0 auto;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <svg width="36" height="36" viewBox="0 0 16 16" fill="none" style="opacity:.35;"><rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="10" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><path d="M10 10h2v2h-2zM13 10h2v2h-2zM10 13h2v2h-2zM13 13h2v2h-2z" fill="currentColor"/></svg>
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:8px;">QR code — bientôt disponible</div>
+            </div>
+            <button class="pdv-action-btn" style="width:100%;margin-top:10px;" onclick="imprimerBillet('${escapeJsAttr(r.id)}')">
+              ${ICONS.impression} Imprimer le billet
+            </button>
+          </div>
+        </div>
+
         <div class="resa-side-actions">
           ${!isAnnulee ? `
           ${!peutModifier ? `
@@ -1010,6 +1013,16 @@ export function openResaDetail(resaId) {
   document.body.appendChild(overlay);
   requestAnimationFrame(() => overlay.classList.add('show'));
 }
+
+function switchResaDetailTab(tab) {
+  ['trajet', 'passager', 'billet'].forEach(t => {
+    const panel = document.getElementById(`resaDetailTab-${t}`);
+    const btn   = document.getElementById(`resaDetailTabBtn-${t}`);
+    if (panel) panel.style.display = t === tab ? '' : 'none';
+    if (btn)   btn.classList.toggle('active', t === tab);
+  });
+}
+window.switchResaDetailTab = switchResaDetailTab;
 
 export function closeResaDetail() {
   const o = document.getElementById('resaDetailOverlay');

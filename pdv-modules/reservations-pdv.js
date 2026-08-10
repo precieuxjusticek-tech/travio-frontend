@@ -497,64 +497,9 @@ export function openResaDetail(resaId) {
         <button onclick="closeResaDetail()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0;">${ICONS.close}</button>
       </div>
 
-      <div class="recap-section-title">Trajet</div>
-      <div class="recap-card" style="margin-bottom:14px;">
-        <div class="recap-row"><span>Ligne</span><strong>${routeAffichee}</strong></div>
-        <div class="recap-row"><span>Date</span><strong>${dateStr}</strong></div>
-        <div class="recap-row"><span>Départ</span><strong>${resa.heureDepart || '—'}</strong></div>
-        <div class="recap-row"><span>Bus</span><strong>${escapeHtml(resa.busNom || '—')}</strong></div>
-        <div class="recap-row"><span>Vendu le</span><strong>${resa.createdAt ? new Date(resa.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) + ' à ' + new Date(resa.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' }) : '—'}</strong></div>
-        <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(resa.pdvEmbarquementNom || '—')}${(resa.arretMontee || trajet?.villeDepart) ? ' (' + escapeHtml(resa.arretMontee || trajet?.villeDepart) + ')' : ''}</strong></div>
-        <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(resa.pdvDebarquementNom || '—')}${(resa.arretDescente || trajet?.villeArrivee) ? ' (' + escapeHtml(resa.arretDescente || trajet?.villeArrivee) + ')' : ''}</strong></div>
-        ${isMulti ? `<div class="recap-row"><span>Passagers</span><strong>${nbPass} personnes</strong></div>` : ''}
-      </div>
-
-      <div class="recap-section-title">Passager${isMulti ? 's' : ''}</div>
-      ${isMulti ? passagersHtml : `
-      <div class="recap-card" style="margin-bottom:14px;">
-        <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(resa.prenomPassager || '—')} ${escapeHtml(resa.nomPassager || '')}</strong></div>
-        <div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(resa.telephonePassager || '—')}</strong></div>
-        <div class="recap-row"><span>Type</span><strong>${nomTypeResa(resa)}</strong></div>
-        ${resa.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(resa.siege)}</strong></div>` : ''}
-        ${resa.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${resa.bagages} kg${resa.nombreBagages > 0 ? ` · ${resa.nombreBagages} colis` : ''}${resa.prixBagages > 0 ? ` (+${Number(resa.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
-        ${resa.passagers?.[0]?.colisSoute ? `
-          <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(resa.passagers[0].colisSoute.nature || '—')} (${Number(resa.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
-          ${resa.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${resa.passagers[0].colisSoute.poids} kg</strong></div>` : ''}
-          ${resa.passagers[0].colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(resa.passagers[0].colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
-        ` : ''}
-        </div>`}
-
-      ${resa.remarques ? `
-      <div class="recap-section-title">Remarques</div>
-      <div class="recap-card" style="margin-bottom:14px;"><div class="recap-row" style="display:block;"><span>${escapeHtml(resa.remarques)}</span></div></div>` : ''}
-
       <div class="recap-total-row">
         <span>Total encaissé</span>
         <strong>${Number(resa.prixTotal || 0).toLocaleString()} XAF</strong>
-      </div>
-
-      <div class="recap-section-title" style="margin-top:14px;">Billet de contrôle</div>
-      <div class="recap-card" style="padding:14px 16px;">
-        <div style="display:flex;gap:6px;margin-bottom:12px;">
-          <button class="rqf-btn active" id="billetToggleCode-${resa.id}" onclick="toggleBilletViewPDV('${resa.id}','code')">Code</button>
-          <button class="rqf-btn" id="billetToggleQr-${resa.id}" onclick="toggleBilletViewPDV('${resa.id}','qr')">QR Code</button>
-        </div>
-        <div id="billetViewCode-${resa.id}" style="text-align:center;padding:18px 0;">
-          <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:5px;color:var(--white);background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;padding:14px;">
-            ${resa.codeControle || '------'}
-          </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:8px;">Code de vérification à 6 caractères</div>
-        </div>
-        <div id="billetViewQr-${resa.id}" style="display:none;text-align:center;padding:18px 0;">
-          <div style="width:130px;height:130px;margin:0 auto;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-            <svg width="32" height="32" viewBox="0 0 16 16" fill="none" style="opacity:.35;"><rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="10" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><path d="M10 10h2v2h-2zM13 10h2v2h-2zM10 13h2v2h-2zM13 13h2v2h-2z" fill="currentColor"/></svg>
-          </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:8px;">QR code — bientôt disponible</div>
-        </div>
-        <button onclick="imprimerBilletPDV('${resa.id}')"
-          style="width:100%;margin-top:10px;background:var(--accent);color:var(--dark);border:none;border-radius:11px;padding:11px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;">
-          ${ICONS.print} Imprimer le billet
-        </button>
       </div>
 
       ${resa.passagerRetire ? `
@@ -576,6 +521,69 @@ export function openResaDetail(resaId) {
           le ${resa.dateReaffectation ? new Date(resa.dateReaffectation).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) : '—'}.
         </p>
       </div>` : ''}
+
+      <div style="display:flex;gap:6px;margin-top:14px;margin-bottom:14px;">
+        <button class="rqf-btn active" id="resaDetailTabBtn-trajet" onclick="switchResaDetailTabPDV('trajet')">Trajet</button>
+        <button class="rqf-btn" id="resaDetailTabBtn-passager" onclick="switchResaDetailTabPDV('passager')">Passager${isMulti ? 's' : ''}</button>
+        <button class="rqf-btn" id="resaDetailTabBtn-billet" onclick="switchResaDetailTabPDV('billet')">Billet</button>
+      </div>
+
+      <div id="resaDetailTab-trajet">
+        <div class="recap-card">
+          <div class="recap-row"><span>Ligne</span><strong>${routeAffichee}</strong></div>
+          <div class="recap-row"><span>Date</span><strong>${dateStr}</strong></div>
+          <div class="recap-row"><span>Départ</span><strong>${resa.heureDepart || '—'}</strong></div>
+          <div class="recap-row"><span>Bus</span><strong>${escapeHtml(resa.busNom || '—')}</strong></div>
+          <div class="recap-row"><span>Vendu le</span><strong>${resa.createdAt ? new Date(resa.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) + ' à ' + new Date(resa.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' }) : '—'}</strong></div>
+          <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(resa.pdvEmbarquementNom || '—')}${(resa.arretMontee || trajet?.villeDepart) ? ' (' + escapeHtml(resa.arretMontee || trajet?.villeDepart) + ')' : ''}</strong></div>
+          <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(resa.pdvDebarquementNom || '—')}${(resa.arretDescente || trajet?.villeArrivee) ? ' (' + escapeHtml(resa.arretDescente || trajet?.villeArrivee) + ')' : ''}</strong></div>
+          ${isMulti ? `<div class="recap-row"><span>Passagers</span><strong>${nbPass} personnes</strong></div>` : ''}
+        </div>
+        ${resa.remarques ? `
+        <div class="recap-section-title" style="margin-top:14px;">Remarques</div>
+        <div class="recap-card"><div class="recap-row" style="display:block;"><span>${escapeHtml(resa.remarques)}</span></div></div>` : ''}
+      </div>
+
+      <div id="resaDetailTab-passager" style="display:none;">
+        ${isMulti ? passagersHtml : `
+        <div class="recap-card">
+          <div class="recap-row"><span>Nom complet</span><strong>${escapeHtml(resa.prenomPassager || '—')} ${escapeHtml(resa.nomPassager || '')}</strong></div>
+          <div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(resa.telephonePassager || '—')}</strong></div>
+          <div class="recap-row"><span>Type</span><strong>${nomTypeResa(resa)}</strong></div>
+          ${resa.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(resa.siege)}</strong></div>` : ''}
+          ${resa.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${resa.bagages} kg${resa.nombreBagages > 0 ? ` · ${resa.nombreBagages} colis` : ''}${resa.prixBagages > 0 ? ` (+${Number(resa.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
+          ${resa.passagers?.[0]?.colisSoute ? `
+            <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(resa.passagers[0].colisSoute.nature || '—')} (${Number(resa.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
+            ${resa.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${resa.passagers[0].colisSoute.poids} kg</strong></div>` : ''}
+            ${resa.passagers[0].colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(resa.passagers[0].colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
+          ` : ''}
+          </div>`}
+      </div>
+
+      <div id="resaDetailTab-billet" style="display:none;">
+        <div class="recap-card" style="padding:14px 16px;">
+          <div style="display:flex;gap:6px;margin-bottom:12px;">
+            <button class="rqf-btn active" id="billetToggleCode-${resa.id}" onclick="toggleBilletViewPDV('${resa.id}','code')">Code</button>
+            <button class="rqf-btn" id="billetToggleQr-${resa.id}" onclick="toggleBilletViewPDV('${resa.id}','qr')">QR Code</button>
+          </div>
+          <div id="billetViewCode-${resa.id}" style="text-align:center;padding:18px 0;">
+            <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:5px;color:var(--white);background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;padding:14px;">
+              ${resa.codeControle || '------'}
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px;">Code de vérification à 6 caractères</div>
+          </div>
+          <div id="billetViewQr-${resa.id}" style="display:none;text-align:center;padding:18px 0;">
+            <div style="width:130px;height:130px;margin:0 auto;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <svg width="32" height="32" viewBox="0 0 16 16" fill="none" style="opacity:.35;"><rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="10" width="5" height="5" stroke="currentColor" stroke-width="1.3"/><path d="M10 10h2v2h-2zM13 10h2v2h-2zM10 13h2v2h-2zM13 13h2v2h-2z" fill="currentColor"/></svg>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px;">QR code — bientôt disponible</div>
+          </div>
+          <button onclick="imprimerBilletPDV('${resa.id}')"
+            style="width:100%;margin-top:10px;background:var(--accent);color:var(--dark);border:none;border-radius:11px;padding:11px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;">
+            ${ICONS.print} Imprimer le billet
+          </button>
+        </div>
+      </div>
 
       ${resa.statut !== 'annulée' ? `
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;">
@@ -600,6 +608,16 @@ export function openResaDetail(resaId) {
   });
 }
 window.openResaDetail = openResaDetail;
+
+function switchResaDetailTabPDV(tab) {
+  ['trajet', 'passager', 'billet'].forEach(t => {
+    const panel = document.getElementById(`resaDetailTab-${t}`);
+    const btn   = document.getElementById(`resaDetailTabBtn-${t}`);
+    if (panel) panel.style.display = t === tab ? '' : 'none';
+    if (btn)   btn.classList.toggle('active', t === tab);
+  });
+}
+window.switchResaDetailTabPDV = switchResaDetailTabPDV;
 
 export function closeResaDetail() {
   const overlay = document.getElementById('resaDetailOverlay');
