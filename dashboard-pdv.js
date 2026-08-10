@@ -209,52 +209,37 @@ async function updateAccueilStats() {
   const confMois = resasMois.filter(r => r.statut !== 'annulée');
 
   const vendusJour = confJour.reduce((s, r) => s + (r.nbPassagers || r.passagers?.length || 1), 0);
-  const vendusMois = confMois.reduce((s, r) => s + (r.nbPassagers || r.passagers?.length || 1), 0);
-  const revMois    = confMois.reduce((s, r) => s + (r.prixTotal || 0), 0);
-  const revJour    = confJour.reduce((s, r) => s + (r.prixTotal || 0), 0);
+  const revJour     = confJour.reduce((s, r) => s + (r.prixTotal || 0), 0);
 
-  // NOUVEAU — comparaison vs période précédente
+  // Revenus colis du jour
+  const colisJour       = (colisList || []).filter(c => toBrazzaDate(c.createdAt) === today);
+  const revenuColisJour = colisJour.reduce((s, c) => s + Number(c.prixTransport || 0), 0);
+
+  // Comparaison vs période précédente
   const yesterday = toBrazzaDate(new Date(Date.now() - 86400000).toISOString());
   const resasHierTotal = resaList.filter(r => toBrazzaDate(r.createdAt) === yesterday);
   const resasHierConf  = resasHierTotal.filter(r => r.statut !== 'annulée');
 
-  const todayDateObj  = new Date(today + 'T00:00:00Z');
-  const quantiemeAuj  = todayDateObj.getUTCDate();
-  const prevMonthDate = new Date(Date.UTC(todayDateObj.getUTCFullYear(), todayDateObj.getUTCMonth() - 1, 1));
-  const prevMonth     = prevMonthDate.toISOString().slice(0, 7);
-  const dernierJourPrevMois = new Date(Date.UTC(prevMonthDate.getUTCFullYear(), prevMonthDate.getUTCMonth() + 1, 0)).getUTCDate();
-  const quantiemeLimite = Math.min(quantiemeAuj, dernierJourPrevMois);
-
-  const resasMoisPrec = resaList.filter(r => {
-    if (r.statut === 'annulée') return false;
-    const d = toBrazzaDate(r.createdAt);
-    if (!d.startsWith(prevMonth)) return false;
-    const jour = Number(d.slice(8, 10));
-    return jour <= quantiemeLimite;
-  });
-
-  const vendusHier     = resasHierConf.reduce((s, r) => s + (r.nbPassagers || r.passagers?.length || 1), 0);
-  const revHier        = resasHierConf.reduce((s, r) => s + (r.prixTotal || 0), 0);
-  const vendusMoisPrec = resasMoisPrec.reduce((s, r) => s + (r.nbPassagers || r.passagers?.length || 1), 0);
+  const vendusHier = resasHierConf.reduce((s, r) => s + (r.nbPassagers || r.passagers?.length || 1), 0);
+  const revHier     = resasHierConf.reduce((s, r) => s + (r.prixTotal || 0), 0);
 
   const setEl   = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
 
-  setEl('statVendusJour',  vendusJour.toLocaleString());
-  setEl('statVendusMois',  vendusMois.toLocaleString());
-  setEl('statRevenusMois', revJour.toLocaleString() + ' XAF');
-  setEl('statPlacesTotal', resasJour.length.toLocaleString());
+  setEl('statVendusJour',    vendusJour.toLocaleString());
+  setEl('statColisJourPDV',  revenuColisJour.toLocaleString() + ' XAF');
+  setEl('statCardBadgeColis', `${colisJour.length} colis aujourd'hui`);
+  setEl('statRevenusMois',   revJour.toLocaleString() + ' XAF');
+  setEl('statPlacesTotal',   resasJour.length.toLocaleString());
 
-  // NOUVEAU — compteur réservations du jour sur chaque KPI (sauf "Vendus ce mois")
   const resaTodayLabel = `${resasJour.length} résa. aujourd'hui`;
   setEl('statCardBadgeResa1', resaTodayLabel);
   setEl('statCardBadgeResa2', resaTodayLabel);
   setEl('statCardBadgeResa4', resaTodayLabel);
 
-  setHtml('statPlacesTotalDelta',  cmpHtmlPDV(resasJour.length, resasHierTotal.length));
-  setHtml('statVendusJourDelta',   cmpHtmlPDV(vendusJour, vendusHier));
-  setHtml('statVendusMoisDelta',   cmpHtmlPDV(vendusMois, vendusMoisPrec));
-  setHtml('statRevenusMoisDelta',  cmpHtmlPDV(revJour, revHier));
+  setHtml('statPlacesTotalDelta', cmpHtmlPDV(resasJour.length, resasHierTotal.length));
+  setHtml('statVendusJourDelta',  cmpHtmlPDV(vendusJour, vendusHier));
+  setHtml('statRevenusMoisDelta', cmpHtmlPDV(revJour, revHier));
 }
 
 // ════════════════════════════════
