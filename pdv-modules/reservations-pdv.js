@@ -959,7 +959,7 @@ export async function confirmerRetraitPassagerPDV(resaId, passagerIndex) {
       body: JSON.stringify({ passagerIndex }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur retrait passager.', ICONS.banned); return; }
+    if (!res.ok) { showToast('Erreur retrait passager.', ICONS.banned); return; }
 
     const idx = resaList.findIndex(r => r.id === resaId);
     if (idx !== -1) resaList[idx] = { ...resaList[idx], ...data.reservation };
@@ -1000,7 +1000,7 @@ export async function confirmerAnnulationPdv(resaId) {
     const data = await res.json();
 
     if (!res.ok) {
-      showToast(data.message || 'Erreur annulation.', ICONS.banned);
+      showToast('Erreur annulation.', ICONS.banned);
       return;
     }
 
@@ -1286,7 +1286,7 @@ export async function confirmerModificationResa(resaId) {
       method: 'PATCH', body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur modification.', ICONS.banned); return; }
+    if (!res.ok) { showToast('Erreur modification.', ICONS.banned); return; }
 
     const idx = resaList.findIndex(r => r.id === resaId);
     if (idx !== -1) resaList[idx] = { ...resaList[idx], ...data.reservation };

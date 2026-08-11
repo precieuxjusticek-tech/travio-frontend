@@ -158,7 +158,7 @@ export async function deleteSession(sessionId, departId) {
   try {
     const res = await apiFetch(`${BACKEND}/session/${sessionId}`, { method: 'DELETE' });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur suppression.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la suppression de la session.', TOAST_ICONS.error); return; }
     showToast('Session supprimée.', TOAST_ICONS.success, true);
     // Recharger via le busDetailOverlay si ouvert
     const busOverlay = document.getElementById('busDetailOverlay');
@@ -283,7 +283,7 @@ export async function submitEditSession(sessionId) {
       }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la sauvegarde de la session.', TOAST_ICONS.error); return; }
 
     closeEditSession();
     showToast('Session modifiée avec succès !', TOAST_ICONS.success, true);
@@ -383,7 +383,7 @@ export async function submitIncidentSession(sessionId) {
       body: JSON.stringify({ cause, details }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de l\'enregistrement de l\'incident.', TOAST_ICONS.error); return; }
 
     closeIncidentSession();
     showToast('Incident enregistré. Session annulée.', TOAST_ICONS.banned || ICONS.banned, false);

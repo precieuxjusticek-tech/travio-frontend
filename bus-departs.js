@@ -263,7 +263,7 @@ export async function submitCreateDepart(trajetId) {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la création du bus.', TOAST_ICONS.error); return; }
 
     invalidateDeparts(trajetId);
     invalidateAllDepartsCache();
@@ -461,7 +461,7 @@ export async function submitEditDepart(departId, trajetId) {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la sauvegarde du bus.', TOAST_ICONS.error); return; }
 
     invalidateDeparts(trajetId);
     invalidateAllDepartsCache();
@@ -531,7 +531,7 @@ export async function deleteDepart(departId, trajetId) {
       openResolutionReservationsModal(data.sessions, data.message, { departId, trajetId, actionType: 'delete' });
       return;
     }
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la suppression du bus.', TOAST_ICONS.error); return; }
     invalidateDeparts(trajetId);
     invalidateAllDepartsCache();
     showToast('Bus supprimé.', TOAST_ICONS.success, true);
@@ -592,13 +592,13 @@ export async function confirmToggleDepartStatut(departId, trajetId, nouvelEtat) 
       openResolutionReservationsModal(data.sessions, data.message, { departId, trajetId, actionType: 'statut', nouvelEtat });
       return;
     }
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors du changement de statut du bus.', TOAST_ICONS.error); return; }
 
     invalidateDeparts(trajetId);
     invalidateAllDepartsCache();
 
     showToast(
-      data.message || (nouvelEtat ? 'Bus activé avec succès.' : 'Bus désactivé avec succès.'),
+      nouvelEtat ? 'Bus activé avec succès.' : 'Bus désactivé avec succès.',
       nouvelEtat ? TOAST_ICONS.success : TOAST_ICONS.error,
       nouvelEtat
     );
@@ -861,11 +861,11 @@ export async function reaffecterSessionResolution(sessionId) {
       body: JSON.stringify({ nouveauDepartId }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur réaffectation.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la réaffectation.', TOAST_ICONS.error); return; }
 
     const s = _resolutionSessions.find(x => x.sessionId === sessionId);
     if (s) s.resolue = true;
-    showToast(data.message, TOAST_ICONS.success, true);
+    showToast('Réservation réaffectée avec succès.', TOAST_ICONS.success, true);
     renderResolutionSessions();
   } catch (err) {
     showToast('Impossible de contacter le serveur.', TOAST_ICONS.error);
@@ -977,11 +977,11 @@ export async function confirmAnnulerSessionResolution(sessionId) {
   try {
     const res = await apiFetch(`${BACKEND}/session/${sessionId}/annuler-toutes`, { method: 'POST' });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur annulation.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de l\'annulation.', TOAST_ICONS.error); return; }
 
     const s = _resolutionSessions.find(x => x.sessionId === sessionId);
     if (s) s.resolue = true;
-    showToast(data.message, TOAST_ICONS.success, true);
+    showToast('Réservations annulées avec succès.', TOAST_ICONS.success, true);
     renderResolutionSessions();
   } catch (err) {
     showToast('Impossible de contacter le serveur.', TOAST_ICONS.error);
@@ -1003,8 +1003,8 @@ async function finaliserResolution() {
     try {
       const res = await apiFetch(`${BACKEND}/vehicule/${ctx.vehiculeId}`, { method: 'DELETE' });
       const data = await res.json();
-      if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
-      showToast(data.message, TOAST_ICONS.success, true);
+      if (!res.ok) { showToast('Erreur lors de la suppression du véhicule.', TOAST_ICONS.error); return; }
+      showToast('Véhicule supprimé avec succès.', TOAST_ICONS.success, true);
       closeTrajetDetail();
       setTimeout(() => openTrajetDetail(ctx.trajetId, 'bus'), 400);
     } catch (err) {
@@ -1017,8 +1017,8 @@ async function finaliserResolution() {
         body: JSON.stringify({ actif: ctx.nouvelEtat }),
       });
       const data = await res.json();
-      if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
-      showToast(data.message, TOAST_ICONS.success, true);
+      if (!res.ok) { showToast('Erreur lors du changement de statut du véhicule.', TOAST_ICONS.error); return; }
+      showToast(ctx.nouvelEtat ? 'Véhicule activé avec succès.' : 'Véhicule désactivé avec succès.', TOAST_ICONS.success, true);
       closeTrajetDetail();
       setTimeout(() => openTrajetDetail(ctx.trajetId, 'bus'), 400);
     } catch (err) {
@@ -1028,7 +1028,7 @@ async function finaliserResolution() {
     try {
       const res = await apiFetch(`${BACKEND}/trajet/${ctx.trajetId}`, { method: 'DELETE' });
       const data = await res.json();
-      if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+      if (!res.ok) { showToast('Erreur lors de la suppression du trajet.', TOAST_ICONS.error); return; }
       invalidateDeparts(ctx.trajetId);
       invalidateAllDepartsCache();
       setTrajetList(trajetList.filter(t => t.id !== ctx.trajetId));
@@ -1045,7 +1045,7 @@ async function finaliserResolution() {
         body: JSON.stringify({ actif: ctx.nouvelEtat }),
       });
       const data = await res.json();
-      if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+      if (!res.ok) { showToast('Erreur lors du changement de statut du trajet.', TOAST_ICONS.error); return; }
 
       invalidateDeparts(ctx.trajetId);
       invalidateAllDepartsCache();
@@ -1053,7 +1053,7 @@ async function finaliserResolution() {
       if (trajet) trajet.actif = ctx.nouvelEtat;
       renderTrajetsPage();
       updateOverviewStats();
-      showToast(data.message, ctx.nouvelEtat ? TOAST_ICONS.success : TOAST_ICONS.error, ctx.nouvelEtat);
+      showToast(ctx.nouvelEtat ? 'Trajet activé avec succès.' : 'Trajet désactivé avec succès.', ctx.nouvelEtat ? TOAST_ICONS.success : TOAST_ICONS.error, ctx.nouvelEtat);
       closeTrajetDetail();
       setTimeout(() => openTrajetDetail(ctx.trajetId), 400);
     } catch (err) {
@@ -1074,8 +1074,8 @@ export async function genererSessions(departId) {
       body: JSON.stringify({ nbJours: 14 }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
-    showToast(data.message, TOAST_ICONS.success, true);
+    if (!res.ok) { showToast('Erreur lors de la génération des sessions.', TOAST_ICONS.error); return; }
+    showToast('Sessions générées avec succès.', TOAST_ICONS.success, true);
   } catch (err) {
     showToast('Impossible de contacter le serveur.', TOAST_ICONS.error);
   }
@@ -1091,8 +1091,8 @@ export async function handleGenererSessions(departId) {
       body: JSON.stringify({ nbJours: 14 }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
-    showToast(data.message, TOAST_ICONS.success, true);
+    if (!res.ok) { showToast('Erreur lors de la génération des sessions.', TOAST_ICONS.error); return; }
+    showToast('Sessions générées avec succès.', TOAST_ICONS.success, true);
 
     const busOverlay = document.getElementById('busDetailOverlay');
     if (busOverlay) {

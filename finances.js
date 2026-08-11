@@ -37,12 +37,12 @@ async function ensureColisFinLoaded() {
   if (colisFinLoaded) return;
   try {
     const res  = await apiFetch(`${BACKEND}/colis/agence?agenceId=${agenceData.id}`, { method: 'GET' });
+    if (!res.ok) return;
     const data = await res.json();
-    if (res.ok) colisListeFin = data.colis || [];
+    colisListeFin = data.colis || [];
     colisFinLoaded = true;
   } catch (err) {
     console.error('Erreur chargement colis (finances) :', err);
-    colisFinLoaded = true;
   }
 }
 
@@ -1190,6 +1190,7 @@ function getFinPdvStatsCacheKey(pdvId) {
 async function loadFinPdvStats(pdvId, cacheKey) {
   if (finPdvStatsCache[cacheKey]) return finPdvStatsCache[cacheKey];
   const res = await apiFetch(buildStatsUrl(pdvId));
+  if (!res.ok) throw new Error('STATS_PDV_FAILED');
   const data = await res.json();
   finPdvStatsCache[cacheKey] = data;
   return data;
@@ -1670,6 +1671,7 @@ export function openFinanceTrajetDetail(trajetId) {
         url += `?dateDebut=${debut2}&dateFin=${fin2}`;
       }
       const res = await apiFetch(url);
+      if (!res.ok) throw new Error('STATS_TRAJET_REEL_FAILED');
       const data = await res.json();
       const container = document.getElementById('financeTrajetTauxReel');
       if (!container) return;
@@ -1695,6 +1697,8 @@ export function openFinanceTrajetDetail(trajetId) {
       }).join('');
     } catch (err) {
       console.error('Erreur remplissage réel trajet :', err);
+      const container = document.getElementById('financeTrajetTauxReel');
+      if (container) container.innerHTML = `<div style="text-align:center;padding:12px;color:#FF4D6A;font-size:12px;">Erreur de chargement.</div>`;
     }
   })();
 }

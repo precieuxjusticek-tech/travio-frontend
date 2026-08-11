@@ -1208,7 +1208,7 @@ export function handleModifierResa(resaId) {
 
         <div class="pdv-field-group">
           <label>Bagages (kg)</label>
-          <input type="number" class="pdv-input" id="modifBagages" value="${r.bagages || 0}" min="0" oninput="recalculerTotalModif()">
+          <input type="number" class="pdv-input" id="modifBagages" value="${Number(r.bagages) || 0}" min="0" oninput="recalculerTotalModif()">
         </div>
 
         <div class="pdv-field-group">
@@ -1225,7 +1225,7 @@ export function handleModifierResa(resaId) {
           <span>Total encaissé (calcul automatique)</span>
           <strong id="modifTotalDisplay">${Number(r.prixTotal || 0).toLocaleString()} XAF</strong>
         </div>
-        <input type="hidden" id="modifPrixTotal" value="${r.prixTotal || 0}">
+        <input type="hidden" id="modifPrixTotal" value="${Number(r.prixTotal) || 0}">
 
       </div>
       <button class="pdv-btn-next" onclick="confirmerModificationResa('${escapeJsAttr(resaId)}')">
@@ -1360,7 +1360,7 @@ export async function confirmerModificationResa(resaId) {
       method: 'PATCH', body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur modification.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la modification de la réservation.', TOAST_ICONS.error); return; }
 
     const idx = resaList.findIndex(r => r.id === resaId);
     if (idx !== -1) resaList[idx] = { ...resaList[idx], ...data.reservation };
@@ -1382,7 +1382,7 @@ export async function marquerBaisseVerifiee(resaId) {
   try {
     const res  = await apiFetch(`${BACKEND}/reservations/${resaId}/verifier-baisse`, { method: 'PATCH' });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la mise à jour.', TOAST_ICONS.error); return; }
 
     const idx = resaList.findIndex(r => r.id === resaId);
     if (idx !== -1) resaList[idx].baisseNonVerifiee = false;
@@ -1727,7 +1727,7 @@ async function confirmerRetraitPassager(resaId, passagerIndex) {
       method: 'PATCH', body: JSON.stringify({ passagerIndex }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur retrait passager.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors du retrait du passager.', TOAST_ICONS.error); return; }
 
     const idx = resaList.findIndex(r => r.id === resaId);
     if (idx !== -1) resaList[idx] = { ...resaList[idx], ...data.reservation };
@@ -1760,7 +1760,7 @@ export async function confirmerAnnulation(resaId) {
   try {
     const res = await apiFetch(`${BACKEND}/reservations/${resaId}/annuler`, { method: 'PATCH' });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur annulation.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de l\'annulation.', TOAST_ICONS.error); return; }
 
     // Mettre à jour localement
     const idx = resaList.findIndex(r => r.id === resaId);

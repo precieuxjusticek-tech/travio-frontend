@@ -96,7 +96,7 @@ export async function submitCreateVehicule() {
       body: JSON.stringify({ agenceId: agenceData?.id, nom, type, capacite: parseInt(capacite), chauffeurNom, chauffeurTel }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur création.', '❌'); return; }
+    if (!res.ok) { showToast('Erreur lors de la création du véhicule.', '❌'); return; }
 
     setVehiculeList([...vehiculeList, data.vehicule]);
     closeCreateVehicule();
@@ -144,7 +144,7 @@ export function openEditVehicule(vehiculeId) {
         </div>
         <div class="pdv-field-group">
           <label>Capacité <span class="req">*</span></label>
-          <input type="number" class="pdv-input" id="ev-capacite" value="${v.capacite || ''}">
+          <input type="number" class="pdv-input" id="ev-capacite" value="${escapeHtml(String(v.capacite)) || ''}">
         </div>
         <div class="pdv-field-group">
           <label>Nom du chauffeur</label>
@@ -188,13 +188,13 @@ export async function submitEditVehicule(vehiculeId) {
       body: JSON.stringify({ nom, type, capacite: parseInt(capacite), chauffeurNom, chauffeurTel }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', '❌'); return; }
+    if (!res.ok) { showToast('Erreur lors de la sauvegarde du véhicule.', '❌'); return; }
 
     const v = vehiculeList.find(v => v.id === vehiculeId);
     if (v) { v.nom = nom; v.type = type; v.capacite = parseInt(capacite); v.chauffeurNom = chauffeurNom; v.chauffeurTel = chauffeurTel; }
 
     closeEditVehicule();
-    showToast(data.message || 'Véhicule mis à jour.', '✅', true);
+    showToast('Véhicule mis à jour.', '✅', true);
   } catch (err) {
     showToast('Impossible de contacter le serveur.', '❌');
   } finally {
@@ -278,11 +278,14 @@ export async function confirmScopeChoice(scope, action, departId, trajetId, vehi
       return;
     }
 
-    if (!res.ok) { showToast(data.message || 'Erreur.', '❌'); return; }
+    if (!res.ok) { showToast('Erreur lors de l\'opération.', '❌'); return; }
 
     invalidateAllDepartsCache(); // supprime/désactive potentiellement des bus sur plusieurs trajets
 
-    showToast(data.message, action === 'delete' ? '🗑️' : (nouvelEtat ? '🟢' : '🔴'), nouvelEtat !== false);
+    const messageSucces = action === 'delete'
+      ? 'Bus supprimé avec succès.'
+      : (nouvelEtat ? 'Bus activé avec succès.' : 'Bus désactivé avec succès.');
+    showToast(messageSucces, action === 'delete' ? '🗑️' : (nouvelEtat ? '🟢' : '🔴'), nouvelEtat !== false);
 
     closeTrajetDetail();
     setTimeout(() => openTrajetDetail(trajetId, 'bus'), 400);
@@ -332,7 +335,7 @@ export async function deleteVehicule(vehiculeId) {
       });
       return;
     }
-    if (!res.ok) { showToast(data.message || 'Erreur suppression.', '❌'); return; }
+    if (!res.ok) { showToast('Erreur lors de la suppression du véhicule.', '❌'); return; }
 
     invalidateAllDepartsCache(); // les bus liés à ce véhicule ont disparu
 

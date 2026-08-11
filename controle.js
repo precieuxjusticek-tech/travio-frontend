@@ -428,7 +428,7 @@ export async function partagerLienChauffeur() {
     if (!token) {
       res  = await apiFetch(`${BACKEND}/agence/${agenceData?.id}/chauffeur-token/generer`, { method: 'POST' });
       data = await res.json();
-      if (!res.ok) { showToast(data.message || 'Erreur lors de la génération du lien.', TOAST_ICONS.error); return; }
+      if (!res.ok) { showToast('Erreur lors de la génération du lien.', TOAST_ICONS.error); return; }
       token = data.token;
     }
 

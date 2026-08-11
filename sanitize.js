@@ -16,6 +16,8 @@ export function escapeJsAttr(str) {
   return String(str)
     .replace(/\\/g, '\\\\')
     .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

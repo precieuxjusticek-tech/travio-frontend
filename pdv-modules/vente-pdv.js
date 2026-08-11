@@ -1213,7 +1213,7 @@ export async function submitVente() {
     });
     const data = await res.json();
 
-    if (!res.ok) { showToast(data.message || 'Erreur lors de la vente.', ICONS.banned); return; }
+    if (!res.ok) { showToast('Erreur lors de la vente.', ICONS.banned); return; }
 
     if (pdvData) pdvData.vendus = (pdvData.vendus || 0) + 1;
 
@@ -1336,7 +1336,7 @@ async function submitColisShared() {
   try {
     const res  = await apiFetch(`${BACKEND}/colis/create`, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || "Erreur lors de l'enregistrement.", ICONS.banned); return; }
+    if (!res.ok) { showToast("Erreur lors de l'enregistrement.", ICONS.banned); return; }
 
     if (!data.codeRetrait) {
       console.error('Le serveur n\'a pas renvoyé de code de retrait.');

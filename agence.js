@@ -363,7 +363,7 @@ export async function submitAgency() {
     });
     const data = await res.json();
     if (!res.ok) {
-      showToast(data.message || 'Erreur lors de la création.', TOAST_ICONS.error);
+      showToast('Erreur lors de la création. Veuillez réessayer.', TOAST_ICONS.error);
       setBtnLoading(btn, false);
       return;
     }
@@ -624,7 +624,7 @@ export async function submitEditFiche() {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur sauvegarde.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la sauvegarde. Veuillez réessayer.', TOAST_ICONS.error); return; }
 
     const updated = { ...agenceData, ...payload };
     setAgenceData(updated);
@@ -802,7 +802,7 @@ export async function submitEditImages() {
       }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur sauvegarde.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la sauvegarde. Veuillez réessayer.', TOAST_ICONS.error); return; }
 
     if (data.logoUrl) agenceData.logoUrl = data.logoUrl;
     setAgenceData({ ...agenceData, photos: data.photos });

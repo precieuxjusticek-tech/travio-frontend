@@ -133,7 +133,7 @@ export async function renderColisPage() {
 
     if (!res.ok) {
       if (container && !dejaCharge) {
-        container.innerHTML = `<div class="empty-state large"><p>${escapeHtml(data.message) || 'Erreur de chargement.'}</p></div>`;
+        container.innerHTML = `<div class="empty-state large"><p>Erreur de chargement.</p></div>`;
       }
       return;
     }
@@ -771,7 +771,7 @@ async function changerStatutColis(id, statut, extra = {}) {
     const data = await res.json();
 
     if (!res.ok) {
-      showToast(data.message || 'Erreur lors de la mise à jour.', TOAST_ICONS.error);
+      showToast('Erreur lors de la mise à jour.', TOAST_ICONS.error);
       return;
     }
 

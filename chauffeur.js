@@ -92,7 +92,7 @@ async function verifierCode() {
       return;
     }
     if (!ok && !data.colis) {
-      setSearchError(data.message || 'Erreur lors de la vérification.');
+      setSearchError('Erreur lors de la vérification.');
       return;
     }
 
@@ -217,7 +217,7 @@ async function marquerArrive(id) {
     });
 
     if (!ok) {
-      alert(data.message || "Erreur lors de la mise à jour.");
+      alert("Erreur lors de la mise à jour.");
       if (btn) { btn.disabled = false; btn.innerHTML = `<span class="ch-btn-label">Marquer comme arrivé</span>`; }
       return;
     }
@@ -313,7 +313,7 @@ async function confirmerRetrait(id) {
     });
 
     if (!ok) {
-      alert(data.message || "Erreur lors de la mise à jour.");
+      alert("Erreur lors de la mise à jour.");
       btn.disabled = false;
       btn.innerHTML = `<span class="ch-btn-label">Confirmer le retrait</span>`;
       return;

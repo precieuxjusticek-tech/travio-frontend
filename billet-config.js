@@ -277,7 +277,7 @@ export async function submitBilletConfig() {
     });
     const data = await res.json();
     if (!res.ok) {
-      showToast(data.message || 'Erreur lors de l\'enregistrement.', TOAST_ICONS.error);
+      showToast('Erreur lors de l\'enregistrement.', TOAST_ICONS.error);
       return;
     }
 

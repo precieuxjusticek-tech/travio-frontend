@@ -473,7 +473,7 @@ export async function marquerColisArrivePDV(id) {
       body: JSON.stringify({ statut: 'arrive', marquePar: pdvData?.responsable || pdvData?.nom || null }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur de mise à jour.', ICONS.banned); return; }
+    if (!res.ok) { showToast('Erreur de mise à jour.', ICONS.banned); return; }
 
     const idx = colisList.findIndex(c => c.id === id);
     if (idx !== -1) colisList[idx] = data.colis;
@@ -609,7 +609,7 @@ export async function confirmerRetraitColisPDV(id) {
       }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur lors du retrait.', ICONS.banned); return; }
+    if (!res.ok) { showToast('Erreur lors du retrait.', ICONS.banned); return; }
 
     const idx = colisList.findIndex(c => c.id === id);
     if (idx !== -1) colisList[idx] = data.colis;
@@ -689,7 +689,7 @@ export async function verifierCodeColisPDV() {
       if (resultEl) {
         resultEl.innerHTML = `
           <div style="background:rgba(255,77,106,0.08);border:1px solid rgba(255,77,106,0.25);border-radius:12px;padding:12px 14px;font-size:13px;color:#FF4D6A;">
-            ${escapeHtml(data.message || 'Colis introuvable.')}
+            Colis introuvable.
           </div>`;
       }
       return;

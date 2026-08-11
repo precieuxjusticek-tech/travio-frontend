@@ -643,7 +643,7 @@ export async function submitCreatePDV() {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur création PDV.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la sauvegarde du PDV.', TOAST_ICONS.error); return; }
 
     setPdvList([...pdvList, data.pdv]);
     renderPDVPage();
@@ -766,7 +766,7 @@ export async function submitEditPDV(pdvId) {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur sauvegarde.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la sauvegarde du PDV.', TOAST_ICONS.error); return; }
 
     const pdv = pdvList.find(p => p.id === pdvId);
     if (pdv) Object.assign(pdv, payload);
@@ -817,7 +817,7 @@ export async function deletePDV(pdvId) {
   try {
     const res = await apiFetch(`${BACKEND}/pdv/${pdvId}`, { method: 'DELETE' });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur suppression.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la suppression du PDV.', TOAST_ICONS.error); return; }
 
     setPdvList(pdvList.filter(p => p.id !== pdvId));
     renderPDVPage();
@@ -871,7 +871,7 @@ export async function confirmToggleStatut(pdvId, nouvelEtat) {
       body: JSON.stringify({ actif: nouvelEtat }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors du changement de statut du PDV.', TOAST_ICONS.error); return; }
 
     const pdv = pdvList.find(p => p.id === pdvId);
     if (pdv) pdv.actif = nouvelEtat;
@@ -949,7 +949,7 @@ export async function revealPdvPassword(pdvId, btn) {
     const data = await res.json();
 
     if (!res.ok) {
-      showToast(data.message || 'Erreur lors de la récupération du mot de passe.', TOAST_ICONS.error);
+      showToast('Erreur lors de la récupération du mot de passe.', TOAST_ICONS.error);
       return;
     }
 
@@ -993,7 +993,7 @@ export async function submitResetPassword(pdvId) {
       body: JSON.stringify({ newPassword }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la réinitialisation du mot de passe.', TOAST_ICONS.error); return; }
 
     closeResetPassword();
     showToast('Mot de passe réinitialisé avec succès.', ICONS.key, true);

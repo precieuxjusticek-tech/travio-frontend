@@ -154,7 +154,7 @@ async function handleRegister() {
     const data = await res.json();
 
     if (!res.ok) {
-      showToast(data.message || 'Erreur lors de l\'inscription.', 'error');
+      showToast('Erreur lors de l\'inscription.', 'error');
       btn.disabled    = false;
       btn.innerHTML = originalText;
       return;
@@ -208,7 +208,7 @@ async function handleLogin() {
     const data = await res.json();
 
     if (!res.ok) {
-      showToast(data.message || 'Erreur lors de la connexion.', 'error');
+      showToast('Erreur lors de la connexion.', 'error');
       btn.disabled    = false;
       btn.innerHTML = originalText;
       return;
@@ -267,7 +267,7 @@ async function handlePdvLogin() {
     const data = await res.json();
 
     if (!res.ok) {
-      showToast(data.message || 'Erreur de connexion.', 'error');
+      showToast('Erreur de connexion.', 'error');
       btn.disabled  = false;
       btn.innerHTML = originalText;
       return;

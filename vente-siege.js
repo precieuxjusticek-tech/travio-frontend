@@ -1,7 +1,7 @@
 // ─── TRAVIO — SIÈGE — Vente (sélection trajet, passagers, colis, soumission, tickets) ───
 
 import { apiFetch } from './api.js';
-import { escapeHtml } from './sanitize.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 import { BACKEND, agenceData, trajetList, pdvList, resaList } from './state.js';
 import { showToast, showToastAction, TOAST_ICONS } from './toast-utils.js';
 import { updateOverviewStats } from './trajets.js';
@@ -38,7 +38,7 @@ function ageRangeLabel(typeId) {
 function peuplerSelectType(selectEl) {
   if (!selectEl) return;
   selectEl.innerHTML = (agenceData?.typesBillet || []).map(t =>
-    `<option value="${t.id}">${escapeHtml(t.nom)} (${ageRangeLabel(t.id)})</option>`
+    `<option value="${escapeHtml(t.id)}">${escapeHtml(t.nom)} (${escapeHtml(ageRangeLabel(t.id))})</option>`
   ).join('');
 }
 
@@ -150,9 +150,9 @@ export function renderTrajetCardListSiege() {
     const prix = t ? Object.values(t.prixParType || {})[0] : null;
     const searchStr = ((t?.villeDepart || '') + ' ' + (t?.villeArrivee || '')).toLowerCase();
     return `
-      <div class="trajet-card-pick" data-search="${searchStr}" data-value="${opt.value}" onclick="pickTrajetCardSiege(this)">
+      <div class="trajet-card-pick" data-search="${escapeHtml(searchStr)}" data-value="${escapeHtml(opt.value)}" onclick="pickTrajetCardSiege(this)">
         <div>
-          <div class="trajet-card-pick-route">${opt.textContent}</div>
+          <div class="trajet-card-pick-route">${escapeHtml(opt.textContent)}</div>
           <div class="trajet-card-pick-meta">${t?.typeTrajet === 'arrets' ? '⊙ Avec arrêts' : '→ Direct'}</div>
         </div>
         ${prix ? `<div class="trajet-card-pick-price">${Number(prix).toLocaleString()} XAF</div>` : ''}
@@ -240,7 +240,7 @@ export function onSelectTrajet() {
     const recapPrixTypesEl = document.getElementById('recapPrixTypesSiege');
     if (recapPrixTypesEl) {
       recapPrixTypesEl.innerHTML = Object.entries(t.prixParType || {}).map(([typeId, prix]) =>
-        `<span>${nomType(typeId)} <small style="color:var(--muted);">(${ageRangeLabel(typeId)})</small> : <strong>${Number(prix).toLocaleString()} XAF</strong></span>`
+        `<span>${escapeHtml(nomType(typeId))} <small style="color:var(--muted);">(${escapeHtml(ageRangeLabel(typeId))})</small> : <strong>${Number(prix).toLocaleString()} XAF</strong></span>`
       ).join('');
     }
 
@@ -250,7 +250,7 @@ export function onSelectTrajet() {
     const selEmb = document.getElementById('vente-siege-pdv-embarquement');
     if (selEmb) {
       selEmb.innerHTML = '<option value="">— Sélectionner —</option>' + (t.pdvDepart || []).map(p =>
-        `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}">${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`
+        `<option value="${escapeHtml(p.id)}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}">${escapeHtml(p.nom)}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`
       ).join('');
     }
 
@@ -258,7 +258,7 @@ export function onSelectTrajet() {
     if (selDeb) {
       selDeb.innerHTML = '<option value="">— Sélectionner —</option>' +
         (t.pdvArrivee || []).map(p =>
-          `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}">${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`
+          `<option value="${escapeHtml(p.id)}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}">${escapeHtml(p.nom)}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`
         ).join('');
     }
 
@@ -283,15 +283,15 @@ export function onSelectTrajet() {
         if (p.isOrigin)      dotClass = 'origin';
         if (p.isDestination) dotClass = 'destination';
         const prixLabel = (!p.isOrigin && p.prixParType && Object.keys(p.prixParType).length)
-          ? `<span class="arret-line-prix">${Object.entries(p.prixParType).map(([tid, v]) => `${Number(v).toLocaleString()} XAF (${ageRangeLabel(tid)})`).join(' · ')}</span>`
+          ? `<span class="arret-line-prix">${Object.entries(p.prixParType).map(([tid, v]) => `${Number(v).toLocaleString()} XAF (${escapeHtml(ageRangeLabel(tid))})`).join(' · ')}</span>`
           : '';
         return `
           <div class="arret-line-item">
             <div class="arret-dot ${dotClass}"></div>
             <div class="arret-line-info">
               <div>
-                <div class="arret-line-name">${p.nom}</div>
-                ${p.heurePassage ? `<div class="arret-line-heure">${p.heurePassage}</div>` : ''}
+                <div class="arret-line-name">${escapeHtml(p.nom)}</div>
+                ${p.heurePassage ? `<div class="arret-line-heure">${escapeHtml(p.heurePassage)}</div>` : ''}
               </div>
               ${prixLabel}
             </div>
@@ -303,7 +303,7 @@ export function onSelectTrajet() {
     const monteeSelect = document.getElementById('vente-siege-montee-ville');
     if (monteeSelect) {
       monteeSelect.innerHTML = '<option value="">— Ville de montée —</option>' +
-        allPoints.slice(0, -1).map(p => `<option value="${p.nom}">${p.nom}</option>`).join('');
+        allPoints.slice(0, -1).map(p => `<option value="${escapeHtml(p.nom)}">${escapeHtml(p.nom)}</option>`).join('');
       monteeSelect.disabled = false;
     }
 
@@ -358,14 +358,14 @@ export function onMonteeVilleChangeSiege() {
   if (selPdvMontee) {
     selPdvMontee.innerHTML = (pointMontee.pdvs || []).length > 0
       ? '<option value="">— Sélectionner —</option>' + pointMontee.pdvs.map(p =>
-          `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||monteeVal}">${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`
+          `<option value="${escapeHtml(p.id)}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||monteeVal)}">${escapeHtml(p.nom)}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`
         ).join('')
       : '<option value="">Aucun PDV à ce point — libre</option>';
   }
 
   if (descenteSelect) {
     descenteSelect.innerHTML = '<option value="">— Ville de descente —</option>' +
-      allPoints.slice(indexMontee + 1).map(p => `<option value="${p.nom}">${p.nom}</option>`).join('');
+      allPoints.slice(indexMontee + 1).map(p => `<option value="${escapeHtml(p.nom)}">${escapeHtml(p.nom)}</option>`).join('');
   }
 
   const selDebArrets = document.getElementById('vente-siege-pdv-debarquement-arrets');
@@ -422,11 +422,11 @@ export function onSegmentChangeSiege() {
   if (selDebArrets) {
     const estLieuLibre = (t.arrets || []).some(a => (a.ville || a.nom) === descenteVal && a.type === 'libre');
     if (estLieuLibre) {
-      selDebArrets.innerHTML = `<option value="__lieu_libre__" data-nom="${descenteVal}" data-ville="${descenteVal}">${descenteVal} (lieu libre)</option>`;
+      selDebArrets.innerHTML = `<option value="__lieu_libre__" data-nom="${escapeHtml(descenteVal)}" data-ville="${escapeHtml(descenteVal)}">${escapeHtml(descenteVal)} (lieu libre)</option>`;
     } else {
       selDebArrets.innerHTML = (pointDescente.pdvs || []).length > 0
         ? '<option value="">— Sélectionner —</option>' + pointDescente.pdvs.map(p =>
-            `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}">${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`
+            `<option value="${escapeHtml(p.id)}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}">${escapeHtml(p.nom)}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`
           ).join('')
         : '<option value="">Aucun PDV disponible</option>';
     }
@@ -434,7 +434,7 @@ export function onSegmentChangeSiege() {
 
   if (segmentPrixTypesEl) {
     segmentPrixTypesEl.innerHTML = Object.entries(prixSegmentParType).map(([typeId, prix]) =>
-      `<span>${nomType(typeId)} <small style="color:var(--muted);">(${ageRangeLabel(typeId)})</small> : <strong>${Number(prix).toLocaleString()} XAF</strong></span>`
+      `<span>${escapeHtml(nomType(typeId))} <small style="color:var(--muted);">(${escapeHtml(ageRangeLabel(typeId))})</small> : <strong>${Number(prix).toLocaleString()} XAF</strong></span>`
     ).join('');
     segmentPrixTypesEl.style.display = 'flex';
   }
@@ -507,11 +507,11 @@ async function loadSessionsDisponibles(trajetId) {
 
       return `
         <div class="session-item ${complet ? 'complet' : ''}"
-          data-date="${s.date}" data-session-id="${s.id}" data-heure="${s.heureDepart || ''}" data-bus="${s.busNom || ''}"
-          onclick="selectSessionSiege(this, '${s.date}', '${s.id}')">
+          data-date="${escapeHtml(s.date)}" data-session-id="${escapeHtml(s.id)}" data-heure="${escapeHtml(s.heureDepart || '')}" data-bus="${escapeHtml(s.busNom || '')}"
+          onclick="selectSessionSiege(this, '${escapeJsAttr(s.date)}', '${escapeJsAttr(s.id)}')">
           <div class="session-item-left">
-            <div class="session-item-date">${dateFormatee}</div>
-            <div class="session-item-bus">🚌 ${s.busNom} · ${s.busType || ''}</div>
+            <div class="session-item-date">${escapeHtml(dateFormatee)}</div>
+            <div class="session-item-bus">🚌 ${escapeHtml(s.busNom)} · ${escapeHtml(s.busType || '')}</div>
           </div>
           <div class="session-item-right">
             <div class="session-item-heure">${s.heureDepart || '—'}</div>
@@ -567,7 +567,7 @@ export function updatePrixPreview() {
 
     linesHtml += `
       <div class="prix-preview-row">
-        <span>Passager ${i + 1} — ${nomType(type)} (${ageRangeLabel(type)})</span>
+        <span>Passager ${i + 1} — ${escapeHtml(nomType(type))} (${escapeHtml(ageRangeLabel(type))})</span>
         <strong>${Number(sousTotal).toLocaleString()} XAF</strong>
       </div>`;
   });
@@ -882,7 +882,7 @@ export async function submitVenteSiege() {
   try {
     const res  = await apiFetch(`${BACKEND}/reservations/create`, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur lors de la vente.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la vente.', TOAST_ICONS.error); return; }
 
     resaList.push({ ...payload, id: data.id || data.reservationId });
     if (typeof updateOverviewStats === 'function') updateOverviewStats();
@@ -974,7 +974,7 @@ async function submitColisSiege() {
   try {
     const res  = await apiFetch(`${BACKEND}/colis/create`, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || "Erreur lors de l'enregistrement.", TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast("Erreur lors de l'enregistrement.", TOAST_ICONS.error); return; }
 
     showToast(`Colis enregistré — code de retrait : ${data.codeRetrait || '—'}`, TOAST_ICONS.success, true);
     resetVenteFormSiege();

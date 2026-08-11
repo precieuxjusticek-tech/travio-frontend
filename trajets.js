@@ -293,7 +293,7 @@ export function renderTrajetCard(t) {
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);"></span>
               <span style="color:var(--white);font-weight:600;">${escapeHtml(t.villeDepart)}</span>
-              ${t.heureDepart ? `<span style="color:var(--muted);font-size:11px;">· ${t.heureDepart}</span>` : ''}
+              ${t.heureDepart ? `<span style="color:var(--muted);font-size:11px;">· ${escapeHtml(t.heureDepart)}</span>` : ''}
             </div>
             ${t.arrets.map(a => {
               const villeLabel = a.ville || a.nom;
@@ -613,7 +613,7 @@ export async function deleteTrajet(trajetId) {
       openResolutionReservationsModal(data.sessions, data.message, { trajetId, actionType: 'delete-trajet' });
       return;
     }
-    if (!res.ok) { showToast(data.message || 'Erreur suppression.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la suppression du trajet.', TOAST_ICONS.error); return; }
     setTrajetList(trajetList.filter(t => t.id !== trajetId));
     renderTrajetsPage();
     updateOverviewStats();
@@ -690,14 +690,14 @@ export async function confirmToggleTrajetStatut(trajetId, nouvelEtat) {
       openResolutionReservationsModal(data.sessions, data.message, { trajetId, actionType: 'statut-trajet', nouvelEtat });
       return;
     }
-    if (!res.ok) { showToast(data.message || 'Erreur.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors du changement de statut.', TOAST_ICONS.error); return; }
 
     const trajet = trajetList.find(t => t.id === trajetId);
     if (trajet) trajet.actif = nouvelEtat;
 
     renderTrajetsPage();
     updateOverviewStats();
-    showToast(data.message, nouvelEtat ? TOAST_ICONS.success : TOAST_ICONS.error, nouvelEtat);
+    showToast(nouvelEtat ? 'Trajet activé avec succès.' : 'Trajet désactivé avec succès.', nouvelEtat ? TOAST_ICONS.success : TOAST_ICONS.error, nouvelEtat);
 
     if (nouvelEtat && data.busDesactives > 0) {
       setTimeout(() => {
@@ -851,7 +851,7 @@ export function openEditTrajet(trajetId) {
                   ${agenceData.typesBillet.map(type => `
                   <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${escapeHtml(type.nom)} (XAF)</label>
                     <p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(type)}</p>
-                    <input type="number" class="pdv-input troncon-prix-type" data-cle="${cle}" data-type-id="${type.id}" value="${prixExistant?.[type.id] ?? ''}" placeholder="Ex : 5000" min="0"></div>`).join('')}
+                    <input type="number" class="pdv-input troncon-prix-type" data-cle="${escapeHtml(cle)}" data-type-id="${type.id}" value="${prixExistant?.[type.id] ?? ''}" placeholder="Ex : 5000" min="0"></div>`).join('')}
                 </div>
               </div>`;
           }
@@ -1029,7 +1029,7 @@ export function genererTableauTronconsEdit() {
             ${agenceData.typesBillet.map(t => `
             <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${escapeHtml(t.nom)} (XAF)</label>
               <p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p>
-              <input type="number" class="pdv-input troncon-prix-type" data-cle="${cle}" data-type-id="${t.id}" value="${prixExistant?.[t.id] ?? ''}" placeholder="Ex : 5000" min="0"></div>`).join('')}
+              <input type="number" class="pdv-input troncon-prix-type" data-cle="${escapeHtml(cle)}" data-type-id="${t.id}" value="${prixExistant?.[t.id] ?? ''}" placeholder="Ex : 5000" min="0"></div>`).join('')}
           </div>
         </div>`;
     }
@@ -1261,7 +1261,7 @@ export async function doSubmitEditTrajet() {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur sauvegarde.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la sauvegarde du trajet.', TOAST_ICONS.error); return; }
 
     const trajet = trajetList.find(t => t.id === trajetId);
     if (trajet) Object.assign(trajet, payload);
@@ -1332,7 +1332,7 @@ export function addTypeBilletRow(type = null) {
   row.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;';
   row.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <input type="text" class="pdv-input tb-nom" placeholder="Ex : Adulte, Enfant 5-10 ans" value="${type?.nom || ''}" style="flex:1;">
+      <input type="text" class="pdv-input tb-nom" placeholder="Ex : Adulte, Enfant 5-10 ans" value="${escapeHtml(type?.nom) || ''}" style="flex:1;">
       <button type="button" onclick="this.closest('.tb-row').remove()" style="background:none;border:none;color:#FF4D6A;font-size:18px;cursor:pointer;padding:2px 6px;">×</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -1383,7 +1383,7 @@ export async function submitTypesBillet() {
       body: JSON.stringify({ typesBillet }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur sauvegarde.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la sauvegarde des types de billets.', TOAST_ICONS.error); return; }
 
     agenceData.typesBillet = typesBillet;
     closeTypesBilletModal();
@@ -1763,7 +1763,7 @@ export function genererTableauTroncons() {
           <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">${escapeHtml(from)} → ${escapeHtml(to)}</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             ${agenceData.typesBillet.map(t => `
-            <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${escapeHtml(t.nom)} (XAF) *</label><p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p><input type="number" class="pdv-input troncon-prix-type" data-cle="${cle}" data-type-id="${t.id}" placeholder="Ex : 5000" min="0"></div>`).join('')}
+            <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Prix ${escapeHtml(t.nom)} (XAF) *</label><p style="font-size:9px;color:var(--muted);margin:-2px 0 4px;">${ageRangeLabel(t)}</p><input type="number" class="pdv-input troncon-prix-type" data-cle="${escapeHtml(cle)}" data-type-id="${t.id}" placeholder="Ex : 5000" min="0"></div>`).join('')}
           </div>
         </div>`;
     }
@@ -1911,7 +1911,7 @@ export async function submitCreateTrajet() {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.message || 'Erreur création trajet.', TOAST_ICONS.error); return; }
+    if (!res.ok) { showToast('Erreur lors de la création du trajet.', TOAST_ICONS.error); return; }
 
     setTrajetList([...trajetList, data.trajet]);
     renderTrajetsPage();
@@ -1934,7 +1934,7 @@ export async function submitCreateTrajet() {
 export function renderDepartItem(d, trajetId) {
   const joursLabel = d.tousLesJours ? 'Tous les jours' : escapeHtml((d.jours || []).join(', '));
   return `
-    <div class="depart-item" id="departItem-${d.id}" onclick="openBusDetail('${escapeJsAttr(d.id)}', '${escapeJsAttr(trajetId)}')" style="cursor:pointer;">
+    <div class="depart-item" id="departItem-${escapeHtml(d.id)}" onclick="openBusDetail('${escapeJsAttr(d.id)}', '${escapeJsAttr(trajetId)}')" style="cursor:pointer;">
       <div class="depart-item-left">
         <div class="depart-item-bus">${escapeHtml(d.busNom)}</div>
         <div class="depart-item-info">${escapeHtml(d.busType)} · ${escapeHtml(d.busCapacite)} places · ${escapeHtml(d.heureDepart)}${d.heureArrivee ? ' → ' + escapeHtml(d.heureArrivee) : ''}</div>
