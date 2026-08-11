@@ -181,7 +181,7 @@ export function buildTicketHTML(format, design, data = {}) {
             <div><div class="tp-k">Date</div><div class="tp-v">${safeDateLabel}</div></div>
             <div><div class="tp-k">Départ</div><div class="tp-v">${safeHeureDepart}</div></div>
             <div><div class="tp-k">Bus / Siège</div><div class="tp-v">${safeBusNom}${safeSiege ? ' — ' + safeSiege : ''}</div></div>
-            <div><div class="tp-k">Voyageurs</div><div class="tp-v">${nbVoyageurs}</div></div>
+            <div><div class="tp-k">Voyageurs</div><div class="tp-v">${Number(nbVoyageurs) || 1}</div></div>
             ${safeBagagesLabel ? `<div><div class="tp-k">Bagages</div><div class="tp-v">${safeBagagesLabel}</div></div>` : ''}
             <div><div class="tp-k">Embarquement</div><div class="tp-v">${safePdvEmbarquementNom || '—'}</div></div>
             <div><div class="tp-k">Débarquement</div><div class="tp-v">${safePdvDebarquementNom || '—'}</div></div>
@@ -217,7 +217,7 @@ export function buildTicketHTML(format, design, data = {}) {
     <div class="tp-t-row"><span>Date</span><span>${safeDateLabel}</span></div>
     <div class="tp-t-row"><span>Départ</span><span>${safeHeureDepart}</span></div>
     <div class="tp-t-row"><span>Bus/Siège</span><span>${safeBusNom}${safeSiege ? ' / ' + safeSiege : ''}</span></div>
-    <div class="tp-t-row"><span>Voyageurs</span><span>${nbVoyageurs}</span></div>
+    <div class="tp-t-row"><span>Voyageurs</span><span>${Number(nbVoyageurs) || 1}</span></div>
     ${safeBagagesLabel ? `<div class="tp-t-row"><span>Bagages</span><span>${safeBagagesLabel}</span></div>` : ''}
     <div class="tp-t-row"><span>Embarq.</span><span>${safePdvEmbarquementNom || '—'}</span></div>
     <div class="tp-t-row"><span>Débarq.</span><span>${safePdvDebarquementNom || '—'}</span></div>

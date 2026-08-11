@@ -599,7 +599,7 @@ export function openColisDetail(id) {
       <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(c.pdvEmbarquementNom) || '—'}${c.pdvEmbarquementVille ? ' — ' + escapeHtml(c.pdvEmbarquementVille) : (c.arretMontee ? ' — ' + escapeHtml(c.arretMontee) : '')}</strong></div>
 <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(c.pdvDebarquementNom) || '—'}${c.pdvDebarquementVille ? ' — ' + escapeHtml(c.pdvDebarquementVille) : (c.arretDescente ? ' — ' + escapeHtml(c.arretDescente) : '')}</strong></div>
       <div class="recap-row"><span>Nature</span><strong>${escapeHtml(c.nature)}</strong></div>
-      <div class="recap-row"><span>Poids</span><strong>${c.poids != null ? c.poids + ' kg' : '—'}</strong></div>
+      <div class="recap-row"><span>Poids</span><strong>${c.poids != null ? Number(c.poids) + ' kg' : '—'}</strong></div>
       <div class="recap-row"><span>Valeur déclarée</span><strong>${c.valeurDeclaree != null ? Number(c.valeurDeclaree).toLocaleString('fr-FR') + ' XAF' : '—'}</strong></div>
       ${c.remarques ? `<div class="recap-row"><span>Remarques</span><strong>${escapeHtml(c.remarques)}</strong></div>` : ''}
     </div>

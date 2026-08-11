@@ -90,7 +90,7 @@ export async function openCreateDepart(trajetId) {
             <option value="">Sélectionner un véhicule</option>
             ${vehiculeList.map(v => {
               const dejaPris = vehiculesDejaPris.includes(v.id);
-              return `<option value="${v.id}" data-nom="${escapeHtml(v.nom)}" data-type="${escapeHtml(v.type)}" data-capacite="${v.capacite}" ${dejaPris ? 'disabled' : ''}>${escapeHtml(v.nom)} · ${escapeHtml(v.type)} · ${v.capacite} places${dejaPris ? ' (déjà sur ce trajet)' : ''}</option>`;
+              return `<option value="${v.id}" data-nom="${escapeHtml(v.nom)}" data-type="${escapeHtml(v.type)}" data-capacite="${Number(v.capacite) || 0}" ${dejaPris ? 'disabled' : ''}>${escapeHtml(v.nom)} · ${escapeHtml(v.type)} · ${Number(v.capacite) || 0} places${dejaPris ? ' (déjà sur ce trajet)' : ''}</option>`;
             }).join('')}
           </select>
           <p class="pdv-field-hint" id="cd-no-vehicule-hint" style="${vehiculeList.filter(v => !vehiculesDejaPris.includes(v.id)).length === 0 ? '' : 'display:none;'}">
@@ -349,7 +349,7 @@ export function openEditDepart(departId, trajetId) {
             </div>
             <div class="pdv-field-group">
               <label>Capacité <span class="req">*</span></label>
-              <input type="number" class="pdv-input" id="ed-capacite" value="${d.busCapacite || ''}">
+              <input type="number" class="pdv-input" id="ed-capacite" value="${d.busCapacite ? Number(d.busCapacite) : ''}">
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
               <div class="pdv-field-group">
@@ -644,16 +644,16 @@ export async function openBusDetail(departId, trajetId) {
       <div class="pdv-overlay-header">
         <div>
         <h2>${ICONS.bus} ${escapeHtml(depart.busNom)}</h2>
-          <p>${depart.busType} · ${depart.busCapacite} places</p>
+          <p>${escapeHtml(depart.busType || '')} · ${Number(depart.busCapacite) || 0} places</p>
         </div>
         <button class="pdv-overlay-close" onclick="closeBusDetail()">${ICONS.close}</button>
       </div>
 
       <div class="pdv-detail-info" style="margin-bottom:16px;">
-        <div class="pdv-detail-row"><span class="pdv-detail-label">Départ</span><span class="pdv-detail-val">${depart.heureDepart}</span></div>
-        ${depart.heureArrivee ? `<div class="pdv-detail-row"><span class="pdv-detail-label">Arrivée</span><span class="pdv-detail-val">${depart.heureArrivee}</span></div>` : ''}
-        ${depart.dureeEstimee ? `<div class="pdv-detail-row"><span class="pdv-detail-label">Durée</span><span class="pdv-detail-val">${depart.dureeEstimee}</span></div>` : ''}
-        <div class="pdv-detail-row"><span class="pdv-detail-label">Jours</span><span class="pdv-detail-val">${joursLabel}</span></div>
+      <div class="pdv-detail-row"><span class="pdv-detail-label">Départ</span><span class="pdv-detail-val">${escapeHtml(depart.heureDepart || '')}</span></div>
+      ${depart.heureArrivee ? `<div class="pdv-detail-row"><span class="pdv-detail-label">Arrivée</span><span class="pdv-detail-val">${escapeHtml(depart.heureArrivee)}</span></div>` : ''}
+      ${depart.dureeEstimee ? `<div class="pdv-detail-row"><span class="pdv-detail-label">Durée</span><span class="pdv-detail-val">${escapeHtml(depart.dureeEstimee)}</span></div>` : ''}
+      <div class="pdv-detail-row"><span class="pdv-detail-label">Jours</span><span class="pdv-detail-val">${escapeHtml(joursLabel)}</span></div>
       </div>
 
       <div class="pdv-detail-actions" style="margin-bottom:20px;">
@@ -810,7 +810,7 @@ function renderResolutionSessions() {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div>
         <div style="font-size:13px;font-weight:700;color:var(--white);">${escapeHtml(s.busNom || '')} · ${escapeHtml(s.date)} · ${escapeHtml(s.heureDepart)}</div>
-          <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${s.nbReservations} réservation${s.nbReservations > 1 ? 's' : ''}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${Number(s.nbReservations) || 0} réservation${s.nbReservations > 1 ? 's' : ''}</div>
         </div>
         ${!suppressionTotale ? `
         <span class="pdv-status-badge ${s.busesDisponibles.length > 0 ? 'active' : 'inactive'}">
@@ -820,7 +820,7 @@ function renderResolutionSessions() {
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         ${(!suppressionTotale && s.busesDisponibles.length > 0) ? `
         <select class="pdv-select resolution-bus-select" id="resolutionSelect-${s.sessionId}" style="flex:1;min-width:180px;">
-        ${s.busesDisponibles.map(b => `<option value="${b.departId}">${escapeHtml(b.busNom)} · ${escapeHtml(b.heureDepart || '')} · ${b.placesLibres} place${b.placesLibres > 1 ? 's' : ''} libre${b.placesLibres > 1 ? 's' : ''}</option>`).join('')}
+        ${s.busesDisponibles.map(b => `<option value="${escapeHtml(b.departId)}">${escapeHtml(b.busNom)} · ${escapeHtml(b.heureDepart || '')} · ${Number(b.placesLibres) || 0} place${b.placesLibres > 1 ? 's' : ''} libre${b.placesLibres > 1 ? 's' : ''}</option>`).join('')}
         </select>
         <button class="pdv-action-btn" style="flex-shrink:0;" onclick="reaffecterSessionResolution('${s.sessionId}')">
           ${ICONS.refresh} Réaffecter
@@ -937,11 +937,11 @@ export async function annulerSessionResolution(sessionId) {
       <div class="pdv-detail-row">
         <div>
         <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(r.prenomPassager || '')} ${escapeHtml(r.nomPassager || '')}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${escapeHtml(r.telephonePassager || '—')} · ${r.nbPassagers} place${r.nbPassagers > 1 ? 's' : ''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${escapeHtml(r.telephonePassager || '—')} · ${Number(r.nbPassagers) || 0} place${r.nbPassagers > 1 ? 's' : ''}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:12px;color:var(--white);">${r.prixTotal.toLocaleString()} XAF</div>
-          <div style="font-size:11px;color:${r.montantRembourse > 0 ? 'var(--accent)' : '#FF4D6A'};">${r.montantRembourse > 0 ? '− ' + r.montantRembourse.toLocaleString() + ' XAF' : 'Aucun remboursement'}</div>
+          <div style="font-size:12px;color:var(--white);">${Number(r.prixTotal || 0).toLocaleString()} XAF</div>
+          <div style="font-size:11px;color:${r.montantRembourse > 0 ? 'var(--accent)' : '#FF4D6A'};">${r.montantRembourse > 0 ? '− ' + Number(r.montantRembourse).toLocaleString() + ' XAF' : 'Aucun remboursement'}</div>
         </div>
       </div>`).join('');
 

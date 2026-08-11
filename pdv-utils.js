@@ -49,8 +49,8 @@ export function getStatsMoisPdv(pdvId, reservations) {
   const ventesMois = getVentesConfirmees(reservations)
     .filter(r => r.pdvId === pdvId && toBrazzaDate(r.createdAt).startsWith(month));
 
-  const revenu  = ventesMois.reduce((s, r) => s + (r.prixTotal || 0), 0);
-  const billets = ventesMois.reduce((s, r) => s + (r.nbPassagers || 1), 0);
+    const revenu  = ventesMois.reduce((s, r) => s + Number(r.prixTotal || 0), 0);
+    const billets = ventesMois.reduce((s, r) => s + (Number(r.nbPassagers) || 1), 0);
 
   return { revenu, billets };
 }

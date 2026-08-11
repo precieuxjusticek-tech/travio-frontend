@@ -64,10 +64,10 @@ export function updateAgenceUI(data) {
       label = `${ICONS.lock} Vente définitive — aucune annulation`;
       cls = 'pol-badge-rouge';
     } else if (!pol.remboursement) {
-      label = `${ICONS.warning} Annulation sans remboursement${pol.delaiHeures ? ' · délai ' + pol.delaiHeures + 'h' : ''}`;
+      label = `${ICONS.warning} Annulation sans remboursement${pol.delaiHeures ? ' · délai ' + Number(pol.delaiHeures) + 'h' : ''}`;
       cls = 'pol-badge-orange';
     } else {
-      label = `${ICONS.check} Annulation avec remboursement · ${pol.precisions || 0}% retenus · délai ${pol.delaiHeures || '?'}h`;
+      label = `${ICONS.check} Annulation avec remboursement · ${Number(pol.precisions || 0)}% retenus · délai ${pol.delaiHeures ? Number(pol.delaiHeures) : '?'}h`;
       cls = 'pol-badge-vert';
     }
     politiqueEl.innerHTML = `
@@ -130,8 +130,8 @@ export function renderAgenceProfile(data) {
         !data.politiqueAnnulation.autorise
           ? 'Vente définitive — aucune annulation possible.'
           : data.politiqueAnnulation.remboursement
-            ? `Annulation avec remboursement, jusqu'à ${data.politiqueAnnulation.delaiHeures || '?'}h avant le départ.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + escapeHtml(String(data.politiqueAnnulation.precisions)) + '%</small>' : ''}`
-            : `Annulation autorisée sans remboursement.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + escapeHtml(String(data.politiqueAnnulation.precisions)) + '%</small>' : ''}`
+            ? `Annulation avec remboursement, jusqu'à ${data.politiqueAnnulation.delaiHeures ? Number(data.politiqueAnnulation.delaiHeures) : '?'}h avant le départ.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + Number(data.politiqueAnnulation.precisions) + '%</small>' : ''}`
+            : `Annulation autorisée sans remboursement.${data.politiqueAnnulation.precisions ? '<br><small style="color:var(--muted)">Frais retenus : ' + Number(data.politiqueAnnulation.precisions) + '%</small>' : ''}`
       }</p></div>` : ''}
       <div class="agence-info-card"><h4>Contact</h4><p>${escapeHtml(data.adresse || '—')}<br>${escapeHtml(data.telephone || '—')}</p></div>
     </div>
@@ -544,7 +544,7 @@ export function openEditFiche() {
             <label>Délai de présentation avant le départ</label>
             <div style="display:flex;gap:8px;">
               <input type="number" min="1" class="pdv-input" id="edit-delai-formalite-valeur"
-                value="${d.delaiFormalite?.valeur || ''}" placeholder="Ex : 30" style="flex:1;">
+                value="${d.delaiFormalite?.valeur ? Number(d.delaiFormalite.valeur) : ''}" placeholder="Ex : 30" style="flex:1;">
               <select class="pdv-input" id="edit-delai-formalite-unite" style="flex:1;background:#0F1525;color:var(--white);">
                 <option value="minutes" ${(!d.delaiFormalite || d.delaiFormalite.unite === 'minutes') ? 'selected' : ''}>Minutes</option>
                 <option value="heures" ${d.delaiFormalite?.unite === 'heures' ? 'selected' : ''}>Heures</option>
@@ -561,10 +561,10 @@ export function openEditFiche() {
           <div id="edit-annul-precisions-wrap" style="display:${d.politiqueAnnulation?.remboursement ? 'block' : 'none'};">
             <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Frais d'annulation retenus par l'agence</label>
             <div style="position:relative;display:flex;align-items:center;">
-              <input type="number" class="pdv-input" id="edit-annul-precisions"
-                min="0" max="100" step="1" placeholder="Ex : 20"
-                value="${d.politiqueAnnulation?.precisions || ''}"
-                style="padding-right:40px;">
+            <input type="number" class="pdv-input" id="edit-annul-precisions"
+            min="0" max="100" step="1" placeholder="Ex : 20"
+            value="${d.politiqueAnnulation?.precisions ? Number(d.politiqueAnnulation.precisions) : ''}"
+            style="padding-right:40px;">
               <span style="position:absolute;right:14px;color:var(--muted);font-size:14px;font-weight:600;pointer-events:none;">%</span>
             </div>
           </div>

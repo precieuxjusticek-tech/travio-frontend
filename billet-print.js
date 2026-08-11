@@ -3,7 +3,7 @@
 import { agenceData, resaList, pdvList, trajetList } from './state.js';
 import { showToast, TOAST_ICONS } from './toast-utils.js';
 import { TICKET_CSS, buildTicketHTML, formatFromMode, formatDelaiFormalite } from './billet-template.js';
-import { escapeHtml } from './sanitize.js';
+import { escapeHtml, escapeJsAttr } from './sanitize.js';
 const ICONS = {
   close:     '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   clipboard: '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;"><rect x="3" y="2" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="6" y="1" width="4" height="2.5" rx="0.5" stroke="currentColor" stroke-width="1.2"/></svg>',
@@ -182,10 +182,10 @@ export function showManualTicket(resaId) {
         <div class="recap-row"><span>Bus / Siège</span><strong>${escapeHtml(busSiege)}</strong></div>
           ${agenceData?.delaiFormalite ? `<div class="recap-row"><span>Présentation</span><strong>${escapeHtml(formatDelaiFormalite(agenceData.delaiFormalite))}</strong></div>` : ''}
           <div class="recap-row"><span>PDV vendeur</span><strong>${escapeHtml(pdv?.nom || '—')}</strong></div>
-          <div class="recap-row"><span>Passagers</span><strong>${nbPass}</strong></div>
+          <div class="recap-row"><span>Passagers</span><strong>${Number(nbPass) || 1}</strong></div>
           <div class="recap-row"><span>Prix</span><strong style="color:var(--accent)">${Number(r.prixTotal || 0).toLocaleString()} XAF</strong></div>
         </div>
-        <button class="pdv-action-btn" style="width:100%;margin-top:12px;" onclick="copierInfosBilletManuelAdmin('${resaId}')">
+        <button class="pdv-action-btn" style="width:100%;margin-top:12px;" onclick="copierInfosBilletManuelAdmin('${escapeJsAttr(resaId)}')">
           ${ICONS.clipboard} Copier les informations
         </button>
         <p style="font-size:11px;color:var(--muted);margin-top:12px;text-align:center;line-height:1.5;">

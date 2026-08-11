@@ -26,10 +26,10 @@ export function renderPolitiqueAnnulPDV() {
     label = `${ICONS.lock} Vente définitive — aucune annulation`;
     cls = 'pol-badge-rouge';
   } else if (!pol.remboursement) {
-    label = `${ICONS.warning} Annulation sans remboursement${pol.delaiHeures ? ' · délai ' + pol.delaiHeures + 'h' : ''}`;
+    label = `${ICONS.warning} Annulation sans remboursement${pol.delaiHeures ? ' · délai ' + escapeHtml(String(pol.delaiHeures)) + 'h' : ''}`;
     cls = 'pol-badge-orange';
   } else {
-    label = `${ICONS.check} Annulation avec remboursement · ${pol.precisions || 0}% retenus · délai ${pol.delaiHeures || '?'}h`;
+    label = `${ICONS.check} Annulation avec remboursement · ${escapeHtml(String(pol.precisions || 0))}% retenus · délai ${escapeHtml(String(pol.delaiHeures || '?'))}h`;
     cls = 'pol-badge-vert';
   }
   el.innerHTML = `

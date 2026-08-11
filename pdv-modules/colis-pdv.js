@@ -315,7 +315,7 @@ function badgeStatutColisPDV(statut) {
   if (statut === 'en_transit') return `<span class="resa-meta-badge" style="background:rgba(255,178,63,0.12);color:#FFB23F;">En transit</span>`;
   if (statut === 'arrive')     return `<span class="resa-meta-badge ok">Arrivé</span>`;
   if (statut === 'retire')     return `<span class="resa-meta-badge" style="background:rgba(77,159,255,0.12);color:#4D9FFF;">Retiré</span>`;
-  return `<span class="resa-meta-badge">${statut}</span>`;
+  return `<span class="resa-meta-badge">${escapeHtml(statut)}</span>`;
 }
 
 export function renderColisPDV(list = colisList) {
@@ -392,7 +392,7 @@ export function openColisDetailPDV(id) {
         <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(c.pdvEmbarquementNom || '—')}${c.pdvEmbarquementVille ? ' — ' + escapeHtml(c.pdvEmbarquementVille) : (c.arretMontee ? ' — ' + escapeHtml(c.arretMontee) : '')}</strong></div>
         <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(c.pdvDebarquementNom || '—')}${c.pdvDebarquementVille ? ' — ' + escapeHtml(c.pdvDebarquementVille) : (c.arretDescente ? ' — ' + escapeHtml(c.arretDescente) : '')}</strong></div>
         <div class="recap-row"><span>Nature</span><strong>${escapeHtml(c.nature)}</strong></div>
-        ${c.poids != null ? `<div class="recap-row"><span>Poids</span><strong>${c.poids} kg</strong></div>` : ''}
+        ${c.poids != null ? `<div class="recap-row"><span>Poids</span><strong>${Number(c.poids)} kg</strong></div>` : ''}
         ${c.valeurDeclaree != null ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(c.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
         ${c.remarques ? `<div class="recap-row"><span>Remarques</span><strong>${escapeHtml(c.remarques)}</strong></div>` : ''}
       </div>

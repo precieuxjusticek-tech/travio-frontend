@@ -401,7 +401,7 @@ export function renderResaList(list, groupMode = null) {
         </div>
         <div class="resa-card-right">
           <div class="resa-card-prix">${Number(r.prixTotal || 0).toLocaleString()} XAF</div>
-          <div class="resa-card-heure">${ICONS.clock} ${r.heureDepart || '—'}</div>
+          <div class="resa-card-heure">${ICONS.clock} ${escapeHtml(r.heureDepart || '—')}</div>
           <div class="resa-card-date">${dateLabel}</div>
         </div>
       </div>`;
@@ -475,7 +475,7 @@ export function openResaDetail(resaId) {
       ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.nombreBagages > 0 ? ` · ${p.nombreBagages} colis` : ''}${p.prixBagages > 0 ? ` (+${Number(p.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
       ${p.colisSoute ? `
         <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(p.colisSoute.nature || '—')} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
-        ${p.colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${p.colisSoute.poids} kg</strong></div>` : ''}
+        ${p.colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${Number(p.colisSoute.poids)} kg</strong></div>` : ''}
         ${p.colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(p.colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
       ` : ''}
       <div class="recap-row"><span>Sous-total</span><strong style="color:var(--accent)">${Number(p.sousTotal || 0).toLocaleString()} XAF</strong></div>
@@ -532,7 +532,7 @@ export function openResaDetail(resaId) {
         <div class="recap-card">
           <div class="recap-row"><span>Ligne</span><strong>${routeAffichee}</strong></div>
           <div class="recap-row"><span>Date</span><strong>${dateStr}</strong></div>
-          <div class="recap-row"><span>Départ</span><strong>${resa.heureDepart || '—'}</strong></div>
+          <div class="recap-row"><span>Départ</span><strong>${escapeHtml(resa.heureDepart || '—')}</strong></div>
           <div class="recap-row"><span>Bus</span><strong>${escapeHtml(resa.busNom || '—')}</strong></div>
           <div class="recap-row"><span>Vendu le</span><strong>${resa.createdAt ? new Date(resa.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Brazzaville' }) + ' à ' + new Date(resa.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Brazzaville' }) : '—'}</strong></div>
           <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(resa.pdvEmbarquementNom || '—')}${(resa.arretMontee || trajet?.villeDepart) ? ' (' + escapeHtml(resa.arretMontee || trajet?.villeDepart) + ')' : ''}</strong></div>
@@ -554,7 +554,7 @@ export function openResaDetail(resaId) {
           ${resa.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${resa.bagages} kg${resa.nombreBagages > 0 ? ` · ${resa.nombreBagages} colis` : ''}${resa.prixBagages > 0 ? ` (+${Number(resa.prixBagages).toLocaleString()} XAF)` : ''}</strong></div>` : ''}
           ${resa.passagers?.[0]?.colisSoute ? `
             <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(resa.passagers[0].colisSoute.nature || '—')} (${Number(resa.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
-            ${resa.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${resa.passagers[0].colisSoute.poids} kg</strong></div>` : ''}
+            ${resa.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${Number(resa.passagers[0].colisSoute.poids)} kg</strong></div>` : ''}
             ${resa.passagers[0].colisSoute.valeurDeclaree ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(resa.passagers[0].colisSoute.valeurDeclaree).toLocaleString()} XAF</strong></div>` : ''}
           ` : ''}
           </div>`}
@@ -568,7 +568,7 @@ export function openResaDetail(resaId) {
           </div>
           <div id="billetViewCode-${resa.id}" style="text-align:center;padding:18px 0;">
             <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:5px;color:var(--white);background:var(--surface2);border:1.5px dashed var(--border2);border-radius:12px;padding:14px;">
-              ${resa.codeControle || '------'}
+            ${escapeHtml(resa.codeControle || '------')}
             </div>
             <div style="font-size:11px;color:var(--muted);margin-top:8px;">Code de vérification à 6 caractères</div>
           </div>
@@ -744,7 +744,7 @@ export function ouvrirAnnulationCompletePDV(resaId) {
 
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:4px;">
         <div style="font-size:13px;font-weight:600;color:var(--white);">${escapeHtml(r.prenomPassager || '')} ${escapeHtml(r.nomPassager || '')}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px;">${escapeHtml(r.routeLabel || '—')} · ${r.dateDepart || '—'} à ${r.heureDepart || '—'}</div>  
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">${escapeHtml(r.routeLabel || '—')} · ${escapeHtml(r.dateDepart || '—')} à ${escapeHtml(r.heureDepart || '—')}</div>  
       </div>
 
       ${resumeHTML}
@@ -819,7 +819,7 @@ export function ouvrirListePassagersAnnulationPDV(resaId) {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
         <div>
           <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--white);">Annuler / Retirer un passager</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px;">${escapeHtml(r.routeLabel || '—')} · ${r.dateDepart || '—'} à ${r.heureDepart || '—'}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">${escapeHtml(r.routeLabel || '—')} · ${escapeHtml(r.dateDepart || '—')} à ${escapeHtml(r.heureDepart || '—')}</div>
         </div>
         <button onclick="closePdvListePassagers()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0;">${ICONS.close}</button>
       </div>

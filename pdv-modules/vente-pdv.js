@@ -1,7 +1,7 @@
 // ─── TRAVIO — PDV — Vente (sélection trajet, passagers, colis, soumission, tickets) ───
 
 import { apiFetch } from '../api.js';
-import { escapeHtml } from '../sanitize.js';
+import { escapeHtml, escapeJsAttr } from '../sanitize.js';
 import {
   ICONS, BACKEND, OFFSET_MS_FIN, toBrazzaDate,
   nomType, ageRangeLabel, peuplerSelectType,
@@ -114,9 +114,9 @@ export function renderTrajetCardList() {
     const prix = t ? Object.values(t.prixParType || {})[0] : null;
     const searchStr = ((t?.villeDepart || '') + ' ' + (t?.villeArrivee || '')).toLowerCase();
     return `
-      <div class="trajet-card-pick" data-search="${searchStr}" data-value="${opt.value}" onclick="pickTrajetCard(this)">
+      <div class="trajet-card-pick" data-search="${escapeHtml(searchStr)}" data-value="${opt.value}" onclick="pickTrajetCard(this)">
         <div>
-          <div class="trajet-card-pick-route">${opt.textContent}</div>
+          <div class="trajet-card-pick-route">${escapeHtml(opt.textContent)}</div>
           <div class="trajet-card-pick-meta">${t?.typeTrajet === 'arrets' ? '⊙ Avec arrêts' : '→ Direct'}</div>
         </div>
         ${prix ? `<div class="trajet-card-pick-price">${Number(prix).toLocaleString()} XAF</div>` : ''}
@@ -180,9 +180,9 @@ export function onSelectTrajet() {
     document.getElementById('recapRoute').textContent =
       `${t.villeDepart} → ${t.villeArrivee}`;
 
-    let metaHtml = '';
-    if (t.limiteBagages) metaHtml += `<span>${ICONS.bag} Limite ${t.limiteBagages} kg</span>`;
-    if (t.fraisExcesBagages) metaHtml += `<span>${ICONS.coin} ${t.fraisExcesBagages} XAF/kg excédent</span>`;
+      let metaHtml = '';
+      if (t.limiteBagages) metaHtml += `<span>${ICONS.bag} Limite ${Number(t.limiteBagages)} kg</span>`;
+      if (t.fraisExcesBagages) metaHtml += `<span>${ICONS.coin} ${Number(t.fraisExcesBagages)} XAF/kg excédent</span>`;
     document.getElementById('recapMeta').innerHTML = metaHtml || '<span>Trajet direct</span>';
 
     const recapPrixTypesEl = document.getElementById('recapPrixTypes');
@@ -198,7 +198,7 @@ export function onSelectTrajet() {
     const selEmb = document.getElementById('vente-pdv-embarquement');
     if (selEmb) {
       selEmb.innerHTML = (t.pdvDepart || []).map(p =>
-        `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}">${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`
+        `<option value="${p.id}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}">${escapeHtml(p.nom||'')}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`
       ).join('');
       const match = (t.pdvDepart || []).find(p => p.id === pdvData.id);
       selEmb.value = match ? match.id : (t.pdvDepart?.[0]?.id || '');
@@ -208,7 +208,7 @@ export function onSelectTrajet() {
     if (selDeb) {
       selDeb.innerHTML = '<option value="">— Sélectionner —</option>' +
         (t.pdvArrivee || []).map(p =>
-          `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}">${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`
+          `<option value="${p.id}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}">${escapeHtml(p.nom||'')}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`
         ).join('');
     }
 
@@ -247,8 +247,8 @@ export function onSelectTrajet() {
             <div class="arret-dot ${dotClass}"></div>
             <div class="arret-line-info">
               <div>
-                <div class="arret-line-name">${p.nom}</div>
-                ${p.heurePassage ? `<div class="arret-line-heure">${p.heurePassage}</div>` : ''}
+                <div class="arret-line-name">${escapeHtml(p.nom)}</div>
+                ${p.heurePassage ? `<div class="arret-line-heure">${escapeHtml(p.heurePassage)}</div>` : ''}
               </div>
               ${prixLabel}
             </div>
@@ -294,11 +294,11 @@ export function onSelectTrajet() {
         ? (t.pdvDepart || [])
         : (t.pdvArrets || []).filter(p => p.id === pdvData.id);
 
-      monteeSelect.innerHTML = pdvsEmbarquement.length > 0
+        monteeSelect.innerHTML = pdvsEmbarquement.length > 0
         ? pdvsEmbarquement.map(p =>
-            `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}" data-city="${villeMonteePdv}">${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`
+            `<option value="${p.id}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}" data-city="${escapeHtml(villeMonteePdv)}">${escapeHtml(p.nom||'')}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`
           ).join('')
-        : `<option value="${pdvData.id}" data-nom="${pdvData.nom||''}" data-ville="${pdvData.ville||''}" data-city="${villeMonteePdv}">${pdvData.nom}</option>`;
+        : `<option value="${pdvData.id}" data-nom="${escapeHtml(pdvData.nom||'')}" data-ville="${escapeHtml(pdvData.ville||'')}" data-city="${escapeHtml(villeMonteePdv)}">${escapeHtml(pdvData.nom)}</option>`;
 
       const matchEmb = pdvsEmbarquement.find(p => p.id === pdvData.id);
       monteeSelect.value = matchEmb ? matchEmb.id : (pdvsEmbarquement[0]?.id || '');
@@ -306,7 +306,7 @@ export function onSelectTrajet() {
 
       descenteSelect.innerHTML = '<option value="">— Ville de descente</option>' +
         allPoints.slice(position + 1).map(p =>
-          `<option value="${p.nom}">${p.nom}</option>`
+          `<option value="${escapeHtml(p.nom)}">${escapeHtml(p.nom)}</option>`
         ).join('');
       descenteSelect.disabled = false;
 
@@ -399,11 +399,11 @@ export function onSegmentChange() {
     );
 
     if (estLieuLibre) {
-      selDebArrets.innerHTML = `<option value="__lieu_libre__" data-nom="${descenteVal}" data-ville="${descenteVal}">${descenteVal} (lieu libre)</option>`;
+      selDebArrets.innerHTML = `<option value="__lieu_libre__" data-nom="${escapeHtml(descenteVal)}" data-ville="${escapeHtml(descenteVal)}">${escapeHtml(descenteVal)} (lieu libre)</option>`;
     } else {
       selDebArrets.innerHTML = pdvsDesc.length > 0
         ? '<option value="">— Sélectionner —</option>' + pdvsDesc.map(p =>
-            `<option value="${p.id}" data-nom="${p.nom||''}" data-ville="${p.ville||''}">${p.nom}${p.ville ? ' — '+p.ville : ''}</option>`
+            `<option value="${p.id}" data-nom="${escapeHtml(p.nom||'')}" data-ville="${escapeHtml(p.ville||'')}">${escapeHtml(p.nom||'')}${p.ville ? ' — '+escapeHtml(p.ville) : ''}</option>`
           ).join('')
         : '<option value="">Aucun PDV disponible</option>';
     }
@@ -502,17 +502,17 @@ async function loadSessionsDisponibles(trajetId) {
 
       return `
         <div class="session-item ${complet ? 'complet' : ''}"
-          data-date="${s.date}"
-          data-session-id="${s.id}"
-          data-heure="${s.heureDepart || ''}"
-          data-bus="${s.busNom || ''}"
-          onclick="selectSession(this, '${s.date}', '${s.id}')">
+          data-date="${escapeHtml(s.date)}"
+          data-session-id="${escapeHtml(s.id)}"
+          data-heure="${escapeHtml(s.heureDepart || '')}"
+          data-bus="${escapeHtml(s.busNom || '')}"
+          onclick="selectSession(this, '${escapeJsAttr(s.date)}', '${escapeJsAttr(s.id)}')">
           <div class="session-item-left">
             <div class="session-item-date">${dateFormatee}</div>
-            <div class="session-item-bus">${ICONS.bus} ${s.busNom} · ${s.busType || ''}</div>
+            <div class="session-item-bus">${ICONS.bus} ${escapeHtml(s.busNom || '')} · ${escapeHtml(s.busType || '')}</div>
           </div>
           <div class="session-item-right">
-            <div class="session-item-heure">${s.heureDepart || '—'}</div>
+            <div class="session-item-heure">${escapeHtml(s.heureDepart || '—')}</div>
             <div class="session-item-places ${complet ? 'zero' : ''}">
               ${restantes <= 0 ? 'Complet' : heurePasse ? 'Départ passé' : `${restantes} place${restantes > 1 ? 's' : ''}`}
             </div>
@@ -843,9 +843,9 @@ export function showVenteRecap() {
     ? new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
     : '—';
 
-  const routeLabel = isArrets && t._arretMontee
-    ? `${t._arretMontee} → ${t._arretDescente}`
-    : `${t.villeDepart} → ${t.villeArrivee}`;
+    const routeLabel = isArrets && t._arretMontee
+    ? `${escapeHtml(t._arretMontee)} → ${escapeHtml(t._arretDescente)}`
+    : `${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}`;
 
   const remarquesVal = escapeHtml(document.getElementById('vente-remarques')?.value.trim() || '') || null;
 
@@ -857,8 +857,8 @@ export function showVenteRecap() {
     const debOption = selDeb?.selectedOptions[0];
 
     embDebHtml = `
-      <div class="recap-row"><span>Embarquement</span><strong>${embOption?.dataset.nom || '—'}${embOption?.dataset.ville ? ' — ' + embOption.dataset.ville : ''}</strong></div>
-      <div class="recap-row"><span>Débarquement</span><strong>${debOption?.dataset.nom || '—'}${debOption?.dataset.ville ? ' — ' + debOption.dataset.ville : ''}</strong></div>`;
+      <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(embOption?.dataset.nom || '—')}${embOption?.dataset.ville ? ' — ' + escapeHtml(embOption.dataset.ville) : ''}</strong></div>
+      <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(debOption?.dataset.nom || '—')}${debOption?.dataset.ville ? ' — ' + escapeHtml(debOption.dataset.ville) : ''}</strong></div>`;
   } else {
     const selEmb = document.getElementById('vente-montee');
     const selDeb = document.getElementById('vente-pdv-debarquement-arrets');
@@ -868,10 +868,10 @@ export function showVenteRecap() {
     const villeDescente = document.getElementById('vente-descente')?.value || '';
 
     embDebHtml = `
-      <div class="recap-row"><span>Montée</span><strong>${villeMontee}</strong></div>
-      <div class="recap-row"><span>PDV embarquement</span><strong>${embOption?.dataset.nom || '—'}${embOption?.dataset.ville ? ' — ' + embOption.dataset.ville : ''}</strong></div>
-      <div class="recap-row"><span>Descente</span><strong>${villeDescente}</strong></div>
-      <div class="recap-row"><span>PDV débarquement</span><strong>${debOption?.dataset.nom || '—'}${debOption?.dataset.ville ? ' — ' + debOption.dataset.ville : ''}</strong></div>`;
+      <div class="recap-row"><span>Montée</span><strong>${escapeHtml(villeMontee)}</strong></div>
+      <div class="recap-row"><span>PDV embarquement</span><strong>${escapeHtml(embOption?.dataset.nom || '—')}${embOption?.dataset.ville ? ' — ' + escapeHtml(embOption.dataset.ville) : ''}</strong></div>
+      <div class="recap-row"><span>Descente</span><strong>${escapeHtml(villeDescente)}</strong></div>
+      <div class="recap-row"><span>PDV débarquement</span><strong>${escapeHtml(debOption?.dataset.nom || '—')}${debOption?.dataset.ville ? ' — ' + escapeHtml(debOption.dataset.ville) : ''}</strong></div>`;
   }
 
   let overlay = document.getElementById('recapVenteOverlay');
@@ -897,7 +897,7 @@ export function showVenteRecap() {
           <div class="recap-card">
             <div class="recap-row"><span>Ligne</span><strong>${routeLabel}</strong></div>
             <div class="recap-row"><span>Date</span><strong>${dateFormatee}</strong></div>
-            <div class="recap-row"><span>Départ</span><strong>${sessionHeure}</strong></div>
+            <div class="recap-row"><span>Départ</span><strong>${escapeHtml(sessionHeure)}</strong></div>
             ${embDebHtml}
             ${blocks.length > 1 ? `<div class="recap-row"><span>Passagers</span><strong>${blocks.length} personnes</strong></div>` : ''}
           </div>
@@ -980,16 +980,16 @@ export function showColisRecapShared() {
     const embOption = selEmb?.selectedOptions[0];
     const debOption = selDeb?.selectedOptions[0];
     embDebHtmlColis = `
-      <div class="recap-row"><span>Embarquement</span><strong>${embOption?.dataset.nom || '—'}${embOption?.dataset.ville ? ' — ' + embOption.dataset.ville : (t._arretMontee ? ' — ' + t._arretMontee : '')}</strong></div>
-      <div class="recap-row"><span>Débarquement</span><strong>${debOption?.dataset.nom || '—'}${debOption?.dataset.ville ? ' — ' + debOption.dataset.ville : (t._arretDescente ? ' — ' + t._arretDescente : '')}</strong></div>`;
+      <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(embOption?.dataset.nom || '—')}${embOption?.dataset.ville ? ' — ' + escapeHtml(embOption.dataset.ville) : (t._arretMontee ? ' — ' + escapeHtml(t._arretMontee) : '')}</strong></div>
+      <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(debOption?.dataset.nom || '—')}${debOption?.dataset.ville ? ' — ' + escapeHtml(debOption.dataset.ville) : (t._arretDescente ? ' — ' + escapeHtml(t._arretDescente) : '')}</strong></div>`;
   } else {
     const selEmb = document.getElementById('vente-pdv-embarquement');
     const selDeb = document.getElementById('vente-pdv-debarquement');
     const embOption = selEmb?.selectedOptions[0];
     const debOption = selDeb?.selectedOptions[0];
     embDebHtmlColis = `
-      <div class="recap-row"><span>Embarquement</span><strong>${embOption?.dataset.nom || '—'}${embOption?.dataset.ville ? ' — ' + embOption.dataset.ville : ''}</strong></div>
-      <div class="recap-row"><span>Débarquement</span><strong>${debOption?.dataset.nom || '—'}${debOption?.dataset.ville ? ' — ' + debOption.dataset.ville : ''}</strong></div>`;
+      <div class="recap-row"><span>Embarquement</span><strong>${escapeHtml(embOption?.dataset.nom || '—')}${embOption?.dataset.ville ? ' — ' + escapeHtml(embOption.dataset.ville) : ''}</strong></div>
+      <div class="recap-row"><span>Débarquement</span><strong>${escapeHtml(debOption?.dataset.nom || '—')}${debOption?.dataset.ville ? ' — ' + escapeHtml(debOption.dataset.ville) : ''}</strong></div>`;
   }
   const sessionHeure = document.querySelector('.session-item.selected')?.dataset.heure || t.heureDepart || '—';
   const date = document.getElementById('vente-date')?.value;
@@ -1014,10 +1014,10 @@ export function showColisRecapShared() {
         <div>
           <div class="recap-section-title">Trajet</div>
           <div class="recap-card">
-            <div class="recap-row"><span>Ligne</span><strong>${isArretsColisCheck && t._arretMontee ? `${t._arretMontee} → ${t._arretDescente}` : `${t.villeDepart} → ${t.villeArrivee}`}</strong></div>
-            <div class="recap-row"><span>Date</span><strong>${dateFormatee}</strong></div>
-            <div class="recap-row"><span>Départ</span><strong>${sessionHeure}</strong></div>
-            <div class="recap-row"><span>Bus</span><strong>${document.querySelector('.session-item.selected')?.dataset.bus || '—'}</strong></div>
+          <div class="recap-row"><span>Ligne</span><strong>${isArretsColisCheck && t._arretMontee ? `${escapeHtml(t._arretMontee)} → ${escapeHtml(t._arretDescente)}` : `${escapeHtml(t.villeDepart)} → ${escapeHtml(t.villeArrivee)}`}</strong></div>
+          <div class="recap-row"><span>Date</span><strong>${dateFormatee}</strong></div>
+          <div class="recap-row"><span>Départ</span><strong>${escapeHtml(sessionHeure)}</strong></div>
+          <div class="recap-row"><span>Bus</span><strong>${escapeHtml(document.querySelector('.session-item.selected')?.dataset.bus || '—')}</strong></div>
             ${embDebHtmlColis}
           </div>
         </div>
@@ -1039,7 +1039,7 @@ export function showColisRecapShared() {
           <div class="recap-section-title">Colis</div>
           <div class="recap-card">
             <div class="recap-row"><span>Nature</span><strong>${nature}</strong></div>
-            <div class="recap-row"><span>Poids</span><strong>${poids} kg</strong></div>
+            <div class="recap-row"><span>Poids</span><strong>${escapeHtml(String(poids))} kg</strong></div>
             ${valeur ? `<div class="recap-row"><span>Valeur déclarée</span><strong>${Number(valeur).toLocaleString()} XAF</strong></div>` : ''}
           </div>
         </div>

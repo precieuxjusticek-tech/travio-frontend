@@ -69,13 +69,13 @@ export function invalidateStatsPdvCache() { statsPdvCache = null; }
 //  HELPERS TYPES DE BILLET
 // ════════════════════════════════
 export function nomType(typeId) {
-  return (agenceData?.typesBillet || []).find(t => t.id === typeId)?.nom || typeId;
+  return escapeHtml((agenceData?.typesBillet || []).find(t => t.id === typeId)?.nom || typeId);
 }
 export function nomTypeResa(r) {
-  return r.typeBilletNom || nomType(r.typeBillet);
+  return r.typeBilletNom ? escapeHtml(r.typeBilletNom) : nomType(r.typeBillet);
 }
 export function nomTypePassager(p) {
-  return p.typeNom || nomType(p.type);
+  return p.typeNom ? escapeHtml(p.typeNom) : nomType(p.type);
 }
 export function ageRangeLabel(typeId) {
   const t = (agenceData?.typesBillet || []).find(t => t.id === typeId);

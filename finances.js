@@ -719,8 +719,8 @@ export function getFinDonneesRapport() {
   const conf     = resas.filter(r => r.statut !== 'annulée');
   const annulees = resas.filter(r => r.statut === 'annulée');
 
-  const CA        = conf.reduce((s, r) => s + (r.prixTotal || 0), 0);
-  const billets    = conf.reduce((s, r) => s + (r.nbPassagers || 1), 0);
+  const CA        = conf.reduce((s, r) => s + Number(r.prixTotal || 0), 0);
+  const billets    = conf.reduce((s, r) => s + (Number(r.nbPassagers) || 1), 0);
   const prixMoyen = billets > 0 ? Math.round(CA / billets) : 0;
   const tauxAnnul = resas.length > 0 ? Math.round((annulees.length / resas.length) * 100) : 0;
 
@@ -730,7 +730,7 @@ export function getFinDonneesRapport() {
     const departInstant = new Date(`${r.dateDepart}T${r.heureDepart || '23:59'}:00Z`).getTime() - OFFSET_MS_BRAZZA;
     return departInstant < maintenant;
   });
-  const totalDejaTransportes = dejaTransportes.reduce((s, r) => s + (r.nbPassagers || 1), 0);
+  const totalDejaTransportes = dejaTransportes.reduce((s, r) => s + (Number(r.nbPassagers) || 1), 0);
   const totalRetraits = resas.reduce((s, r) => s + (r.historiqueRetraits?.length || 0), 0);
 
   // ── Impact sur les revenus (annulations / modifs / retraits) ──
@@ -745,25 +745,25 @@ export function getFinDonneesRapport() {
   const base = resaList.filter(finPasseFiltreSansStatut);
 
   const annuleesImpact  = base.filter(r => r.statut === 'annulée' && dansPeriode(r.annuleeAt || r.createdAt));
-  const totalAnnule     = annuleesImpact.reduce((s, r) => s + (r.prixTotal || 0), 0);
-  const totalFraisAnnul = annuleesImpact.reduce((s, r) => s + (r.fraisRetenus || 0), 0);
+  const totalAnnule     = annuleesImpact.reduce((s, r) => s + Number(r.prixTotal || 0), 0);
+  const totalFraisAnnul = annuleesImpact.reduce((s, r) => s + Number(r.fraisRetenus || 0), 0);
 
   const modifs      = base.filter(r => r.modifiee === true && r.ecartMontant > 0 && dansPeriode(r.dateModification));
-  const totalBaisse = modifs.reduce((s, r) => s + (r.ecartMontant || 0), 0);
+  const totalBaisse = modifs.reduce((s, r) => s + Number(r.ecartMontant || 0), 0);
 
   let totalRetraitMontant = 0, totalFraisRetrait = 0, nbPassRetires = 0;
   base.filter(r => r.passagerRetire === true).forEach(r => {
     (r.historiqueRetraits || []).forEach(h => {
       if (dansPeriode(h.retireAt)) {
-        totalRetraitMontant += (h.montantRembourse || 0);
-        totalFraisRetrait   += (h.fraisRetenus || 0);
+        totalRetraitMontant += Number(h.montantRembourse || 0);
+        totalFraisRetrait   += Number(h.fraisRetenus || 0);
         nbPassRetires       += 1;
       }
     });
   });
 
   const totalGarde = totalFraisAnnul + totalFraisRetrait;
-  const totalPerdu = annuleesImpact.reduce((s, r) => s + (r.montantRembourse || 0), 0) + totalBaisse + totalRetraitMontant;
+  const totalPerdu = annuleesImpact.reduce((s, r) => s + Number(r.montantRembourse || 0), 0) + totalBaisse + totalRetraitMontant;
 
   // ── Classement PDV ──
   const pdvMap = {};
@@ -771,8 +771,8 @@ export function getFinDonneesRapport() {
     if (!r.pdvId) return;
     const pdv = pdvList.find(p => p.id === r.pdvId);
     if (!pdvMap[r.pdvId]) pdvMap[r.pdvId] = { nom: pdv?.nom || '—', ville: pdv?.ville || '—', ca: 0, billets: 0, resas: 0 };
-    pdvMap[r.pdvId].ca      += r.prixTotal || 0;
-    pdvMap[r.pdvId].billets += r.nbPassagers || 1;
+    pdvMap[r.pdvId].ca      += Number(r.prixTotal || 0);
+    pdvMap[r.pdvId].billets += Number(r.nbPassagers) || 1;
     pdvMap[r.pdvId].resas   += 1;
   });
   const pdvStats = Object.values(pdvMap).sort((a, b) => b.ca - a.ca);
@@ -783,8 +783,8 @@ export function getFinDonneesRapport() {
     if (!r.trajetId) return;
     const t = trajetList.find(t => t.id === r.trajetId);
     if (!trajetMap[r.trajetId]) trajetMap[r.trajetId] = { nom: t ? `${t.villeDepart} - ${t.villeArrivee}` : '—', ca: 0, billets: 0 };
-    trajetMap[r.trajetId].ca      += r.prixTotal || 0;
-    trajetMap[r.trajetId].billets += r.nbPassagers || 1;
+    trajetMap[r.trajetId].ca      += Number(r.prixTotal || 0);
+    trajetMap[r.trajetId].billets += Number(r.nbPassagers) || 1;
   });
   const trajetStats = Object.values(trajetMap).sort((a, b) => b.ca - a.ca);
 
@@ -794,7 +794,7 @@ export function getFinDonneesRapport() {
   conf.forEach(r => {
     if (!r.createdAt) return;
     const dow = new Date(toBrazzaDate(r.createdAt) + 'T00:00:00').getDay();
-    dowCA[dow] += r.prixTotal || 0;
+    dowCA[dow] += Number(r.prixTotal || 0);
   });
   const bestDowIdx  = dowCA.indexOf(Math.max(...dowCA));
   const meilleurJour = dowCA[bestDowIdx] > 0 ? JOURS_SEMAINE_FR[bestDowIdx] : null;
@@ -838,12 +838,12 @@ export function renderFinancePage() {
   const confPrev = resasPrev.filter(r => r.statut !== 'annulée');
   const annulees = resas.filter(r => r.statut === 'annulée');
 
-  const CA      = conf.reduce((s,r) => s + (r.prixTotal||0), 0);
-  const CAprev  = confPrev.reduce((s,r) => s + (r.prixTotal||0), 0);
-  const billetsAnnules     = annulees.reduce((s,r) => s + (r.nbPassagers||1), 0);
-  const billetsAnnulesPrev = resasPrev.filter(r => r.statut === 'annulée').reduce((s,r) => s + (r.nbPassagers||1), 0);
-  const billets = conf.reduce((s,r) => s + (r.nbPassagers||1), 0) + billetsAnnules;
-  const bilPrev = confPrev.reduce((s,r) => s + (r.nbPassagers||1), 0) + billetsAnnulesPrev;
+  const CA      = conf.reduce((s,r) => s + Number(r.prixTotal||0), 0);
+  const CAprev  = confPrev.reduce((s,r) => s + Number(r.prixTotal||0), 0);
+  const billetsAnnules     = annulees.reduce((s,r) => s + (Number(r.nbPassagers)||1), 0);
+  const billetsAnnulesPrev = resasPrev.filter(r => r.statut === 'annulée').reduce((s,r) => s + (Number(r.nbPassagers)||1), 0);
+  const billets = conf.reduce((s,r) => s + (Number(r.nbPassagers)||1), 0) + billetsAnnules;
+  const bilPrev = confPrev.reduce((s,r) => s + (Number(r.nbPassagers)||1), 0) + billetsAnnulesPrev;
 
   const nbResa     = resas.length;
   const nbResaPrev = resasPrev.length;
@@ -930,8 +930,8 @@ function renderFinanceChartSiege(periode, resas) {
         const val = resaList.filter(r =>
           r.statut !== 'annulée' && finPasseFiltreSansStatut(r) &&
           toBrazzaDate(r.createdAt) === str
-        ).reduce((s, r) => s + (r.prixTotal || 0), 0);
-        cols.push({ label: `${d.getUTCDate()}/${d.getUTCMonth()+1}`, val, date: str });
+          ).reduce((s, r) => s + Number(r.prixTotal || 0), 0);
+          cols.push({ label: `${d.getUTCDate()}/${d.getUTCMonth()+1}`, val, date: str });
       }
     } else {
       // Vue mois par mois pour les grandes plages
@@ -942,8 +942,8 @@ function renderFinanceChartSiege(periode, resas) {
         const val = resaList.filter(r =>
           r.statut !== 'annulée' && finPasseFiltreSansStatut(r) &&
           toBrazzaDate(r.createdAt).startsWith(moisStr)
-        ).reduce((s, r) => s + (r.prixTotal || 0), 0);
-        cols.push({ label: `${moisNoms[curseur.getUTCMonth()]} ${curseur.getUTCFullYear()}`, val });
+          ).reduce((s, r) => s + Number(r.prixTotal || 0), 0);
+          cols.push({ label: `${moisNoms[curseur.getUTCMonth()]} ${curseur.getUTCFullYear()}`, val });
         curseur = new Date(Date.UTC(curseur.getUTCFullYear(), curseur.getUTCMonth() + 1, 1));
       }
     }
@@ -960,7 +960,7 @@ function renderFinanceChartSiege(periode, resas) {
         if (!r.createdAt) return false;
         const heureBrazza = new Date(new Date(r.createdAt).getTime() + OFFSET_MS_BRAZZA).getUTCHours();
         return toBrazzaDate(r.createdAt) === today && heureBrazza >= h && heureBrazza < h + 2;
-      }).reduce((s, r) => s + (r.prixTotal || 0), 0);
+      }).reduce((s, r) => s + Number(r.prixTotal || 0), 0);
       return { label: `${h}h`, val };
     });
     if (titleEl) titleEl.textContent = "Activité d'aujourd'hui par heure";
@@ -973,8 +973,8 @@ function renderFinanceChartSiege(periode, resas) {
       const dStr = new Date(lundiDate.getTime() + i * 86400000).toISOString().split('T')[0];
       const val = resaList.filter(r =>
         r.statut !== 'annulée' && finPasseFiltreSansStatut(r) && toBrazzaDate(r.createdAt) === dStr
-      ).reduce((s, r) => s + (r.prixTotal || 0), 0);
-      cols.push({ label: joursNoms[i], val, date: dStr });
+        ).reduce((s, r) => s + Number(r.prixTotal || 0), 0);
+        cols.push({ label: joursNoms[i], val, date: dStr });
       if (dStr === aujourdHui) break;
     }
     if (titleEl) titleEl.textContent = "Activité de la semaine (lundi → aujourd'hui)";
@@ -991,7 +991,7 @@ function renderFinanceChartSiege(periode, resas) {
         if (!dBrazza.startsWith(month)) return false;
         const jour = Number(dBrazza.slice(8, 10));
         return jour >= debut && jour <= fin;
-      }).reduce((s, r) => s + (r.prixTotal || 0), 0);
+      }).reduce((s, r) => s + Number(r.prixTotal || 0), 0);
       cols.push({ label: `S${w + 1}`, val });
     }
     if (titleEl) titleEl.textContent = 'Activité par semaine ce mois';
@@ -1005,8 +1005,8 @@ function renderFinanceChartSiege(periode, resas) {
       const val = resaList.filter(r =>
         r.statut !== 'annulée' && finPasseFiltreSansStatut(r) &&   // ← ajout
         toBrazzaDate(r.createdAt).startsWith(str)
-      ).reduce((s, r) => s + (r.prixTotal || 0), 0);
-      cols.push({ label: moisNoms[d.getUTCMonth()], val });
+        ).reduce((s, r) => s + Number(r.prixTotal || 0), 0);
+        cols.push({ label: moisNoms[d.getUTCMonth()], val });
     }
     if (titleEl) titleEl.textContent = 'Activité des 6 derniers mois';
   }
@@ -1044,7 +1044,7 @@ function _renderFinanceDow(conf) {
   conf.forEach(r => {
     if (!r.createdAt) return;
     const dow = new Date(toBrazzaDate(r.createdAt)+'T00:00:00').getDay();
-    dowCA[dow] += r.prixTotal||0;
+    dowCA[dow] += Number(r.prixTotal||0);
   });
   const maxDow  = Math.max(...dowCA, 1);
   const bestDow = dowCA.indexOf(Math.max(...dowCA));
@@ -1097,13 +1097,13 @@ function _renderFinanceImpact(fmt) {
 
   // 1. Annulations
   const annulees = base.filter(r => r.statut === 'annulée' && dansPeriode(r.annuleeAt || r.createdAt));
-  const totalAnnule      = annulees.reduce((s, r) => s + (r.prixTotal || 0), 0);
-  const totalFraisAnnul  = annulees.reduce((s, r) => s + (r.fraisRetenus || 0), 0);
-  const nbBilletsAnnules = annulees.reduce((s, r) => s + (r.nbPassagers || 1), 0);
+  const totalAnnule      = annulees.reduce((s, r) => s + Number(r.prixTotal || 0), 0);
+  const totalFraisAnnul  = annulees.reduce((s, r) => s + Number(r.fraisRetenus || 0), 0);
+  const nbBilletsAnnules = annulees.reduce((s, r) => s + (Number(r.nbPassagers) || 1), 0);
 
   // 2. Modifications à la baisse
   const modifs = base.filter(r => r.modifiee === true && r.ecartMontant > 0 && dansPeriode(r.dateModification));
-  const totalBaisse = modifs.reduce((s, r) => s + (r.ecartMontant || 0), 0);
+  const totalBaisse = modifs.reduce((s, r) => s + Number(r.ecartMontant || 0), 0);
   const nbModifs     = modifs.length;
 
   // 3. Retraits de passagers
@@ -1111,15 +1111,15 @@ function _renderFinanceImpact(fmt) {
   base.filter(r => r.passagerRetire === true).forEach(r => {
     (r.historiqueRetraits || []).forEach(h => {
       if (dansPeriode(h.retireAt)) {
-        totalRetrait      += (h.montantRembourse || 0);
-        totalFraisRetrait += (h.fraisRetenus || 0);
+        totalRetrait      += Number(h.montantRembourse || 0);
+        totalFraisRetrait += Number(h.fraisRetenus || 0);
         nbPassRetires     += 1;
       }
     });
   });
 
   const totalGarde  = totalFraisAnnul + totalFraisRetrait;
-  const totalPerdu  = annulees.reduce((s, r) => s + (r.montantRembourse || 0), 0) + totalBaisse + totalRetrait;
+  const totalPerdu  = annulees.reduce((s, r) => s + Number(r.montantRembourse || 0), 0) + totalBaisse + totalRetrait;
   const totalImpact = totalAnnule + totalBaisse + totalRetrait + totalGarde;
 
   if (totalImpact === 0) {
@@ -1156,7 +1156,7 @@ function _renderFinanceTrophy(conf, fmt) {
     if (!r.pdvId) return;
     const pdv = pdvList.find(p => p.id === r.pdvId);
     if (!pdvMapTrophy[r.pdvId]) pdvMapTrophy[r.pdvId] = { nom: pdv?.nom||'—', ca: 0 };
-    pdvMapTrophy[r.pdvId].ca += r.prixTotal||0;
+    pdvMapTrophy[r.pdvId].ca += Number(r.prixTotal||0);
   });
   const bestPDV  = Object.values(pdvMapTrophy).sort((a,b) => b.ca - a.ca)[0];
   const trophyEl = document.getElementById('finTrophy');
@@ -1202,8 +1202,8 @@ function _renderFinancePdv(conf, fmt) {
     if (!r.pdvId) return;
     const pdv = pdvList.find(p => p.id === r.pdvId);
     if (!pdvMap[r.pdvId]) pdvMap[r.pdvId] = { id: r.pdvId, nom: pdv?.nom||'—', ville: pdv?.ville||'Autre', ca: 0, billets: 0, resas: 0 };
-    pdvMap[r.pdvId].ca      += r.prixTotal||0;
-    pdvMap[r.pdvId].billets += r.nbPassagers||1;
+    pdvMap[r.pdvId].ca      += Number(r.prixTotal||0);
+    pdvMap[r.pdvId].billets += Number(r.nbPassagers)||1;
     pdvMap[r.pdvId].resas   += 1;
   });
 
@@ -1299,8 +1299,8 @@ function _renderFinanceTrajets(conf, fmt) {
       billets: 0,
       resas:   0,
     };
-    trajetMap[r.trajetId].ca      += r.prixTotal||0;
-    trajetMap[r.trajetId].billets += r.nbPassagers||1;
+    trajetMap[r.trajetId].ca      += Number(r.prixTotal||0);
+    trajetMap[r.trajetId].billets += Number(r.nbPassagers)||1;
     trajetMap[r.trajetId].resas   += 1;
   });
 
@@ -1363,25 +1363,25 @@ export function openFinancePdvDetail(pdvId) {
   const resas       = resasPeriode.filter(r => r.statut !== 'annulée');
   const resasAnnuleesPeriode = resasPeriode.filter(r => r.statut === 'annulée');
   const nbAnnulees  = resasAnnuleesPeriode.length;
-  const billetsAnnules = resasAnnuleesPeriode.reduce((s, r) => s + (r.nbPassagers || 1), 0);
+  const billetsAnnules = resasAnnuleesPeriode.reduce((s, r) => s + (Number(r.nbPassagers) || 1), 0);
 
   const fmt = n => n >= 1_000_000
     ? (n/1_000_000).toFixed(1).replace(/\.0$/,'') + 'M XAF'
     : n >= 1_000 ? Math.round(n/1_000) + 'k XAF'
     : n.toLocaleString() + ' XAF';
 
-  const CA      = resas.reduce((s,r) => s + (r.prixTotal||0), 0);
-  const billets = resas.reduce((s,r) => s + (r.nbPassagers||1), 0);
-
-  const trajetMap = {};
-  resas.forEach(r => {
-    if (!r.trajetId) return;
-    const t = trajetList.find(t => t.id === r.trajetId);
-    if (!trajetMap[r.trajetId]) trajetMap[r.trajetId] = { nom: t ? `${t.villeDepart} → ${t.villeArrivee}` : '—', ca: 0, billets: 0 };
-    trajetMap[r.trajetId].ca      += r.prixTotal||0;
-    trajetMap[r.trajetId].billets += r.nbPassagers||1;
-  });
-  const meilleurTrajet  = Object.values(trajetMap).sort((a,b) => b.ca - a.ca)[0];
+    const CA      = resas.reduce((s,r) => s + Number(r.prixTotal||0), 0);
+    const billets = resas.reduce((s,r) => s + (Number(r.nbPassagers)||1), 0);
+  
+    const trajetMap = {};
+    resas.forEach(r => {
+      if (!r.trajetId) return;
+      const t = trajetList.find(t => t.id === r.trajetId);
+      if (!trajetMap[r.trajetId]) trajetMap[r.trajetId] = { nom: t ? `${t.villeDepart} → ${t.villeArrivee}` : '—', ca: 0, billets: 0 };
+      trajetMap[r.trajetId].ca      += Number(r.prixTotal||0);
+      trajetMap[r.trajetId].billets += Number(r.nbPassagers)||1;
+    });
+    const meilleurTrajet  = Object.values(trajetMap).sort((a,b) => b.ca - a.ca)[0];
   const dernieresVentes = [...resasToutes].sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||'')).slice(0, 5);
 
   const overlay = document.createElement('div');
@@ -1577,26 +1577,26 @@ export function openFinanceTrajetDetail(trajetId) {
     : n >= 1_000 ? Math.round(n/1_000) + 'k XAF'
     : n.toLocaleString() + ' XAF';
 
-  const CA      = resas.reduce((s,r) => s + (r.prixTotal||0), 0);
-  const billets = resas.reduce((s,r) => s + (r.nbPassagers||1), 0);
-
-  const JOURS_SEMAINE = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-  const dowCA = Array(7).fill(0);
-  resas.forEach(r => {
-    if (!r.createdAt) return;
-    const dow = new Date(toBrazzaDate(r.createdAt)+'T00:00:00').getDay();
-    dowCA[dow] += r.prixTotal||0;
-  });
-  const bestDow = dowCA.indexOf(Math.max(...dowCA));
-
-  const pdvMap = {};
-  resas.forEach(r => {
-    if (!r.pdvId) return;
-    const pdv = pdvList.find(p => p.id === r.pdvId);
-    if (!pdvMap[r.pdvId]) pdvMap[r.pdvId] = { nom: pdv?.nom||'—', ca: 0, billets: 0 };
-    pdvMap[r.pdvId].ca      += r.prixTotal||0;
-    pdvMap[r.pdvId].billets += r.nbPassagers||1;
-  });
+    const CA      = resas.reduce((s,r) => s + Number(r.prixTotal||0), 0);
+    const billets = resas.reduce((s,r) => s + (Number(r.nbPassagers)||1), 0);
+  
+    const JOURS_SEMAINE = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    const dowCA = Array(7).fill(0);
+    resas.forEach(r => {
+      if (!r.createdAt) return;
+      const dow = new Date(toBrazzaDate(r.createdAt)+'T00:00:00').getDay();
+      dowCA[dow] += Number(r.prixTotal||0);
+    });
+    const bestDow = dowCA.indexOf(Math.max(...dowCA));
+  
+    const pdvMap = {};
+    resas.forEach(r => {
+      if (!r.pdvId) return;
+      const pdv = pdvList.find(p => p.id === r.pdvId);
+      if (!pdvMap[r.pdvId]) pdvMap[r.pdvId] = { nom: pdv?.nom||'—', ca: 0, billets: 0 };
+      pdvMap[r.pdvId].ca      += Number(r.prixTotal||0);
+      pdvMap[r.pdvId].billets += Number(r.nbPassagers)||1;
+    });
   const pdvSorted = Object.values(pdvMap).sort((a,b) => b.ca - a.ca);
   const maxPdvCA  = pdvSorted[0]?.ca || 1;
 
@@ -1721,9 +1721,9 @@ export function openFinanceJourDetail(dateStr) {
     : n >= 1_000 ? Math.round(n/1_000) + 'k XAF'
     : n.toLocaleString() + ' XAF';
 
-  const CA      = resas.reduce((s,r) => s + (r.prixTotal||0), 0);
-  const billets = resas.reduce((s,r) => s + (r.nbPassagers||1), 0);
-  const dateLabel = new Date(dateStr+'T00:00:00').toLocaleDateString('fr-FR', {
+    const CA      = resas.reduce((s,r) => s + Number(r.prixTotal||0), 0);
+    const billets = resas.reduce((s,r) => s + (Number(r.nbPassagers)||1), 0);
+    const dateLabel = new Date(dateStr+'T00:00:00').toLocaleDateString('fr-FR', {
     weekday: 'long', day: '2-digit', month: 'long'
   });
 
