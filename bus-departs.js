@@ -349,7 +349,7 @@ export function openEditDepart(departId, trajetId) {
             </div>
             <div class="pdv-field-group">
               <label>Capacité <span class="req">*</span></label>
-              <input type="number" class="pdv-input" id="ed-capacite" value="${d.busCapacite ? Number(d.busCapacite) : ''}">
+              <input type="number" class="pdv-input" id="ed-capacite" min="1" value="${d.busCapacite ? Number(d.busCapacite) : ''}">y
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
               <div class="pdv-field-group">
@@ -416,6 +416,12 @@ export async function submitEditDepart(departId, trajetId) {
 
   if (!busNom || !busType || !busCapacite || !heureDepart) {
     showToast('Remplissez les champs obligatoires.', TOAST_ICONS.warning); return;
+  }
+
+  if (isNaN(parseInt(busCapacite)) || parseInt(busCapacite) < 1) {
+    document.getElementById('ed-capacite')?.classList.add('error');
+    showToast('La capacité doit être d\'au moins 1 place.', TOAST_ICONS.warning);
+    return;
   }
 
   const tousBtn      = document.querySelector('#edJoursWrap .jour-toggle-btn[data-tous].active');
