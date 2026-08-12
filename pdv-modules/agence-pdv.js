@@ -1,6 +1,7 @@
 // ─── TRAVIO — PDV — Agence (chargement des données agence, politique d'annulation) ───
 
 import { apiFetch } from '../api.js';
+import { escapeHtml } from '../sanitize.js';
 import { ICONS, BACKEND, agenceData, setAgenceData } from './state-pdv.js';
 
 export async function loadAgenceData(agenceId) {

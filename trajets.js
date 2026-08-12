@@ -38,6 +38,18 @@ function toBrazzaDate(isoStr) {
   return new Date(new Date(isoStr).getTime() + OFFSET_MS_BZV).toISOString().split('T')[0];
 }
 
+function calculerRevenuColisAccompagne(resas) {
+  let total = 0;
+  resas.forEach(r => {
+    (r.passagers || []).forEach(p => {
+      if (p.colisSoute && p.colisSoute.prix) {
+        total += Number(p.colisSoute.prix) || 0;
+      }
+    });
+  });
+  return total;
+}
+
 function ageRangeLabel(type) {
   if (!type) return '';
   return type.ageMax == null ? `${type.ageMin} ans et +` : `de ${type.ageMin} à ${type.ageMax} ans`;
@@ -80,6 +92,9 @@ export function updateOverviewStats() {
   );
   const revenuJour = resaAujourdhui.reduce((s, r) => s + (r.prixTotal || 0), 0);
 
+  const revenuColisAccompagneJour = calculerRevenuColisAccompagne(resaAujourdhui);
+  const revenuBilletsSeulsJour    = revenuJour - revenuColisAccompagneJour;
+
   const elResa = document.getElementById('statResa');
   if (elResa) elResa.textContent = resaAujourdhui.length.toLocaleString();
   const elResaDelta = document.getElementById('statResaDelta');
@@ -87,6 +102,11 @@ export function updateOverviewStats() {
 
   const elRevenu = document.getElementById('statRevenu');
   if (elRevenu) elRevenu.textContent = revenuJour.toLocaleString() + ' XAF';
+  const elRevenuDetail = document.getElementById('statRevenuDetail');
+  if (elRevenuDetail) {
+    elRevenuDetail.textContent =
+      `Billets : ${revenuBilletsSeulsJour.toLocaleString()} XAF · Colis accompagnés : ${revenuColisAccompagneJour.toLocaleString()} XAF`;
+  }
   const elRevenuDelta = document.getElementById('statRevenuDelta');
   if (elRevenuDelta) elRevenuDelta.textContent = `${resaAujourdhui.length} réservation${resaAujourdhui.length > 1 ? 's' : ''} aujourd'hui`;
 

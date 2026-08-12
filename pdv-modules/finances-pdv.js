@@ -48,6 +48,7 @@ export function applyFinCustomRangePDV() {
   if (debut > fin) { showToast('La date de début doit précéder la date de fin.', ICONS.warning); return; }
 
   finCustomRange = { debut, fin };
+  finPeriode = 'custom';   // ← LIGNE AJOUTÉE
   document.querySelectorAll('#finPeriodeFilters .rqf-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('finCustomBtnPDV')?.classList.add('active');
   document.getElementById('finCustomPickerWrapPDV').style.display = 'none';
@@ -132,6 +133,19 @@ function getAnnulParPeriode() {
     if (fin   && d > fin)   return false;
     return true;
   });
+}
+
+export function calculerRevenuColisAccompagnePDV(resas) {
+  let total = 0, count = 0;
+  resas.forEach(r => {
+    (r.passagers || []).forEach(p => {
+      if (p.colisSoute && p.colisSoute.prix) {
+        total += Number(p.colisSoute.prix) || 0;
+        count++;
+      }
+    });
+  });
+  return { total, count };
 }
 
 function finPasseFiltrePDV(r) {
@@ -219,21 +233,19 @@ function getBornesPeriodePrecedentePDV(periode, bDebut, bFin) {
   }
 
   if (periode === 'week') {
-    const d = new Date(bDebut + 'T00:00:00Z');
-    const f = new Date(bFin   + 'T00:00:00Z');
+    const d = new Date(bDebut + 'T00:00:00Z');       // lundi de cette semaine
+    const prevDebut = new Date(d.getTime() - 7 * 86400000); // lundi de la semaine précédente
+    const prevFin   = new Date(d.getTime() - 1 * 86400000); // dimanche de la semaine précédente
     return {
-      debut: new Date(d.getTime() - 7 * 86400000).toISOString().split('T')[0],
-      fin:   new Date(f.getTime() - 7 * 86400000).toISOString().split('T')[0],
+      debut: prevDebut.toISOString().split('T')[0],
+      fin:   prevFin.toISOString().split('T')[0],
     };
   }
 
   if (periode === 'month') {
     const d = new Date(bDebut + 'T00:00:00Z');
-    const f = new Date(bFin   + 'T00:00:00Z');
-    const prevDebut = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));
-    const dernierJourPrevMois = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 0)).getUTCDate();
-    const quantieme = Math.min(f.getUTCDate(), dernierJourPrevMois);
-    const prevFin = new Date(Date.UTC(prevDebut.getUTCFullYear(), prevDebut.getUTCMonth(), quantieme));
+    const prevDebut = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));   // 1er du mois précédent
+    const prevFin   = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 0));       // dernier jour du mois précédent
     return { debut: prevDebut.toISOString().split('T')[0], fin: prevFin.toISOString().split('T')[0] };
   }
 
@@ -256,8 +268,36 @@ function getResasPrecedentesPDV(periode) {
   });
 }
 
+function getAnnulPrecedentesPDV(periode) {
+  const { debut, fin } = getFinBornesEffectivesPDV();
+  const { debut: pDebut, fin: pFin } = getBornesPeriodePrecedentePDV(periode, debut, fin);
+  if (!pDebut || !pFin) return [];
+  return resaList.filter(r => {
+    if (r.statut !== 'annulée') return false;
+    if (!finPasseFiltrePDV(r)) return false;
+    const d = toBrazzaDate(r.createdAt);
+    return d >= pDebut && d <= pFin;
+  });
+}
+
+function getToutesResasPrecedentesPDV(periode) {
+  const { debut, fin } = getFinBornesEffectivesPDV();
+  const { debut: pDebut, fin: pFin } = getBornesPeriodePrecedentePDV(periode, debut, fin);
+  if (!pDebut || !pFin) return [];
+  return resaList.filter(r => {
+    if (!finPasseFiltrePDV(r)) return false;
+    const d = toBrazzaDate(r.createdAt);
+    return d >= pDebut && d <= pFin;
+  });
+}
+
 export function cmpHtmlPDV(val, prev) {
-  if (prev === 0) return `<span style="color:var(--muted);">— pas de comparaison</span>`;
+  if (prev === 0 && val === 0) {
+    return `<span style="color:var(--muted);">— pas de comparaison</span>`;
+  }
+  if (prev === 0 && val > 0) {
+    return `<span style="color:var(--accent);">↑ Nouveau — rien sur la période précédente</span>`;
+  }
   const pct     = Math.round((val - prev) / prev * 100);
   const couleur = pct >= 0 ? 'var(--accent)' : '#FF4D6A';
   const fleche  = pct >= 0 ? '↑' : '↓';
@@ -305,16 +345,28 @@ function calculerColisStatsPDV() {
   };
 }
 
-function _renderFinanceColisPDV() {
+function _renderFinanceColisPDV(totalEncaisse = 0, CAprec = 0) {
   const container = document.getElementById('finColisStatsPDV');
+
+  const { revenuColis, revenuColisPrec, total, enTransit, retire } = calculerColisStatsPDV();
+
+  const totalCombine     = totalEncaisse + revenuColis;
+  const totalCombinePrec = CAprec + revenuColisPrec;
+
+  const elTotal = document.getElementById('finKpiEncaisseTotal');
+  if (elTotal) elTotal.textContent = totalCombine.toLocaleString() + ' XAF';
+
+  const elTotalInfo = document.getElementById('finKpiEncaisseTotalInfo');
+  if (elTotalInfo) {
+    elTotalInfo.innerHTML = finPeriode === 'all' ? '' : cmpHtmlPDV(totalCombine, totalCombinePrec);
+  }
+
   if (!container) return;
 
   const fmt = n => n >= 1_000_000
     ? (n/1_000_000).toFixed(1).replace(/\.0$/,'') + 'M XAF'
     : n >= 1_000 ? Math.round(n/1_000) + 'k XAF'
     : n.toLocaleString() + ' XAF';
-
-  const { revenuColis, revenuColisPrec, total, enTransit, retire } = calculerColisStatsPDV();
 
   if (total === 0) {
     container.style.display = 'none';
@@ -647,33 +699,56 @@ export function renderFinancePage() {
   const toutesResas = getToutesResasParPeriode();
 
   const totalEncaisse    = resas.reduce((s, r) => s + (r.prixTotal || 0), 0);
+  const { total: revenuColisAccompagne, count: nbColisAccompagne } = calculerRevenuColisAccompagnePDV(resas);
+  const totalBilletsSeuls = totalEncaisse - revenuColisAccompagne;
+
+  setEl('finKpiEncaisse',   totalBilletsSeuls.toLocaleString() + ' XAF');
+  setEl('finKpiColisAccompagne', revenuColisAccompagne.toLocaleString() + ' XAF');
+  setEl('finKpiColisAccompagneCount', `${nbColisAccompagne} colis`);
+
   const billetsConfirmes = resas.reduce((s, r) => s + (r.nbPassagers || 1), 0);
   const billetsAnnules   = annuls.reduce((s, r) => s + (r.nbPassagers || 1), 0);
   const nbBillets        = billetsConfirmes + billetsAnnules;
   const montantAnnule    = annuls.reduce((s, r) => s + (r.prixTotal || 0), 0);
 
-  setEl('finKpiEncaisse',   totalEncaisse.toLocaleString());
   setEl('finKpiBillets',    nbBillets.toLocaleString());
   setEl('finKpiAnnule',     montantAnnule.toLocaleString());
   setEl('finKpiAnnulCount', `${annuls.length} annulation${annuls.length > 1 ? 's' : ''}`);
   setEl('finKpiResa', toutesResas.length.toLocaleString());
-  setElHtml('finKpiResaInfo', annuls.length > 0
-    ? `sur la période · <span style="color:#FF4D6A;font-weight:600;">dont ${annuls.length} annulée${annuls.length > 1 ? 's' : ''}</span>`
-    : 'sur la période');
 
   const noteAnnulesBillets = billetsAnnules > 0
     ? ` <span style="color:#FF4D6A;font-weight:600;">· dont ${billetsAnnules} annulé${billetsAnnules > 1 ? 's' : ''}</span>`
     : '';
 
+  let CAprec = 0; // nécessaire pour le total combiné, calculé même en 'all' (restera 0)
+
   if (finPeriode === 'all') {
     setElHtml('finKpiEncaisseInfo', '');
     setElHtml('finKpiBilletsInfo', noteAnnulesBillets ? noteAnnulesBillets.trim() : 'sur la période');
+    setElHtml('finKpiAnnulInfo', '');
+    setElHtml('finKpiColisAccompagneInfo', '');
+    setElHtml('finKpiResaInfo', annuls.length > 0
+      ? `sur la période · <span style="color:#FF4D6A;font-weight:600;">dont ${annuls.length} annulée${annuls.length > 1 ? 's' : ''}</span>`
+      : 'sur la période');
   } else {
-    const resasPrec = getResasPrecedentesPDV(finPeriode);
-    const CAprec  = resasPrec.reduce((s, r) => s + (r.prixTotal || 0), 0);
+    const resasPrec       = getResasPrecedentesPDV(finPeriode);
+    const annulPrec       = getAnnulPrecedentesPDV(finPeriode);
+    const toutesResasPrec = getToutesResasPrecedentesPDV(finPeriode);
+
+    CAprec = resasPrec.reduce((s, r) => s + (r.prixTotal || 0), 0);
     const bilPrec = resasPrec.reduce((s, r) => s + (r.nbPassagers || 1), 0);
-    setElHtml('finKpiEncaisseInfo', cmpHtmlPDV(totalEncaisse, CAprec));
+    const { total: colisAccompagnePrec } = calculerRevenuColisAccompagnePDV(resasPrec);
+    const billetsSeulsPrec = CAprec - colisAccompagnePrec;
+    const montantAnnulePrec = annulPrec.reduce((s, r) => s + (r.prixTotal || 0), 0);
+
+    setElHtml('finKpiEncaisseInfo', cmpHtmlPDV(totalBilletsSeuls, billetsSeulsPrec));
     setElHtml('finKpiBilletsInfo',  cmpHtmlPDV(nbBillets, bilPrec) + noteAnnulesBillets);
+    setElHtml('finKpiAnnulInfo',    cmpHtmlPDV(montantAnnule, montantAnnulePrec));
+    setElHtml('finKpiColisAccompagneInfo', cmpHtmlPDV(revenuColisAccompagne, colisAccompagnePrec));
+    setElHtml('finKpiResaInfo', cmpHtmlPDV(toutesResas.length, toutesResasPrec.length) +
+      (annuls.length > 0
+        ? ` <span style="color:#FF4D6A;font-weight:600;">· dont ${annuls.length} annulée${annuls.length > 1 ? 's' : ''}</span>`
+        : ''));
   }
 
   renderMeilleurTrajet(resas);
@@ -681,5 +756,5 @@ export function renderFinancePage() {
   renderFinanceChartPDV(finPeriode);
   renderFinanceDowPDV(resas);
   renderFinanceTrajetsPDV(resas, fmt);
-  _renderFinanceColisPDV();
+  _renderFinanceColisPDV(totalEncaisse, CAprec);
 }

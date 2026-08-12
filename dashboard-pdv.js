@@ -44,7 +44,7 @@ import {
 
 // finance-pdv
 import {
-  renderFinancePage, cmpHtmlPDV,
+  renderFinancePage, cmpHtmlPDV, calculerRevenuColisAccompagnePDV,
   onFinTrajetFiltreChangePDV, onFinFiltreChange,
 } from './pdv-modules/finances-pdv.js';
 
@@ -211,6 +211,9 @@ async function updateAccueilStats() {
   const vendusJour = confJour.reduce((s, r) => s + (Number(r.nbPassagers) || r.passagers?.length || 1), 0);
   const revJour     = confJour.reduce((s, r) => s + Number(r.prixTotal || 0), 0);
 
+  const { total: revenuColisAccompagneJour } = calculerRevenuColisAccompagnePDV(confJour);
+  const revenuBilletsSeulsJour = revJour - revenuColisAccompagneJour;
+
   // Revenus colis du jour
   const colisJour       = (colisList || []).filter(c => toBrazzaDate(c.createdAt) === today);
   const revenuColisJour = colisJour.reduce((s, c) => s + Number(c.prixTransport || 0), 0);
@@ -230,6 +233,8 @@ async function updateAccueilStats() {
   setEl('statColisJourPDV',  revenuColisJour.toLocaleString() + ' XAF');
   setEl('statCardBadgeColis', `${colisJour.length} colis aujourd'hui`);
   setEl('statRevenusMois',   revJour.toLocaleString() + ' XAF');
+  setHtml('statRevenusMoisDetail',
+    `Billets : ${revenuBilletsSeulsJour.toLocaleString()} XAF · Colis accompagnés : ${revenuColisAccompagneJour.toLocaleString()} XAF`);
   setEl('statPlacesTotal',   resasJour.length.toLocaleString());
 
   const resaTodayLabel = `${resasJour.length} résa. aujourd'hui`;
