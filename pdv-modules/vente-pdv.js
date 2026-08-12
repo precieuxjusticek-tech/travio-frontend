@@ -12,6 +12,11 @@ import { showToast, showPage } from './auth-init-pdv.js';
 import { getDepartsForTrajet, renderTrajetsPDV } from './trajets-pdv.js';
 import { showTicket, showManualTicket, showColisTicketShared } from './ticket-pdv.js';
 
+function isValidPhone(tel) {
+  const digits = (tel || '').replace(/[^\d]/g, '');
+  return digits.length >= 8 && digits.length <= 15;
+}
+
 // ════════════════════════════════
 //  HOOK — notifier dashboard-pdv.js qu'une vente vient d'être enregistrée
 //  (dashboard-pdv.js s'enregistre ici pour rafraîchir l'accueil, sans import circulaire)
@@ -759,10 +764,11 @@ export function showVenteRecap() {
   for (let i = 0; i < blocks.length; i++) {
     const prenom = blocks[i].querySelector('.p-prenom')?.value.trim();
     const nom    = blocks[i].querySelector('.p-nom')?.value.trim();
-    const tel    = i === 0 ? blocks[i].querySelector('.p-tel')?.value.trim() : null;
+    const tel    = blocks[i].querySelector('.p-tel')?.value.trim() || null;
     if (!prenom) { showToast(`Prénom manquant (Passager ${i + 1}).`, ICONS.warning); return; }
     if (!nom)    { showToast(`Nom manquant (Passager ${i + 1}).`, ICONS.warning); return; }
     if (i === 0 && !tel) { showToast('Téléphone du passager principal manquant.', ICONS.warning); return; }
+    if (tel && !isValidPhone(tel)) { showToast(`Numéro de téléphone invalide (Passager ${i + 1}) — au moins 8 chiffres requis.`, ICONS.warning); return; }
   }
 
   const isArretsCheck = (selectedTrajetForVente?.typeTrajet || 'direct') === 'arrets';
@@ -952,7 +958,9 @@ export function showColisRecapShared() {
   const prix    = Number(document.getElementById('colis-prix')?.value || 0); // ← ne pas toucher, c'est un nombre
 
   if (!expNom || !expTel)   { showToast('Informations expéditeur manquantes.', ICONS.warning); return; }
+  if (!isValidPhone(expTel)) { showToast('Le numéro de téléphone de l\'expéditeur doit contenir au moins 8 chiffres.', ICONS.warning); return; }
   if (!destNom || !destTel) { showToast('Informations destinataire manquantes.', ICONS.warning); return; }
+  if (!isValidPhone(destTel)) { showToast('Le numéro de téléphone du destinataire doit contenir au moins 8 chiffres.', ICONS.warning); return; }
   if (!nature)              { showToast('Précisez la nature du colis.', ICONS.warning); return; }
   if (!prix)                { showToast('Indiquez le prix du transport.', ICONS.warning); return; }
   if (!selectedTrajetForVente) { showToast('Sélectionnez un trajet.', ICONS.warning); return; }

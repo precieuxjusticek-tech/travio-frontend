@@ -1386,6 +1386,7 @@ export async function submitTypesBillet() {
     const ageMaxRaw = row.querySelector('.tb-age-max')?.value;
     if (!nom) { showToast('Chaque type doit avoir un nom.', TOAST_ICONS.warning); return; }
     if (ageMin === '') { showToast(`Entrez l'âge min pour "${nom}".`, TOAST_ICONS.warning); return; }
+    if (ageMaxRaw !== '' && parseInt(ageMaxRaw) < parseInt(ageMin)) { showToast(`L'âge max doit être supérieur ou égal à l'âge min pour "${nom}".`, TOAST_ICONS.warning); return; }
     typesBillet.push({
       id: row.dataset.id,
       nom,

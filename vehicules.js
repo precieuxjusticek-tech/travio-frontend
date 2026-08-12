@@ -6,6 +6,11 @@ import { closeTrajetDetail, openTrajetDetail, invalidateAllDepartsCache, loadAll
 import { apiFetch } from './api.js';
 import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
+function isValidPhone(tel) {
+  const digits = (tel || '').replace(/[^\d]/g, '');
+  return digits.length >= 8 && digits.length <= 15;
+}
+
 // ════════════════════════════════
 //  VÉHICULES — CHARGEMENT
 // ════════════════════════════════
@@ -85,7 +90,8 @@ export async function submitCreateVehicule() {
 
   if (!nom)      { showToast('Entrez le nom du véhicule.', '⚠️'); return; }
   if (!type)     { showToast('Sélectionnez le type.', '⚠️'); return; }
-  if (!capacite) { showToast('Entrez la capacité.', '⚠️'); return; }
+  if (!capacite || parseInt(capacite) <= 0) { showToast('La capacité doit être un nombre de places supérieur à 0.', '⚠️'); return; }
+  if (chauffeurTel && !isValidPhone(chauffeurTel)) { showToast('Le numéro de téléphone du chauffeur doit contenir au moins 8 chiffres.', '⚠️'); return; }
 
   const btn = document.getElementById('createVehiculeBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Création...'; }
@@ -178,6 +184,8 @@ export async function submitEditVehicule(vehiculeId) {
   const chauffeurTel = document.getElementById('ev-chauffeur-tel')?.value.trim() || null;
 
   if (!nom || !type || !capacite) { showToast('Remplissez tous les champs.', '⚠️'); return; }
+  if (parseInt(capacite) <= 0) { showToast('La capacité doit être un nombre de places supérieur à 0.', '⚠️'); return; }
+  if (chauffeurTel && !isValidPhone(chauffeurTel)) { showToast('Le numéro de téléphone du chauffeur doit contenir au moins 8 chiffres.', '⚠️'); return; }
 
   const btn = document.getElementById('editVehiculeBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Sauvegarde...'; }

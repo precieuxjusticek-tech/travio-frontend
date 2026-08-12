@@ -50,7 +50,11 @@ function buildManualPreviewHTML() {
       <div class="mp-banner">⚠️ Pas d'imprimante configurée</div>
       <div class="mp-content">
         <div class="mp-title">Billet à recopier</div>
-        <div class="mp-subtitle">Reportez ces informations sur le carnet papier, puis apposez le cachet.</div>
+        <div class="mp-subtitle">Reportez ces informations sur le carnet papier.</div>
+        <div class="mp-field mp-big">
+          <div class="mp-label">Code billet</div>
+          <div class="mp-value">7K3PXR</div>
+        </div>
         <div class="mp-field mp-big">
           <div class="mp-label">Trajet</div>
           <div class="mp-value">Brazzaville → Pointe-Noire</div>
@@ -169,6 +173,7 @@ export function renderBilletConfigPage() {
       slogan:      agenceData?.slogan || '',
       politiqueAnnulation: agenceData?.politiqueAnnulation || null,
       delaiFormalite: agenceData?.delaiFormalite || null,
+      codeControle: 'VTK-89G4T6',
     };
 
     const designCardsHtml = DESIGNS.map(d => {
@@ -205,7 +210,7 @@ export function renderBilletConfigPage() {
             ${buildTicketHTML(format, selectedDesign, previewData)}
           </div>
           <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5;">
-            Aperçu sans code alphanumérique — cette fonctionnalité sera ajoutée automatiquement à ce design dès qu'elle sera prête, sans action de votre part.
+            Le vrai code billet remplacera le « — » sur les billets réellement imprimés.
           </p>
         </div>`;
     }

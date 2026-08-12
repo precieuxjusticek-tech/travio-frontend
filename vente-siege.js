@@ -6,6 +6,11 @@ import { BACKEND, agenceData, trajetList, pdvList, resaList } from './state.js';
 import { showToast, showToastAction, TOAST_ICONS } from './toast-utils.js';
 import { updateOverviewStats } from './trajets.js';
 
+function isValidPhone(tel) {
+  const digits = (tel || '').replace(/[^\d]/g, '');
+  return digits.length >= 8 && digits.length <= 15;
+}
+
 // ════════════════════════════════
 //  ICONES LOCALES (léger, pas de dépendance à state-pdv.js)
 // ════════════════════════════════
@@ -764,10 +769,11 @@ export async function submitVenteSiege() {
   for (let i = 0; i < blocks.length; i++) {
     const prenom = blocks[i].querySelector('.p-prenom')?.value.trim();
     const nom    = blocks[i].querySelector('.p-nom')?.value.trim();
-    const tel    = i === 0 ? blocks[i].querySelector('.p-tel')?.value.trim() : null;
+    const tel    = blocks[i].querySelector('.p-tel')?.value.trim() || null;
     if (!prenom) { showToast(`Prénom manquant (Passager ${i + 1}).`, TOAST_ICONS.warning); return; }
     if (!nom)    { showToast(`Nom manquant (Passager ${i + 1}).`, TOAST_ICONS.warning); return; }
     if (i === 0 && !tel) { showToast('Téléphone du passager principal manquant.', TOAST_ICONS.warning); return; }
+    if (tel && !isValidPhone(tel)) { showToast(`Numéro de téléphone invalide (Passager ${i + 1}) — au moins 8 chiffres requis.`, TOAST_ICONS.warning); return; }
   }
 
   const t = selectedTrajetForVente;
@@ -911,7 +917,9 @@ async function submitColisSiege() {
   const prix    = Number(document.getElementById('colis-siege-prix')?.value || 0);
 
   if (!expNom || !expTel)   { showToast('Informations expéditeur manquantes.', TOAST_ICONS.warning); return; }
+  if (!isValidPhone(expTel)) { showToast('Le numéro de téléphone de l\'expéditeur doit contenir au moins 8 chiffres.', TOAST_ICONS.warning); return; }
   if (!destNom || !destTel) { showToast('Informations destinataire manquantes.', TOAST_ICONS.warning); return; }
+  if (!isValidPhone(destTel)) { showToast('Le numéro de téléphone du destinataire doit contenir au moins 8 chiffres.', TOAST_ICONS.warning); return; }
   if (!nature)              { showToast('Précisez la nature du colis.', TOAST_ICONS.warning); return; }
   if (!prix)                { showToast('Indiquez le prix du transport.', TOAST_ICONS.warning); return; }
 
