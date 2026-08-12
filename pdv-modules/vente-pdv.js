@@ -1217,7 +1217,7 @@ export async function submitVente() {
 
     if (pdvData) pdvData.vendus = (pdvData.vendus || 0) + 1;
 
-    const newResa = { ...payload, id: data.id || data.reservationId };
+    const newResa = { ...payload, id: data.id || data.reservationId, codeControle: data.codeControle || null };
     resaList.push(newResa);
     invalidateStatsPdvCache();
 
