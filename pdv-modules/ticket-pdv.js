@@ -170,6 +170,7 @@ export function showTicket(resa, trajet) {
       <strong>${escapeHtml(resa.heureDepart || '—')}</strong>
     </div>
     ${resa.siege ? `<div class="ticket-row"><span>Siège</span><strong>${escapeHtml(resa.siege)}</strong></div>` : ''}
+    ${resa.codeControle ? `<div class="ticket-row"><span>Code billet</span><strong class="accent" style="letter-spacing:2px;">${escapeHtml(resa.codeControle)}</strong></div>` : ''}
     <div class="ticket-row">
       <span>Total encaissé</span>
       <strong class="accent">${Number(resa.prixTotal).toLocaleString()} XAF</strong>
@@ -265,6 +266,7 @@ export function showManualTicket(resa, trajet) {
         ${agenceData?.delaiFormalite ? `<div class="ticket-row"><span>Présentation</span><strong>${formatDelaiFormalite(agenceData.delaiFormalite)}</strong></div>` : ''}
         <div class="ticket-row"><span>Passagers</span><strong>${nbPass}</strong></div>
         <div class="ticket-row"><span>Prix</span><strong class="accent">${Number(resa.prixTotal || 0).toLocaleString()} XAF</strong></div>
+        ${resa.codeControle ? `<div class="ticket-row"><span>Code billet</span><strong class="accent" style="letter-spacing:2px;">${escapeHtml(resa.codeControle)}</strong></div>` : ''}
       </div>
       <div class="ticket-actions">
         <button class="ticket-btn-primary" onclick="copierInfosBilletManuel('${resa.id}')">
@@ -274,7 +276,7 @@ export function showManualTicket(resa, trajet) {
         <button class="ticket-btn-secondary" onclick="showPage('reservations', document.querySelector('[data-page=reservations]'));closeManualTicket()">Voir les réservations</button>
       </div>
       <div style="padding:14px 24px 0;font-size:11px;color:var(--muted);text-align:center;line-height:1.5;">
-        Le code alphanumérique sera ajouté ici dès que la fonctionnalité sera disponible. Cet écran reste accessible depuis l'historique des réservations.
+        Reportez également le code billet ci-dessus sur le carnet papier. Cet écran reste accessible depuis l'historique des réservations.
       </div>
     </div>
   `;
