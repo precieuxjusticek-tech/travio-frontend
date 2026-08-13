@@ -51,11 +51,11 @@ import {
 // monpdv
 import { renderMonPDVPage } from './pdv-modules/monpdv-pdv.js';
 
-// guide
-import { renderGuidePagePDV, updateGuideBadgePDV, checkGuideWelcomeModalPDV } from './pdv-modules/guide-pdv.js';
-
 // colis
 import { loadColisPDV, filterColisPDV } from './pdv-modules/colis-pdv.js';
+
+// page-help
+import { openPageHelp, closePageHelp } from './pdv-modules/page-help-pdv.js';
 
 // ════════════════════════════════
 //  INIT
@@ -98,9 +98,6 @@ onAuthStateChanged(auth, async (user) => {
         hideLoader();
         return; // stoppe tout chargement + toute navigation
       }
-
-      updateGuideBadgePDV();
-      checkGuideWelcomeModalPDV();
     }
 
     await Promise.all([
@@ -111,6 +108,7 @@ onAuthStateChanged(auth, async (user) => {
 
     populateVenteSelect();
     updateAccueilStats();
+    renderAccueilVentes();   // ← ajouter cette ligne
     initInstallPrompt();
     initBackGuard();
 
@@ -281,7 +279,6 @@ onPageShow('reservations', () => filterReservations());
 onPageShow('monpdv',       () => renderMonPDVPage());
 onPageShow('finance',      () => renderFinancePage());
 onPageShow('colis',        () => filterColisPDV());
-onPageShow('guide',        () => renderGuidePagePDV());
 
 // ════════════════════════════════
 //  EXPOSER AU HTML

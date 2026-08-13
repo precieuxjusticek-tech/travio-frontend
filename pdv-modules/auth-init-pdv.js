@@ -16,7 +16,6 @@ export const PAGE_TITLES = {
   monpdv:       'Mon point de vente',
   finance:      'Finances',
   colis:        'Colis',
-  guide:        "Mode d'emploi",
 };
 
 // ════════════════════════════════
