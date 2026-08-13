@@ -38,7 +38,7 @@ function toBrazzaDate(isoStr) {
   return new Date(new Date(isoStr).getTime() + OFFSET_MS_BZV).toISOString().split('T')[0];
 }
 
-function calculerRevenuColisAccompagne(resas) {
+export function calculerRevenuColisAccompagne(resas) {
   let total = 0;
   resas.forEach(r => {
     (r.passagers || []).forEach(p => {
@@ -105,7 +105,7 @@ export function updateOverviewStats() {
   const elRevenuDetail = document.getElementById('statRevenuDetail');
   if (elRevenuDetail) {
     elRevenuDetail.textContent =
-      `Billets : ${revenuBilletsSeulsJour.toLocaleString()} XAF · Colis accompagnés : ${revenuColisAccompagneJour.toLocaleString()} XAF`;
+    `Billets : ${revenuBilletsSeulsJour.toLocaleString()} XAF · Bagage(colis) accompagné : ${revenuColisAccompagneJour.toLocaleString()} XAF`;
   }
   const elRevenuDelta = document.getElementById('statRevenuDelta');
   if (elRevenuDelta) elRevenuDelta.textContent = `${resaAujourdhui.length} réservation${resaAujourdhui.length > 1 ? 's' : ''} aujourd'hui`;

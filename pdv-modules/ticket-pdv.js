@@ -140,17 +140,16 @@ export function showTicket(resa, trajet) {
     : `${escapeHtml(resa.prenomPassager)} ${escapeHtml(resa.nomPassager)}`;
 
   body.innerHTML = `
+    ${resa.codeControle ? `
+    <div style="text-align:center;padding:6px 0 18px;border-bottom:1px solid var(--border);margin-bottom:14px;">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Code de vérification</div>
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:6px;color:var(--white);background:var(--surface2);border:1.5px dashed var(--accent);border-radius:12px;padding:14px 10px;">
+        ${escapeHtml(resa.codeControle)}
+      </div>
+    </div>` : ''}
     <div class="ticket-row">
       <span>Passager${nbPass > 1 ? 's' : ''}</span>
       <strong style="text-align:right;max-width:60%;">${passagersLabel}</strong>
-    </div>
-    <div class="ticket-row">
-      <span>Téléphone</span>
-      <strong>${escapeHtml(resa.telephonePassager || '—')}</strong>
-    </div>
-    <div class="ticket-row">
-      <span>Trajet</span>
-      <strong>${routeAffichee}</strong>
     </div>
     ${nbPass > 1 ? `
     <div class="ticket-row">
@@ -170,7 +169,6 @@ export function showTicket(resa, trajet) {
       <strong>${escapeHtml(resa.heureDepart || '—')}</strong>
     </div>
     ${resa.siege ? `<div class="ticket-row"><span>Siège</span><strong>${escapeHtml(resa.siege)}</strong></div>` : ''}
-    ${resa.codeControle ? `<div class="ticket-row"><span>Code billet</span><strong class="accent" style="letter-spacing:2px;">${escapeHtml(resa.codeControle)}</strong></div>` : ''}
     <div class="ticket-row">
       <span>Total encaissé</span>
       <strong class="accent">${Number(resa.prixTotal).toLocaleString()} XAF</strong>
@@ -258,6 +256,15 @@ export function showManualTicket(resa, trajet) {
           <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;">${routeAffichee}</div>
         </div>
       </div>
+      ${resa.codeControle ? `
+      <div style="padding:0 24px 4px;">
+        <div style="text-align:center;background:var(--surface2);border:1.5px dashed var(--accent);border-radius:14px;padding:16px 18px;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Code de vérification — à recopier</div>
+          <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:6px;color:var(--white);">
+            ${escapeHtml(resa.codeControle)}
+          </div>
+        </div>
+      </div>` : ''}
       <div class="ticket-body">
         <div class="ticket-row"><span>Agence</span><strong>${escapeHtml(agenceData?.nom || '—')}</strong></div>
         <div class="ticket-row"><span>Date</span><strong>${dateStr}</strong></div>
@@ -266,7 +273,6 @@ export function showManualTicket(resa, trajet) {
         ${agenceData?.delaiFormalite ? `<div class="ticket-row"><span>Présentation</span><strong>${formatDelaiFormalite(agenceData.delaiFormalite)}</strong></div>` : ''}
         <div class="ticket-row"><span>Passagers</span><strong>${nbPass}</strong></div>
         <div class="ticket-row"><span>Prix</span><strong class="accent">${Number(resa.prixTotal || 0).toLocaleString()} XAF</strong></div>
-        ${resa.codeControle ? `<div class="ticket-row"><span>Code billet</span><strong class="accent" style="letter-spacing:2px;">${escapeHtml(resa.codeControle)}</strong></div>` : ''}
       </div>
       <div class="ticket-actions">
         <button class="ticket-btn-primary" onclick="copierInfosBilletManuel('${resa.id}')">

@@ -519,7 +519,7 @@ async function buildRapportFinancesDoc() {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(...NAVY);
-    doc.text('Revenu colis', 52, y + 15);
+    doc.text('Colis expédié', 52, y + 15);
     doc.setFontSize(13);
     doc.setTextColor(...TEAL_DARK);
     doc.text(fmtMontant(colisData.revenuColis), 52, y + 28);

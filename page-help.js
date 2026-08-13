@@ -10,7 +10,7 @@ const PAGE_HELP = {
       <ul>
         <li><strong>Réservations aujourd'hui</strong> — nombre de réservations créées aujourd'hui (les annulées ne sont pas comptées).</li>
         <li><strong>Revenus du jour</strong> — total encaissé sur ces réservations du jour.</li>
-        <li><strong>Revenus colis du jour</strong> — total encaissé sur les colis expédiés aujourd'hui, avec le nombre de colis correspondant.</li>
+        <li><strong>Revenus colis expediés du jour</strong> — total encaissé sur les colis expédiés aujourd'hui, avec le nombre de colis correspondant.</li>
         <li><strong>Billets vendus aujourd'hui</strong> — nombre de passagers inclus dans les réservations créées aujourd'hui.</li>
       </ul>
 
@@ -21,7 +21,7 @@ const PAGE_HELP = {
         <span class="guide-img-caption">Exemple des 4 cartes en haut de la page</span>
       </div>
 
-      <p><strong>Dernières réservations</strong> — affiche les 5 réservations confirmées les plus récentes. Un clic dessus ouvre directement son détail. Des alertes s'affichent si un prix a été réduit ou si un passager a été retiré.</p>
+      <p><strong>Dernières réservations</strong> — affiche les 5 réservations confirmées les plus récentes. Un clic dessus ouvre directement son détail complet (organisé en onglets Trajet / Passager(s) / Billet). Des alertes s'affichent si un prix a été réduit ou si un passager a été retiré.</p>
 
       <div class="guide-img-wrap">
         <img src="image-helps/liste-reserve.png" alt="Exemple de la liste des dernières réservations" class="guide-img">
@@ -47,6 +47,95 @@ const PAGE_HELP = {
       </div>
     `
   },
+  'vente-siege': {
+    title: 'Guichet de vente',
+    content: `
+      <p>Cette page permet de <strong>vendre un billet ou d'expédier un colis directement depuis le siège</strong>, sans passer par un point de vente.</p>
+
+      <div class="guide-warning-box">⚠️ Contrairement à un PDV, qui ne peut vendre que sur les trajets qui lui sont assignés, le siège a accès à <strong>tous les trajets de l'agence</strong>, sans aucune restriction.</div>
+
+      <p><strong>Deux modes en haut de page :</strong> <strong>Billet</strong> (vendre un passage) et <strong>Colis</strong> (expédier un colis). Le formulaire s'adapte selon le mode choisi.</p>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-modes-billet-colis.png" alt="Exemple des modes Billet et Colis" class="guide-img">
+        <span class="guide-img-caption">Exemple des deux modes en haut de la page</span>
+      </div>
+
+      <h3>Étape 1 — Point de vente et trajet</h3>
+      <p><strong>Vendre au nom de</strong> — par défaut, la vente est enregistrée comme "Vente directe — Siège". Vous pouvez aussi choisir un PDV existant dans la liste déroulante pour attribuer cette vente à ce point de vente précis (utile si un agent PDV vous appelle pour vendre en son nom, par exemple).</p>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-pdv-vendeur.png" alt="Exemple du sélecteur PDV vendeur" class="guide-img">
+        <span class="guide-img-caption">Exemple du champ "Vendre au nom de"</span>
+      </div>
+
+      <p><strong>Choisir le trajet</strong> — une barre de recherche permet de filtrer par ville, puis deux boutons permettent de basculer entre trajets <strong>Direct</strong> et <strong>Avec arrêts</strong>. Cliquez sur la carte du trajet souhaité dans la liste qui s'affiche.</p>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-recherche-trajet.png" alt="Exemple de la recherche et sélection de trajet" class="guide-img">
+        <span class="guide-img-caption">Exemple de la barre de recherche et des cartes de trajets</span>
+      </div>
+
+      <p><strong>Session de départ</strong> — une fois le trajet choisi, la liste des prochains départs disponibles apparaît, avec la date, le bus et les places restantes. Cliquez sur une session pour la sélectionner.</p>
+
+      <div class="guide-warning-box">⚠️ Contrairement à un PDV (qui voit un sous-quota de places qui lui est propre), le siège voit toujours le <strong>nombre de places réellement restantes sur tout le bus</strong>, tous vendeurs confondus.</div>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-sessions-liste.png" alt="Exemple de la liste des sessions disponibles" class="guide-img">
+        <span class="guide-img-caption">Exemple de la liste des sessions de départ disponibles</span>
+      </div>
+
+      <h3>Étape 2 (mode Billet) — Passagers</h3>
+      <p>Ajoutez un ou plusieurs passagers avec le bouton <strong>"Ajouter un passager"</strong>. Pour chaque passager : prénom, nom et type de billet sont obligatoires. Le <strong>téléphone n'est obligatoire que pour le premier passager</strong> (le contact principal de la réservation).</p>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-passager-form.png" alt="Exemple du formulaire d'un passager" class="guide-img">
+        <span class="guide-img-caption">Exemple du bloc d'informations d'un passager</span>
+      </div>
+
+      <p>En dépliant <strong>"Bagages, siège (facultatif)"</strong> sur chaque passager, vous pouvez renseigner le poids et le nombre de bagages (des frais s'ajoutent automatiquement en cas de dépassement de la limite du trajet), un numéro de siège, et éventuellement un <strong>colis en soute</strong> associé à ce passager (nature, poids, valeur déclarée, prix).</p>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-bagages-colis-soute.png" alt="Exemple des options bagages et colis en soute" class="guide-img">
+        <span class="guide-img-caption">Exemple des champs bagages et colis en soute dépliés</span>
+      </div>
+
+      <p><strong>Ville de montée et de descente :</strong></p>
+      <ul>
+        <li><strong>Trajet direct</strong> — vous choisissez le PDV d'embarquement et de débarquement parmi ceux assignés au trajet.</li>
+        <li><strong>Trajet avec arrêts</strong> — vous choisissez librement n'importe quel point de montée et de descente parmi le départ, les arrêts et l'arrivée du trajet (le prix se recalcule automatiquement selon le segment parcouru). Un PDV existant à ce point peut être sélectionné, ou laissé comme un lieu libre.</li>
+      </ul>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-montee-descente-arrets.png" alt="Exemple du choix de montée et descente sur un trajet avec arrêts" class="guide-img">
+        <span class="guide-img-caption">Exemple de la sélection libre montée/descente sur un trajet avec arrêts</span>
+      </div>
+
+      <p>Le <strong>récapitulatif du prix</strong> se met à jour en temps réel en bas du formulaire, passager par passager, jusqu'au total à encaisser. Cliquez sur <strong>"Confirmer la vente"</strong> pour finaliser.</p>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-recap-prix-billet.png" alt="Exemple du récapitulatif de prix pour un billet" class="guide-img">
+        <span class="guide-img-caption">Exemple du récapitulatif de prix avant confirmation</span>
+      </div>
+
+      <h3>Étape 2 (mode Colis) — Expéditeur, destinataire et colis</h3>
+      <p>Renseignez les coordonnées complètes de l'<strong>expéditeur</strong> et du <strong>destinataire</strong> (nom et téléphone obligatoires pour les deux), puis les détails du colis : nature (obligatoire), poids estimé, valeur déclarée (optionnelle) et prix du transport (obligatoire).</p>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-colis-form.png" alt="Exemple du formulaire expéditeur, destinataire et colis" class="guide-img">
+        <span class="guide-img-caption">Exemple du formulaire du mode Colis</span>
+      </div>
+
+      <p>Comme pour un billet, vous choisissez le point d'embarquement et de débarquement du colis (PDV ou lieu libre selon le type de trajet). Une fois la vente confirmée, un <strong>code de retrait</strong> est généré — à transmettre au destinataire pour qu'il puisse récupérer le colis à l'arrivée.</p>
+
+      <div class="guide-warning-box">⚠️ Après confirmation, le formulaire se réinitialise automatiquement pour une nouvelle vente — pensez à noter ou transmettre le code de retrait affiché avant de continuer.</div>
+
+      <div class="guide-img-wrap">
+        <img src="image-helps/vente-siege-code-retrait.png" alt="Exemple du code de retrait généré après expédition" class="guide-img">
+        <span class="guide-img-caption">Exemple du code de retrait affiché après confirmation d'un colis</span>
+      </div>
+    `
+  },
   reservations: {
     title: 'Réservations',
     content: `
@@ -65,7 +154,12 @@ const PAGE_HELP = {
 
       <p><strong>Deux onglets :</strong></p>
       <ul>
-        <li><strong>Vue d'ensemble</strong> — affiche les alertes de votre réseau (trajets sous-performants, PDV inactifs, annulations récentes, modifications à la baisse non vérifiées) ainsi que des statistiques globales : total réservations, taux d'annulation, PDV vendeurs actifs.</li>
+        <p><strong>Cliquer sur une réservation</strong> ouvre son détail complet, organisé en 3 onglets :</p>
+        <ul>
+          <li><strong>Trajet</strong> — ligne, date, heure, bus, PDV vendeur, date et heure de vente, points d'embarquement/débarquement, statut, et les remarques éventuelles en dessous.</li>
+          <li><strong>Passager(s)</strong> — coordonnées, type de billet, siège, bagages et colis en soute de chaque passager (un bloc par passager si la réservation en compte plusieurs).</li>
+          <li><strong>Billet</strong> — le billet de contrôle, avec un choix entre affichage Code et QR Code, et un bouton pour l'imprimer directement.</li>
+        </ul>
         <li><strong>Détail des réservations</strong> — la liste complète, filtrable, avec des stats sur les billets vendus, les passagers déjà transportés, les passagers retirés et les réservations réaffectées.</li>
       </ul>
 
@@ -151,7 +245,7 @@ const PAGE_HELP = {
       <h4>Les cases à cocher "PDV de départ" et "PDV d'arrivée"</h4>
       <p>Dès que vous avez choisi une ville de départ, une liste de cases à cocher apparaît automatiquement juste en dessous : ce sont <strong>tous les points de vente actifs qui se trouvent dans cette ville</strong>. Il en va de même pour la ville d'arrivée. <strong>Cocher un PDV lui donne le droit de vendre des billets sur ce trajet.</strong> Un PDV non coché ne verra tout simplement pas ce trajet dans son interface de vente, même s'il est situé dans la bonne ville.</p>
 
-      <div class="guide-warning-box">⚠️ Un trajet ne peut pas exister sans <strong>au moins un PDV de départ coché</strong>. C'est ce qui permet de vendre des billets depuis la ville de départ. Sans ça, la création est bloquée. Le PDV d'arrivée n'est pas obligatoire, mais sans lui, personne ne pourra vendre de billets retour depuis la ville d'arrivée.</div>
+      <div class="guide-warning-box">⚠️ Un trajet ne peut pas exister sans <strong>au moins un PDV de départ</strong> et <strong>au moins un PDV d'arrivée</strong> cochés. C'est ce qui permet de vendre des billets dans les deux sens (aller depuis la ville de départ, retour depuis la ville d'arrivée). Sans l'un des deux, la création est bloquée. Cette exigence ne s'applique qu'à la création — en modifiant un trajet existant, retirer tous les PDV d'arrivée reste possible.</div>
 
       <p>Si aucun PDV n'existe encore dans la ville choisie, la liste affiche un message vous en informant — il faudra d'abord créer un PDV dans cette ville (page "Équipe & PDV") avant de pouvoir continuer.</p>
 
@@ -398,7 +492,7 @@ const PAGE_HELP = {
       <p><strong>3 indicateurs en haut de la liste</strong> (calculés en tâche de fond) :</p>
       <ul>
         <li><strong>PDV actifs</strong> — combien de PDV sur le total peuvent se connecter.</li>
-        <li><strong>À surveiller</strong> — nombre de PDV actifs sans aucune vente depuis 5 jours ou plus. Un clic sur cette carte filtre directement la liste sur ces PDV.</li>
+        <li><strong>À surveiller</strong> — nombre de PDV actifs sans aucune vente depuis 5 jours ou plus. Un clic sur cette carte ouvre une fenêtre listant ces PDV, avec un accès direct au détail de chacun.</li>
         <li><strong>Revenu réseau (mois)</strong> — somme des revenus du mois en cours, tous PDV confondus.</li>
       </ul>
 

@@ -1,7 +1,7 @@
 // ─── TRAVIO — Finances ───
 
 import { BACKEND, agenceData, resaList, pdvList, trajetList } from './state.js';
-import { loadDeparts, loadAllDeparts } from './trajets.js';
+import { loadDeparts, loadAllDeparts, calculerRevenuColisAccompagne } from './trajets.js';
 import { showToast, TOAST_ICONS } from './toast-utils.js';
 import { apiFetch } from './api.js';
 import { escapeHtml, escapeJsAttr } from './sanitize.js';
@@ -103,7 +103,7 @@ function _renderFinanceColis() {
   container.innerHTML = `
     <div class="stat-card">
       <div class="stat-card-header">
-        <span class="stat-label">Revenu colis</span>
+        <span class="stat-label">Colis expédié</span>
         <div class="stat-icon green">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><path d="M5 11h2M9 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
@@ -840,6 +840,10 @@ export function renderFinancePage() {
 
   const CA      = conf.reduce((s,r) => s + Number(r.prixTotal||0), 0);
   const CAprev  = confPrev.reduce((s,r) => s + Number(r.prixTotal||0), 0);
+  const revenuColisAccompagne     = calculerRevenuColisAccompagne(conf);
+  const revenuColisAccompagnePrev = calculerRevenuColisAccompagne(confPrev);
+  const revenuBilletsSeuls        = CA - revenuColisAccompagne;
+  const revenuBilletsSeulsPrev    = CAprev - revenuColisAccompagnePrev;
   const billetsAnnules     = annulees.reduce((s,r) => s + (Number(r.nbPassagers)||1), 0);
   const billetsAnnulesPrev = resasPrev.filter(r => r.statut === 'annulée').reduce((s,r) => s + (Number(r.nbPassagers)||1), 0);
   const billets = conf.reduce((s,r) => s + (Number(r.nbPassagers)||1), 0) + billetsAnnules;
@@ -871,8 +875,13 @@ export function renderFinancePage() {
 
   const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.innerHTML = v; };
 
-  setEl('finCA',          fmt(CA));
-  setEl('finCAInfo',      cmpHtml(CA, CAprev));
+  setEl('finCA',          fmt(revenuBilletsSeuls));
+  setEl('finCAInfo',
+    `<div>${cmpHtml(revenuBilletsSeuls, revenuBilletsSeulsPrev)}</div>` +
+    (revenuColisAccompagne > 0
+      ? `<div style="color:var(--muted);font-size:10.5px;margin-top:3px;">dont ${fmt(revenuColisAccompagne)} de suppléments bagage(colis) accompagné</div>`
+      : '')
+  );
   setEl('finBillets', billets.toLocaleString());
   setEl('finBilletsInfo', cmpHtml(billets, bilPrev) +
     (billetsAnnules > 0 ? ` <span style="color:#FF4D6A;font-weight:600;">· dont ${billetsAnnules} annulé${billetsAnnules > 1 ? 's' : ''}</span>` : ''));

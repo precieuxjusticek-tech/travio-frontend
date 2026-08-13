@@ -697,8 +697,12 @@
           <div>
             <h1 class="page-title" id="venteSiegePageTitle">Vente de billets</h1>
             <p class="page-subtitle">Vente directe depuis le siège — accès à tout le réseau.</p>
+            <button class="page-help-trigger" onclick="openPageHelp('vente-siege')">
+              <span class="page-help-trigger-mark">!</span>
+              <span class="page-help-trigger-label">Comment ça marche ?</span>
+            </button>
 
-            <div class="trajet-type-toggle" style="margin-top:10px;">
+                    <div class="trajet-type-toggle" style="margin-top:10px;">
               <button class="trajet-type-btn active" id="btnModeBilletSiege" onclick="setVenteMode('billet')">
                 <span class="ttb-icon">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 5V4a3 3 0 016 0v1" stroke="currentColor" stroke-width="1.5"/></svg>
