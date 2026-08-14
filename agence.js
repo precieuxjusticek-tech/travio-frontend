@@ -310,11 +310,17 @@ function buildPolitiqueAnnulation() {
   const delaiEl  = document.getElementById('edit-annul-delai')     || document.getElementById('ob-annul-delai');
   const precisEl = document.getElementById('edit-annul-precisions') || document.getElementById('ob-annul-precisions');
 
+  let precisions = parseFloat(precisEl?.value) || null;
+  if (precisions !== null && (precisions < 0 || precisions > 100)) {
+    showToast('Les frais d\'annulation doivent être compris entre 0 et 100%.', TOAST_ICONS.warning);
+    precisions = null;
+  }
+
   return {
     autorise:      true,
     remboursement: autorise === 'remboursement',
     delaiHeures:   parseInt(delaiEl?.value) || null,
-    precisions:    parseFloat(precisEl?.value) || null,
+    precisions,
   };
 }
 
@@ -598,6 +604,12 @@ export async function submitEditFiche() {
 
   if (!nom || !slogan || !desc || !ville || !adresse || !telephone) {
     showToast('Remplissez tous les champs obligatoires.', TOAST_ICONS.warning); return;
+  }
+
+  if (telephone.length !== 9) {
+    document.getElementById('edit-telephone')?.classList.add('error');
+    showToast('Le numéro de téléphone doit contenir exactement 9 chiffres.', TOAST_ICONS.warning);
+    return;
   }
 
   const payload = {

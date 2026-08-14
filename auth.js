@@ -72,6 +72,11 @@ function showToast(message, iconKey = 'warning') {
 //  UTILITAIRES
 // ════════════════════════════════
 
+// Vérifie qu'une adresse email a un format valide
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // Highlight les champs vides
 function highlightEmpty(ids) {
   let hasEmpty = false;
@@ -125,6 +130,12 @@ async function handleRegister() {
   const email    = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-password').value;
   const confirm  = document.getElementById('reg-confirm').value;
+
+  if (!isValidEmail(email)) {
+    document.getElementById('reg-email').classList.add('error');
+    showToast('Adresse email invalide.', 'mail');
+    return;
+  }
 
   if (password !== confirm) {
     document.getElementById('reg-confirm').classList.add('error');
@@ -191,6 +202,12 @@ async function handleLogin() {
   const email    = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
 
+  if (!isValidEmail(email)) {
+    document.getElementById('login-email').classList.add('error');
+    showToast('Adresse email invalide.', 'mail');
+    return;
+  }
+
   // ── LOADING ON ──
   const btn = document.querySelector('#screen-login .btn-submit');
   const originalText = btn.innerHTML;
@@ -233,6 +250,8 @@ async function handleLogin() {
       showToast('Email ou mot de passe incorrect.', 'error');
     } else if (err.code === 'auth/too-many-requests') {
       showToast('Trop de tentatives. Réessayez plus tard.', 'clock');
+    } else if (err.code === 'auth/invalid-email') {
+      showToast('Adresse email invalide.', 'error');
     } else {
       console.error(err);
       showToast('Impossible de contacter le serveur.', 'error');
@@ -249,6 +268,12 @@ async function handlePdvLogin() {
 
   const email    = document.getElementById('pdv-email').value.trim();
   const password = document.getElementById('pdv-password').value;
+
+  if (!isValidEmail(email)) {
+    document.getElementById('pdv-email').classList.add('error');
+    showToast('Adresse email invalide.', 'mail');
+    return;
+  }
 
   // ── LOADING ON ──
   const btn = document.querySelector('#screen-pdv .btn-submit');
@@ -291,6 +316,8 @@ async function handlePdvLogin() {
       showToast('Email ou mot de passe incorrect.', 'error');
     } else if (err.code === 'auth/too-many-requests') {
       showToast('Trop de tentatives. Réessayez plus tard.', 'clock');
+    } else if (err.code === 'auth/invalid-email') {
+      showToast('Adresse email invalide.', 'error');
     } else {
       console.error(err);
       showToast('Impossible de contacter le serveur.', 'error');
@@ -306,6 +333,12 @@ async function handleForgot() {
   if (hasEmpty) { showToast('Entrez votre adresse email.', 'mail'); return; }
 
   const email = document.getElementById('forgot-email').value.trim();
+
+  if (!isValidEmail(email)) {
+    document.getElementById('forgot-email').classList.add('error');
+    showToast('Adresse email invalide.', 'mail');
+    return;
+  }
 
   try {
     // Firebase envoie l'email de reset directement
