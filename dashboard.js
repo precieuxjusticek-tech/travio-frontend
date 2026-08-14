@@ -52,8 +52,8 @@ import { genererRapportReservations, imprimerRapportReservations, genererRapport
 // ── controleurs ──
 import { switchEquipeTab, loadControleurs, openCreateControleur, closeCreateControleur, createControleurNextStep, createControleurBackStep, submitCreateControleur, openControleurDetail, closeControleurDetail } from './controle.js';
 
-// ── Géolocalisation ──
-import { renderGeoPage } from './geo.js';
+// ── Départs ──
+import { renderDepartsPage } from './departs.js';
 
 // ── Mode d'emploi ──
 import { openPageHelp, closePageHelp } from './page-help.js';
@@ -127,8 +127,8 @@ window.showPage = function(pageId, navEl) {
   if (finPage?.classList.contains('active')) renderFinancePage();
   const aboPage = document.getElementById('page-abonnement');
   if (aboPage?.classList.contains('active')) renderAbonnementPage();
-  const geoPage = document.getElementById('page-geo');
-  if (geoPage?.classList.contains('active')) renderGeoPage();
+  const departsPage = document.getElementById('page-departs');
+  if (departsPage?.classList.contains('active')) renderDepartsPage();
   const billetsPage = document.getElementById('page-billets');
   if (billetsPage?.classList.contains('active')) renderBilletConfigPage();
   const colisPage = document.getElementById('page-colis');
@@ -358,8 +358,8 @@ window.imprimerRapportReservations = imprimerRapportReservations;
 window.genererRapportFinances      = genererRapportFinances;
 window.imprimerRapportFinances     = imprimerRapportFinances;
 
-// Géolocalisation
-window.renderGeoPage = renderGeoPage;
+// Départs
+window.renderDepartsPage = renderDepartsPage;
 
 // Aide contextuelle
 window.openPageHelp  = openPageHelp;
