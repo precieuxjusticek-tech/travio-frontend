@@ -8,6 +8,14 @@ import { agenceData } from './state.js';
 import { apiFetch } from './api.js';
 import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
+// ════════════════════════════════
+//  VALIDATION — helpers
+// ════════════════════════════════
+function isValidPhone(tel) {
+  const digits = (tel || '').replace(/[^\d]/g, '');
+  return digits.length >= 8 && digits.length <= 15;
+}
+
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   down:    '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px;"><path d="M8 2v9M4 8l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -944,7 +952,7 @@ export function openResaDetail(resaId) {
               ${p.telephone ? `<div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(p.telephone)}</strong></div>` : ''}
               <div class="recap-row"><span>Type</span><strong>${escapeHtml(nomTypePassager(p))}</strong></div>
               ${p.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(p.siege)}</strong></div>` : ''}
-              ${p.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages} kg${p.nombreBagages > 0 ? ' · ' + p.nombreBagages + ' colis' : ''}${p.prixBagages > 0 ? ' (+' + Number(p.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
+              ${(p.bagages > 0 || p.nombreBagages > 0) ? `<div class="recap-row"><span>Bagages</span><strong>${p.bagages > 0 ? p.bagages + ' kg' : ''}${p.nombreBagages > 0 ? (p.bagages > 0 ? ' · ' : '') + p.nombreBagages + ' colis' : ''}${p.prixBagages > 0 ? ' (+' + Number(p.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
               ${p.colisSoute ? `
                 <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(p.colisSoute.nature) || '—'} (${Number(p.colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
                 ${p.colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${p.colisSoute.poids} kg</strong></div>` : ''}
@@ -957,7 +965,10 @@ export function openResaDetail(resaId) {
               <div class="recap-row"><span>Téléphone</span><strong>${escapeHtml(r.telephonePassager) || '—'}</strong></div>
               <div class="recap-row"><span>Type</span><strong>${escapeHtml(nomTypeResa(r))}</strong></div>
               ${r.siege ? `<div class="recap-row"><span>Siège</span><strong>${escapeHtml(r.siege)}</strong></div>` : ''}
-              ${r.bagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${r.bagages} kg${r.nombreBagages > 0 ? ' · ' + r.nombreBagages + ' colis' : ''}${r.prixBagages > 0 ? ' (+' + Number(r.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : ''}
+              ${(() => {
+                const nbColis = r.nombreBagages || r.passagers?.[0]?.nombreBagages || 0;
+                return (r.bagages > 0 || nbColis > 0) ? `<div class="recap-row"><span>Bagages</span><strong>${r.bagages > 0 ? r.bagages + ' kg' : ''}${nbColis > 0 ? (r.bagages > 0 ? ' · ' : '') + nbColis + ' colis' : ''}${r.prixBagages > 0 ? ' (+' + Number(r.prixBagages).toLocaleString() + ' XAF)' : ''}</strong></div>` : '';
+              })()}
               ${r.passagers?.[0]?.colisSoute ? `
                 <div class="recap-row"><span>Colis en soute</span><strong>${escapeHtml(r.passagers[0].colisSoute.nature) || '—'} (${Number(r.passagers[0].colisSoute.prix || 0).toLocaleString()} XAF)</strong></div>
                 ${r.passagers[0].colisSoute.poids ? `<div class="recap-row"><span>Poids du colis</span><strong>${r.passagers[0].colisSoute.poids} kg</strong></div>` : ''}
@@ -1341,6 +1352,26 @@ export async function confirmerModificationResa(resaId) {
 
   if (!payload.prenomPassager) {
     showToast('Le prénom est obligatoire.', TOAST_ICONS.warning);
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer les modifications'; }
+    return;
+  }
+
+  if (isMulti) {
+    for (const p of payload.passagers) {
+      if (p.telephone && !isValidPhone(p.telephone)) {
+        showToast('Le numéro de téléphone d\'un passager doit contenir au moins 8 chiffres.', TOAST_ICONS.warning);
+        if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer les modifications'; }
+        return;
+      }
+    }
+  } else if (payload.telephonePassager && !isValidPhone(payload.telephonePassager)) {
+    showToast('Le numéro de téléphone doit contenir au moins 8 chiffres.', TOAST_ICONS.warning);
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer les modifications'; }
+    return;
+  }
+
+  if (payload.bagages < 0) {
+    showToast('Le poids des bagages ne peut pas être négatif.', TOAST_ICONS.warning);
     if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer les modifications'; }
     return;
   }

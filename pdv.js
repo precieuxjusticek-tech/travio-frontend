@@ -7,6 +7,17 @@ import { showToast, togglePdvPassword, TOAST_ICONS } from './toast-utils.js';
 import { apiFetch } from './api.js';
 import { escapeHtml, escapeJsAttr } from './sanitize.js';
 
+// ════════════════════════════════
+//  VALIDATION — helpers
+// ════════════════════════════════
+function isValidPhone(tel) {
+  const digits = (tel || '').replace(/[^\d]/g, '');
+  return digits.length >= 8 && digits.length <= 15;
+}
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || '').trim());
+}
+
 const ICONS = {
   close:   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   pin:     '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px;"><path d="M8 1a5 5 0 00-5 5c0 3.5 5 9 5 9s5-5.5 5-9a5 5 0 00-5-5z" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="6" r="1.4" stroke="currentColor" stroke-width="1.4"/></svg>',
@@ -597,6 +608,7 @@ export function createPDVNextStep() {
   if (!nom)     { showToast('Entrez le nom du PDV.', TOAST_ICONS.warning); return; }
   if (!adresse) { showToast('Entrez l\'adresse.', TOAST_ICONS.warning); return; }
   if (!tel)     { showToast('Entrez le téléphone.', TOAST_ICONS.warning); return; }
+  if (!isValidPhone(tel)) { showToast('Le numéro de téléphone doit contenir au moins 8 chiffres.', TOAST_ICONS.warning); return; }
 
   document.getElementById('createStep').textContent = '2';
   document.getElementById('createStep1').style.display = 'none';
@@ -617,6 +629,8 @@ export async function submitCreatePDV() {
 
   if (!responsable)    { showToast('Entrez le nom du responsable.', TOAST_ICONS.warning); return; }
   if (!emailConnexion) { showToast('Entrez l\'email de connexion.', TOAST_ICONS.warning); return; }
+  if (!isValidEmail(emailConnexion)) { showToast('L\'email de connexion n\'est pas valide.', TOAST_ICONS.warning); return; }
+  if (emailContact && !isValidEmail(emailContact)) { showToast('L\'email personnel n\'est pas valide.', TOAST_ICONS.warning); return; }
   if (!password || password.length < 6) { showToast('Mot de passe trop court (min. 6 caractères).', TOAST_ICONS.warning); return; }
 
   const villeSelect = document.getElementById('pdv-ville')?.value;
@@ -755,6 +769,9 @@ export async function submitEditPDV(pdvId) {
   if (!nom || !ville || !adresse || !responsable || !telephone || !emailConnexion) {
     showToast('Remplissez tous les champs obligatoires.', TOAST_ICONS.warning); return;
   }
+  if (!isValidPhone(telephone)) { showToast('Le numéro de téléphone doit contenir au moins 8 chiffres.', TOAST_ICONS.warning); return; }
+  if (!isValidEmail(emailConnexion)) { showToast('L\'email de connexion n\'est pas valide.', TOAST_ICONS.warning); return; }
+  if (emailContact && !isValidEmail(emailContact)) { showToast('L\'email personnel n\'est pas valide.', TOAST_ICONS.warning); return; }
 
   const payload = { nom, ville, adresse, responsable, telephone, emailContact: emailContact || null, emailConnexion };
   const btn = document.getElementById('editPDVSubmitBtn');

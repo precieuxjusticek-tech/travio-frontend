@@ -28,20 +28,17 @@ function buildDataPourReservation(r, pdv, trajet) {
   }
 
   // Bagages : agrège tous les passagers si multi, sinon le passager principal
-  let totalKg = r.bagages || 0;
-  let totalNombre = r.nombreBagages || 0;
+  let nbBagages = r.nombreBagages || 0;
   if (Array.isArray(r.passagers) && r.passagers.length > 0) {
-    totalKg = r.passagers.reduce((s, p) => s + (p.bagages || 0), 0);
-    totalNombre = r.passagers.reduce((s, p) => s + (p.nombreBagages || 0), 0);
+    nbBagages = r.passagers.reduce((s, p) => s + (p.nombreBagages || 0), 0);
   }
-  const bagagesLabel = totalKg > 0
-    ? `${totalKg} kg${totalNombre > 0 ? ` (${totalNombre} bagage${totalNombre > 1 ? 's' : ''})` : ''}`
-    : null;
+
+  const pdvDebarquement = r.pdvDebarquementId ? pdvList.find(p => p.id === r.pdvDebarquementId) : null;
 
   return {
     nomAgence:    agenceData?.nom   || 'Votre agence',
     codeControle: r.codeControle || null,
-    bagagesLabel,
+    nbBagages,
     politiqueAnnulation: agenceData?.politiqueAnnulation || null,
     delaiFormalite: agenceData?.delaiFormalite || null,
     villeAgence:  agenceData?.ville || '',
@@ -57,10 +54,8 @@ function buildDataPourReservation(r, pdv, trajet) {
     agentNom:     pdv?.responsable || '—',
     passagerNom:  nomComplet,
     nbVoyageurs,
-    pdvEmbarquementNom:   r.pdvEmbarquementNom   || pdv?.nom   || null,
-    pdvEmbarquementVille: r.pdvEmbarquementVille || pdv?.ville || null,
-    pdvDebarquementNom:   r.pdvDebarquementNom   || null,
-    pdvDebarquementVille: r.pdvDebarquementVille || null,
+    pdvEmbarquementAdresse: pdv?.adresse || null,
+    pdvDebarquementAdresse: pdvDebarquement?.adresse || null,
     codeControle: r.codeControle || null,
     politiqueAnnulation: agenceData?.politiqueAnnulation || null,
     delaiFormalite: agenceData?.delaiFormalite || null,
@@ -153,6 +148,10 @@ export function showManualTicket(resaId) {
   }
   const busSiege = `${r.busNom || '—'}${siege !== '—' ? ' — ' + siege : ''}`;
   const nbPass   = r.passagers?.length || r.nbPassagers || 1;
+  let nbBagages = r.nombreBagages || 0;
+  if (Array.isArray(r.passagers) && r.passagers.length > 0) {
+    nbBagages = r.passagers.reduce((s, p) => s + (p.nombreBagages || 0), 0);
+  }
 
   const existing = document.getElementById('manualTicketAdminOverlay');
   if (existing) existing.remove();
@@ -171,26 +170,26 @@ export function showManualTicket(resaId) {
         <button class="pdv-overlay-close" onclick="closeManualTicketAdmin()">${ICONS.close}</button>
       </div>
       <div style="padding:0 0 8px;">
-        <div style="background:linear-gradient(120deg,#14B8A6 0%,#0B7A9E 100%);border-radius:14px;padding:16px 18px;text-align:center;margin-bottom:14px;">
-          <div style="font-size:10px;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Trajet</div>
-          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;">${escapeHtml(routeAffichee)}</div>
+        <div style="background:linear-gradient(120deg,#14B8A6 0%,#0B7A9E 100%);border-radius:14px;padding:18px;text-align:center;margin-bottom:14px;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Code billet</div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:5px;font-family:'Courier New',monospace;color:#fff;">${escapeHtml(r.codeControle || '—')}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.85);margin-top:6px;">Recopiez ce code exactement, en majuscules</div>
         </div>
         <div class="recap-card">
-        <div class="recap-row"><span>Agence</span><strong>${escapeHtml(agenceData?.nom || '—')}</strong></div>
-        <div class="recap-row"><span>Date</span><strong>${escapeHtml(formatDateLabelFr(r.dateDepart))}</strong></div>
-        <div class="recap-row"><span>Départ</span><strong>${escapeHtml(r.heureDepart || '—')}</strong></div>
-        <div class="recap-row"><span>Bus / Siège</span><strong>${escapeHtml(busSiege)}</strong></div>
-          ${agenceData?.delaiFormalite ? `<div class="recap-row"><span>Présentation</span><strong>${escapeHtml(formatDelaiFormalite(agenceData.delaiFormalite))}</strong></div>` : ''}
+          <div class="recap-row"><span>Trajet</span><strong>${escapeHtml(routeAffichee)}</strong></div>
+          <div class="recap-row"><span>Agence</span><strong>${escapeHtml(agenceData?.nom || '—')}</strong></div>
+          <div class="recap-row"><span>Date</span><strong>${escapeHtml(formatDateLabelFr(r.dateDepart))}</strong></div>
+          <div class="recap-row"><span>Départ</span><strong>${escapeHtml(r.heureDepart || '—')}</strong></div>
+          <div class="recap-row"><span>Bus / Siège</span><strong>${escapeHtml(busSiege)}</strong></div>
+          ${agenceData?.delaiFormalite ? `<div class="recap-row"><span>Formalité</span><strong>${escapeHtml(formatDelaiFormalite(agenceData.delaiFormalite))}</strong></div>` : ''}
           <div class="recap-row"><span>PDV vendeur</span><strong>${escapeHtml(pdv?.nom || '—')}</strong></div>
           <div class="recap-row"><span>Passagers</span><strong>${Number(nbPass) || 1}</strong></div>
+          ${nbBagages > 0 ? `<div class="recap-row"><span>Bagages</span><strong>${nbBagages}</strong></div>` : ''}
           <div class="recap-row"><span>Prix</span><strong style="color:var(--accent)">${Number(r.prixTotal || 0).toLocaleString()} XAF</strong></div>
         </div>
         <button class="pdv-action-btn" style="width:100%;margin-top:12px;" onclick="copierInfosBilletManuelAdmin('${escapeJsAttr(resaId)}')">
           ${ICONS.clipboard} Copier les informations
         </button>
-        <p style="font-size:11px;color:var(--muted);margin-top:12px;text-align:center;line-height:1.5;">
-          Le code alphanumérique sera ajouté ici dès que la fonctionnalité sera disponible.
-        </p>
       </div>
     </div>
   `;
@@ -211,6 +210,11 @@ export function copierInfosBilletManuelAdmin(resaId) {
     ? `${r.arretMontee} → ${r.arretDescente}`
     : `${trajet?.villeDepart || '—'} → ${trajet?.villeArrivee || '—'}`;
 
+  let nbBagages = r.nombreBagages || 0;
+  if (Array.isArray(r.passagers) && r.passagers.length > 0) {
+    nbBagages = r.passagers.reduce((s, p) => s + (p.nombreBagages || 0), 0);
+  }
+
   const texte = [
     `Agence : ${agenceData?.nom || '—'}`,
     `Trajet : ${routeAffichee}`,
@@ -218,7 +222,9 @@ export function copierInfosBilletManuelAdmin(resaId) {
     `Départ : ${r.heureDepart || '—'}`,
     `Bus/Siège : ${r.busNom || '—'}${r.siege ? ' — ' + r.siege : ''}`,
     `Passagers : ${r.passagers?.length || r.nbPassagers || 1}`,
+    ...(nbBagages > 0 ? [`Bagages : ${nbBagages}`] : []),
     `Prix : ${Number(r.prixTotal || 0).toLocaleString()} XAF`,
+    `Code : ${r.codeControle || '—'}`,
   ].join('\n');
 
   navigator.clipboard?.writeText(texte)

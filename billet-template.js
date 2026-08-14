@@ -44,6 +44,23 @@ export const TICKET_CSS = `
   .tp-info-grid .tp-v{font-size:12px;font-weight:600;margin-top:2px;}
   .tp-foot{padding:10px 16px;border-top:1px dashed #E4E1D8;font-size:8px;color:#7C8494;display:flex;justify-content:space-between;}
   .tp-stamp{margin-top:12px;border:2px dashed #cfd3da;border-radius:8px;padding:8px;font-size:8px;color:#7C8494;text-align:center;}
+  .tp-code-block{
+    background:#0B1220;border-radius:10px;padding:14px 16px;text-align:center;
+    margin-top:14px;border:2px solid #14B8A6;
+  }
+  .tp-code-label{
+    display:block;color:#14B8A6;font-size:9px;text-transform:uppercase;
+    letter-spacing:1.4px;margin-bottom:6px;font-weight:700;
+  }
+  .tp-code{
+    color:#fff;font-size:22px;font-weight:800;letter-spacing:5px;
+    font-family:'Courier New',monospace;
+  }
+  .tp-t-code{
+    text-align:center;font-size:16px;font-weight:800;letter-spacing:3.5px;
+    background:#0B1220;color:#fff;padding:8px 0;margin:10px 0;
+    border-radius:5px;border:2px solid #14B8A6;
+  }
   .tp-politique{font-size:8px;color:#7C8494;margin-top:10px;padding-top:8px;border-top:1px dashed #E4E1D8;line-height:1.45;}
 
   .tp-thermal{
@@ -126,11 +143,9 @@ export function buildTicketHTML(format, design, data = {}) {
     codeControle = null,
     passagerNom  = 'Jean Dupont',
     nbVoyageurs  = 1,
-    bagagesLabel = null,
-    pdvEmbarquementNom   = null,
-    pdvEmbarquementVille = null,
-    pdvDebarquementNom   = null,
-    pdvDebarquementVille = null,
+    nbBagages = 0,
+    pdvEmbarquementAdresse = null,
+    pdvDebarquementAdresse = null,
     politiqueAnnulation = null,
     delaiFormalite = null,
   } = data;
@@ -149,9 +164,9 @@ export function buildTicketHTML(format, design, data = {}) {
   const safeAgentNom     = escapeHtml(agentNom);
   const safeCodeControle = codeControle ? escapeHtml(codeControle) : null;
   const safePassagerNom  = escapeHtml(passagerNom);
-  const safeBagagesLabel = bagagesLabel ? escapeHtml(bagagesLabel) : null;
-  const safePdvEmbarquementNom   = pdvEmbarquementNom ? escapeHtml(pdvEmbarquementNom) : null;
-  const safePdvDebarquementNom   = pdvDebarquementNom ? escapeHtml(pdvDebarquementNom) : null;
+  const bagagesLabel = Number(nbBagages) > 0 ? `${nbBagages} bagage${nbBagages > 1 ? 's' : ''}` : null;
+  const safePdvEmbarquementAdresse = pdvEmbarquementAdresse ? escapeHtml(pdvEmbarquementAdresse) : null;
+  const safePdvDebarquementAdresse = pdvDebarquementAdresse ? escapeHtml(pdvDebarquementAdresse) : null;
   
   const initiales = getInitiales(nomAgence);
 
@@ -182,15 +197,16 @@ export function buildTicketHTML(format, design, data = {}) {
             <div><div class="tp-k">Départ</div><div class="tp-v">${safeHeureDepart}</div></div>
             <div><div class="tp-k">Bus / Siège</div><div class="tp-v">${safeBusNom}${safeSiege ? ' — ' + safeSiege : ''}</div></div>
             <div><div class="tp-k">Voyageurs</div><div class="tp-v">${Number(nbVoyageurs) || 1}</div></div>
-            ${safeBagagesLabel ? `<div><div class="tp-k">Bagages</div><div class="tp-v">${safeBagagesLabel}</div></div>` : ''}
-            <div><div class="tp-k">Embarquement</div><div class="tp-v">${safePdvEmbarquementNom || '—'}</div></div>
-            <div><div class="tp-k">Débarquement</div><div class="tp-v">${safePdvDebarquementNom || '—'}</div></div>
-            ${delaiFormalite ? `<div style="grid-column:1/-1;"><div class="tp-k">Présentation</div><div class="tp-v">${escapeHtml(formatDelaiFormalite(delaiFormalite))}</div></div>` : ''}
+            ${bagagesLabel ? `<div><div class="tp-k">Bagages</div><div class="tp-v">${bagagesLabel}</div></div>` : ''}
+            <div><div class="tp-k">Embarquement</div><div class="tp-v">${safePdvEmbarquementAdresse || '—'}</div></div>
+            <div><div class="tp-k">Débarquement</div><div class="tp-v">${safePdvDebarquementAdresse || '—'}</div></div>
+            ${delaiFormalite ? `<div style="grid-column:1/-1;"><div class="tp-k">Formalité</div><div class="tp-v">${escapeHtml(formatDelaiFormalite(delaiFormalite))}</div></div>` : ''}
             <div style="grid-column:1/-1;"><div class="tp-k">Prix total</div><div class="tp-v">${safePrix}</div></div>
           </div>
-          ${safeCodeControle
-            ? `<div class="tp-stamp" style="letter-spacing:2px;font-weight:700;">${safeCodeControle}</div>`
-            : (design === 'colore' ? `<div class="tp-stamp">Cachet de l'agence</div>` : '')}
+          <div class="tp-code-block">
+            <span class="tp-code-label">Code billet</span><br>
+            <span class="tp-code">${safeCodeControle || '—'}</span>
+          </div>
           ${politiqueAnnulation ? `<div class="tp-politique">${escapeHtml(formatPolitiqueCourte(politiqueAnnulation))}</div>` : ''}
         </div>
         <div class="tp-foot">
@@ -218,12 +234,12 @@ export function buildTicketHTML(format, design, data = {}) {
     <div class="tp-t-row"><span>Départ</span><span>${safeHeureDepart}</span></div>
     <div class="tp-t-row"><span>Bus/Siège</span><span>${safeBusNom}${safeSiege ? ' / ' + safeSiege : ''}</span></div>
     <div class="tp-t-row"><span>Voyageurs</span><span>${Number(nbVoyageurs) || 1}</span></div>
-    ${safeBagagesLabel ? `<div class="tp-t-row"><span>Bagages</span><span>${safeBagagesLabel}</span></div>` : ''}
-    <div class="tp-t-row"><span>Embarq.</span><span>${safePdvEmbarquementNom || '—'}</span></div>
-    <div class="tp-t-row"><span>Débarq.</span><span>${safePdvDebarquementNom || '—'}</span></div>
-    ${delaiFormalite ? `<div class="tp-t-row"><span>Présentation</span><span>${escapeHtml(formatDelaiFormalite(delaiFormalite))}</span></div>` : ''}
+    ${bagagesLabel ? `<div class="tp-t-row"><span>Bagages</span><span>${bagagesLabel}</span></div>` : ''}
+    <div class="tp-t-row"><span>Embarq.</span><span>${safePdvEmbarquementAdresse || '—'}</span></div>
+    <div class="tp-t-row"><span>Débarq.</span><span>${safePdvDebarquementAdresse || '—'}</span></div>
+    ${delaiFormalite ? `<div class="tp-t-row"><span>Formalité</span><span>${escapeHtml(formatDelaiFormalite(delaiFormalite))}</span></div>` : ''}
     <div class="tp-t-row"><span>Prix total</span><span>${safePrix}</span></div>
-    ${safeCodeControle ? `<div class="tp-t-row"><span>Code</span><span>${safeCodeControle}</span></div>` : ''}
+    <div class="tp-t-code">${safeCodeControle || '—'}</div>
     ${politiqueAnnulation ? `<div class="tp-t-politique">${escapeHtml(formatPolitiqueCourte(politiqueAnnulation))}</div>` : ''}
     <div class="tp-t-foot">Agent : ${safeAgentNom}<br>Propulsé par Travio</div>
   </div>`;

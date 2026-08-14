@@ -308,14 +308,7 @@ async function handleForgot() {
   const email = document.getElementById('forgot-email').value.trim();
 
   try {
-    // 1. Vérifier que l'email existe via notre backend
-    const res = await fetch(`${BACKEND}/auth/forgot-password`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email }),
-    });
-
-    // 2. Firebase envoie l'email de reset directement
+    // Firebase envoie l'email de reset directement
     await sendPasswordResetEmail(auth, email);
 
     showToast('Lien envoyé ! Vérifiez votre boîte mail.', 'mail');
